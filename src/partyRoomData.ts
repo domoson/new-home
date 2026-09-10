@@ -1,0 +1,1 @@
+export const partyRoom = { x: 3.6, z: 7.6, ballHeight: 2.13, radius: .18, colors: ['#df5279', '#3daac3', '#e5b84a'] }

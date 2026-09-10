@@ -1,0 +1,98 @@
+import { useState } from 'react'
+import type { PointerEvent } from 'react'
+import { Ruler, Trash2, X } from 'lucide-react'
+import type { Floor, Furniture } from './model'
+import { format, heightLine, lightWells, roofWindows, roomArea, stairFor, stairSolids } from './model'
+import { stairWalkingLine } from './winderStair'
+import { contains, distance, metres, planObjects, snapPoint } from './measure'
+import type { Measurable, PlanPoint } from './measure'
+import { terraceArea, terraceFurniture, terraceMain, terraceOutline } from './terrace'
+import { partyRoom } from './partyRoomData'
+
+function Furnishing({ item }: { item: Furniture }) {
+  const { x, z, width, depth, kind } = item
+  if (kind === 'bed' && item.angle === Math.PI / 2) return <g transform={`translate(${x + width} ${z}) rotate(90)`}><Furnishing item={{ ...item, x: 0, z: 0, width: depth, depth: width, angle: 0 }} /></g>
+  if (kind === 'sofa' && item.angle === Math.PI / 2) return <g transform={`translate(${x + width} ${z}) rotate(90)`}><Furnishing item={{ ...item, x: 0, z: 0, width: depth, depth: width, angle: 0 }} /></g>
+  return <g transform={`translate(${x} ${z})`} stroke="#777d73" strokeWidth=".018" fill={item.color ?? (kind === 'cabinet' || kind === 'counter' ? '#d3bb94' : kind === 'plant' ? '#93a88b' : '#faf9f5')}>
+    <rect width={width} height={depth} rx={['sofa', 'bed', 'bath', 'wc', 'chair'].includes(kind) ? .08 : .015} />
+    {kind === 'bed' && <><path d={`M .04 .5 H ${width - .04}`} /><rect x=".09" y=".1" width={width > 1.3 ? width / 2 - .16 : width - .18} height=".3" rx=".04" />{width > 1.3 && <rect x={width / 2 + .04} y=".1" width={width / 2 - .16} height=".3" rx=".04" />}<rect x=".05" y=".6" width={width - .1} height={depth - .68} fill="#d4dcd2" rx=".03" /></>}
+    {kind === 'sofa' && <><rect x=".09" y=".05" width={width - .18} height=".18" fill="#d0d7c9" /><path d={`M ${width / 3} .25 V ${depth - .08} M ${width * 2 / 3} .25 V ${depth - .08}`} /><rect x=".08" y=".32" width=".35" height=".35" rx=".05" fill="#b9c8b0" /></>}
+    {(kind === 'sink' || kind === 'bath') && <rect x=".07" y=".07" width={width - .14} height={depth - .14} rx=".08" fill="#e0eeee" />}
+    {kind === 'wc' && <ellipse cx={width / 2} cy={depth * .6} rx={width * .32} ry={depth * .27} fill="#f1f3ef" />}
+    {kind === 'shower' && <><path d={`M0 0 L${width} ${depth} M${width} 0 L0 ${depth}`} stroke="#b9cccc" /><circle cx={width / 2} cy={depth / 2} r=".04" fill="#777d73" /></>}
+    {kind === 'desk' && <rect x={width * .3} y={depth * .25} width={width * .45} height={depth * .45} fill="#687b7b" />}
+    {kind === 'counter' && item.id === 'kitchen' && depth > 2.3 && <g fill="#495854"><rect x=".05" y="1.75" width=".5" height=".55" rx=".03" /><circle cx=".2" cy="1.9" r=".08" stroke="#a8b4b1" /><circle cx=".4" cy="2.1" r=".09" stroke="#a8b4b1" /></g>}
+    {kind === 'hob' && <g fill="#384441" stroke="#afbeb6"><rect width={width} height={depth} />{[.18, width - .18].flatMap(east => [.14, depth - .14].map(south => <circle key={`${east}-${south}`} cx={east} cy={south} r=".095" />))}</g>}
+    {kind === 'espresso' && <g fill="#63726e"><rect x=".025" y=".025" width={width - .05} height={depth * .55} /><path d={`M${width / 2} ${depth * .5} V${depth}`} strokeWidth=".035" /></g>}
+    {kind === 'cabinet' && <path d={`M${width / 2} 0 V${depth}`} stroke="#b09a79" />}
+    {kind === 'bench' && <rect x={width - .08} y="0" width=".08" height={depth} fill="#9eae98" />}
+    {kind === 'bookcase' && <path d={width > depth ? `M${width / 3} 0 V${depth} M${width * 2 / 3} 0 V${depth}` : `M0 ${depth / 3} H${width} M0 ${depth * 2 / 3} H${width}`} />}
+    {kind === 'plant' && <><circle cx={width / 2} cy={depth / 2} r={width * .46} /><path d={`M0 0 L${width} ${depth} M0 ${depth} L${width} 0`} /></>}
+    {kind === 'machine' && <circle cx={width / 2} cy={depth / 2} r={Math.min(width, depth) * .3} fill="#c5d1d1" />}
+  </g>
+}
+export default function FloorPlan({ floor, selected, onSelect, dimensions, furnished, zoom }: { floor: Floor; selected: string; onSelect: (id: string) => void; dimensions: boolean; furnished: boolean; zoom: number }) {
+  const [pan, setPan] = useState({ x: 0, y: 0 })
+  const [drag, setDrag] = useState<{ x: number; y: number; startX: number; startY: number } | null>(null)
+  const [measuring, setMeasuring] = useState(false)
+  const [origin, setOrigin] = useState<PlanPoint | null>(null)
+  const [cursor, setCursor] = useState<PlanPoint | null>(null)
+  const [lines, setLines] = useState<{ start: PlanPoint; end: PlanPoint }[]>([])
+  const [hover, setHover] = useState<{ object: Measurable; left: number; top: number } | null>(null)
+  const objects = planObjects(floor, furnished)
+  const location = (event: PointerEvent<SVGSVGElement>) => {
+    const matrix = event.currentTarget.getScreenCTM()!
+    const point = new DOMPoint(event.clientX, event.clientY).matrixTransform(matrix.inverse())
+    return snapPoint({ x: point.x, z: point.y }, measuring ? objects : [], 8 / Math.hypot(matrix.a, matrix.b), origin ?? undefined, event.shiftKey)
+  }
+  const move = (event: PointerEvent<SVGSVGElement>) => {
+    const point = location(event); setCursor(point)
+    if (drag && zoom > 1 && !measuring) { const matrix = event.currentTarget.getScreenCTM()!; setPan({ x: drag.startX + (event.clientX - drag.x) / matrix.a, y: drag.startY + (event.clientY - drag.y) / matrix.d }); setHover(null); return }
+    const object = objects.findLast(object => contains(object, point))
+    setHover(!measuring && object ? { object, left: Math.max(8, Math.min(event.clientX + 16, window.innerWidth - 276)), top: Math.max(8, Math.min(event.clientY + 18, window.innerHeight - 126)) } : null)
+  }
+  const labels: Record<string, [number, number]> = floor.id === 'EG' ? { living: [4.0, 6.7], hall: [5.5, 1.35], wc: [1.63, 1.7], pantry: [2.55, 3] } : { bath: [2.1, 2.6], 'child-north': [5.65, 4.65], 'child-south': [4.1, 8.35], hall: [3.855, 4.95], multifunction: [5.8, 7.4], bedroom: [4.65, 7.4], office: [3.3, 2.8] }
+  const viewWidth = 10.2 / zoom, viewHeight = (floor.id === 'EG' ? 15 : 12.6) / zoom
+  if (floor.id === 'KG') { labels.bath = [2.5, 2.6]; labels['child-south'] = [3.3, 7.5] }
+  if (floor.id === 'DG') labels.hall = [3.55, 4.65]
+  if (floor.id === 'OG') { labels.bath = [1.9, 2.05]; labels['child-north'] = [5.5, 1.75]; labels['child-south'] = [2.65, 8.15] }
+  const core = stairFor()
+  const walkingLine = stairWalkingLine(2.95)
+  if (floor.id === 'DG') walkingLine.reverse()
+  return <><div className="measure-tools"><button className={`icon-button ${measuring ? 'on' : ''}`} aria-label="Maßband" title="Maßband: zwei Punkte setzen; Shift für waagerecht/senkrecht" aria-pressed={measuring} onClick={() => { setMeasuring(!measuring); setOrigin(null); setHover(null) }}><Ruler size={19} /></button><button className="icon-button" aria-label="Messungen löschen" title="Messungen löschen" disabled={!lines.length && !origin} onClick={() => { setLines([]); setOrigin(null) }}><Trash2 size={18} /></button>{origin && <button className="icon-button" aria-label="Messung abbrechen" title="Messung abbrechen (Escape)" onClick={() => setOrigin(null)}><X size={18} /></button>}</div><svg xmlns="http://www.w3.org/2000/svg" className="floor-plan" role="img" tabIndex={0} aria-label={`Grundriss ${floor.name}`} viewBox={`${3.75 - viewWidth / 2 - (zoom === 1 ? 0 : pan.x)} ${(floor.id === 'EG' ? 6 : 5) - viewHeight / 2 - (zoom === 1 ? 0 : pan.y)} ${viewWidth} ${viewHeight}`} onPointerDown={event => {
+    event.currentTarget.focus()
+    if (measuring) { const point = location(event); setCursor(point); if (origin) { if (distance(origin, point) > .001) setLines([...lines, { start: origin, end: point }]); setOrigin(null) } else setOrigin(point); return }
+    move(event)
+    if (event.target === event.currentTarget) { event.currentTarget.setPointerCapture(event.pointerId); setDrag({ x: event.clientX, y: event.clientY, startX: pan.x, startY: pan.y }) }
+  }} onClickCapture={event => { if (measuring) event.stopPropagation() }} onPointerMove={move} onPointerLeave={() => setHover(null)} onPointerUp={() => setDrag(null)} onPointerCancel={() => setDrag(null)} onKeyDown={event => { if (event.key === 'Escape') { setOrigin(null); setHover(null) } if (event.key === 'Delete') { setLines([]); setOrigin(null) } }} style={{ fontFamily: 'IBM Plex Sans, sans-serif', touchAction: 'none', cursor: measuring ? 'crosshair' : undefined }}>
+    <defs><pattern id="terrace-plan" width=".15" height="3" patternUnits="userSpaceOnUse"><rect width=".144" height="3" fill="#c8ad80" /><path d="M.03 0 V3 M.09 0 V3" stroke="#b49c77" strokeWidth=".005" /></pattern><pattern id="closed-eaves" width=".18" height=".18" patternUnits="userSpaceOnUse"><rect width=".18" height=".18" fill="#e4e6e4" /><path d="M0 .18 L.18 0" stroke="#c5cbc6" strokeWidth=".018" /></pattern></defs>
+    <rect x="-.22" y="0" width=".22" height="10" fill="#c7cac4" /><text x="-.4" y="5" fontSize=".12" fill="#868b80" textAnchor="middle" transform="rotate(-90 -.4 5)">HAUSTRENNWAND · NACHBAR WEST</text>
+    {floor.id === 'EG' && <g><polygon data-terrace="east" points={terraceOutline.map(point => point.join(',')).join(' ')} fill="url(#terrace-plan)" /><rect x={terraceMain.x} y="13" width={terraceMain.width} height=".28" fill="#c6d7bc" /><text x="5.75" y="12.65" textAnchor="middle" fontSize=".2" fill="#526452">Terrasse · {format(terraceArea)} m²</text><text x="5.75" y="13.7" textAnchor="middle" fontSize=".16" fill="#7d8b78">SÜDGARTEN</text>{furnished && terraceFurniture.map(item => <Furnishing key={item.id} item={item} />)}</g>}
+    {floor.id === 'KG' && <g fill="#e2e7e3" stroke="#8b9b90" strokeWidth=".025">{lightWells.map(({x, z, width, depth}) => <g key={`${x}-${z}`}><rect x={x} y={z} width={width} height={depth} />{Array.from({ length: 7 }, (_, index) => <line key={index} x1={x} x2={x + width} y1={z + (index + 1) * depth / 8} y2={z + (index + 1) * depth / 8} />)}</g>)}</g>}
+    <rect x="0" y="0" width="7.5" height="10" fill="#fff" />
+    {floor.id === 'DG' && [.365, 10 - heightLine(1.2)].map(south => <g key={south} data-closed-eaves="true" pointerEvents="none"><rect x=".4" y={south} width="6.735" height={heightLine(1.2) - .365} fill="url(#closed-eaves)" /><text x="3.75" y={south + .55} textAnchor="middle" fontSize=".15" fill="#667169">Unter 1,20 m · geschlossen</text></g>)}
+    {floor.rooms.map(room => <g key={room.id} onClick={() => onSelect(room.id)} style={{ cursor: 'pointer' }}>{room.parts.map((part, index) => <rect key={index} x={part.x} y={part.z} width={part.width} height={part.depth} fill={room.color} opacity={selected === room.id ? 1 : .65} />)}</g>)}
+    <g data-stair="double-quarter-winder">
+      <rect x={core.x} y={core.z} width={core.width} height={core.depth} fill="#f4f0e8" />
+      {stairSolids(floor.id === 'KG' ? 2.7 : 2.95).map(solid => <polygon key={solid.id} data-step={solid.id} points={solid.footprint!.map(point => point.join(',')).join(' ')} fill="#e6d1af" stroke="#aa9473" strokeWidth=".016" />)}
+      <polyline points={walkingLine.map(([east, , south]) => `${east},${south}`).join(' ')} fill="none" stroke="#746e61" strokeWidth=".025" />
+      <path d={`M${core.x + core.width + .35} ${walkingLine.at(-1)![2]} l-.18 -.1 m.18 .1 l-.18 .1`} fill="none" stroke="#746e61" strokeWidth=".025" />
+      {floor.id === 'DG' && <rect x={core.x + core.width} y={core.z} width=".065" height={core.runWidth} fill="#777d73" />}
+      <text x={core.x + 1.1} y={core.z + core.depth / 2 + .04} textAnchor="middle" fontSize=".105" fill="#655f51">2 × ¼</text>
+      <text x={core.x + core.width - .45} y={core.z + .15} textAnchor="middle" fontSize=".13" fill="#655f51">{floor.id === 'DG' ? '↓ OG' : '↑ ' + (floor.id === 'KG' ? 'EG' : floor.id === 'EG' ? 'OG' : 'DG')}</text>
+    </g>
+    {floor.walls.map(wall => <g key={wall.id}><rect x={wall.x} y={wall.z} width={wall.width} height={wall.depth} fill={['west', 'east', 'north', 'south'].includes(wall.id) ? '#424a43' : '#647064'} />{wall.openings.map(opening => {
+      const east = wall.x + (wall.axis === 'x' ? opening.start : 0), south = wall.z + (wall.axis === 'z' ? opening.start : 0)
+      return <g key={opening.id} transform={`translate(${east} ${south}) ${wall.axis === 'z' ? 'rotate(90)' : ''}`}><rect x="0" y={wall.axis === 'z' ? -wall.width : 0} width={opening.width} height={wall.axis === 'z' ? wall.width : wall.depth} fill={opening.kind === 'window' ? '#dbe9e8' : '#f7f8f4'} />{opening.kind === 'passage' ? null : opening.kind === 'window' ? <path d={`M0 ${wall.axis === 'z' ? -wall.width / 2 : wall.depth / 2} H${opening.width}`} stroke="#739d9e" strokeWidth=".025" /> : opening.id === 'terrace' ? <g stroke="#739d9e" strokeWidth=".025" fill="none"><path d={`M${opening.width} .06 h${opening.width} M.2 -.12 h.9 l-.15 -.08 m.15 .08 l-.15 .08`} /></g> : <g stroke="#7b8979" strokeWidth=".018" fill="none" transform={`${opening.hinge === 'end' ? `translate(${opening.width} 0) scale(-1 1)` : ''} ${['store-north', 'parents-entry-south'].includes(wall.id) !== (opening.swing === 'reverse') ? 'scale(1 -1)' : ''}`}><path d={`M0 0 V${-opening.width} A${opening.width} ${opening.width} 0 0 1 ${opening.width} 0`} /></g>}</g>
+    })}</g>)}
+    {furnished && <g pointerEvents="none">{floor.furniture.map(item => <Furnishing key={item.id} item={item} />)}</g>}
+    {floor.id === 'DG' && <g pointerEvents="none">{[heightLine(2), 10 - heightLine(2)].map(south => <g key={south}><line x1=".4" x2="7.135" y1={south} y2={south} stroke="#608c94" strokeDasharray=".09 .06" strokeWidth=".022" /><text x="7.25" y={south + .04} fontSize=".13" fill="#60818c">2 m</text></g>)}<line x1=".4" x2="7.135" y1="5" y2="5" stroke="#a4aaa1" strokeWidth=".012" strokeDasharray=".25 .05" /></g>}
+    {floor.rooms.map(room => { const point = labels[room.id] ?? room.spawn; const compact = ['wc', 'hall', 'pantry'].includes(room.id); const labelWidth = compact ? .96 : room.id === 'bath' && floor.id === 'OG' ? 1.05 : room.id === 'multifunction' ? 1.4 : 1.8; return <g key={room.id} onClick={() => onSelect(room.id)} style={{ cursor: 'pointer' }}><rect x={point[0] - labelWidth / 2} y={point[1] - .25} width={labelWidth} height=".56" rx=".04" fill="#f9fbf6" opacity=".91" /><text x={point[0]} y={point[1] - .04} textAnchor="middle" fontSize={compact ? '.12' : '.155'} fontWeight="500" fill="#334b41">{room.id === 'living' ? 'Wohnen / Kochen / Essen' : room.name}</text><text x={point[0]} y={point[1] + .18} textAnchor="middle" fontSize=".155" fontWeight="600" fill="#294c40">{format(roomArea(room, floor.id).floor)} m²</text></g> })}
+    {floor.id === 'EG' && <g fill="#6a867a"><path d="M8.25 1.6 H7.65 l.18 -.1 m-.18 .1 l.18 .1" stroke="#6a867a" strokeWidth=".025" /><text x="8.08" y="1.37" textAnchor="middle" fontSize=".13">EINGANG</text></g>}
+    {dimensions && <g stroke="#8a9588" strokeWidth=".014" fill="#667262"><path d="M0 -.25 V-.85 M7.5 -.25 V-.85 M0 -.65 H7.5 M7.8 0 H8.45 M7.8 10 H8.45 M8.2 0 V10" /><path d="M-.07 -.58 l.14 -.14 M7.43 -.58 l.14 -.14 M8.13 .07 l.14 -.14 M8.13 10.07 l.14 -.14" strokeWidth=".025" /><text x="3.75" y="-.79" textAnchor="middle" fontSize=".2" stroke="none">7,50 m</text><text x="8.5" y="5" textAnchor="middle" fontSize=".2" stroke="none" transform="rotate(90 8.5 5)">10,00 m</text><path d="M.4 10.35 V10.7 M7.135 10.35 V10.7 M.4 10.55 H7.135" /><text x="3.75" y="10.48" fontSize=".14" textAnchor="middle" stroke="none">6,735 m lichte Breite</text></g>}
+    {floor.id === 'KG' && furnished && <g data-party-room="true" pointerEvents="none"><circle cx={partyRoom.x} cy={partyRoom.z} r={partyRoom.radius} fill="#dce8e8" stroke="#697f85" strokeWidth=".025" /><path d={`M${partyRoom.x - .18} ${partyRoom.z} h.36 M${partyRoom.x} ${partyRoom.z - .18} v.36`} stroke="#697f85" strokeWidth=".015" />{partyRoom.colors.map((color, index) => <circle key={color} cx={partyRoom.x - .6 + index * .6} cy={partyRoom.z + .5} r=".08" fill={color} />)}</g>}
+    {floor.id === 'DG' && roofWindows.map(window => <rect key={window.id} x={window.x} y={window.z} width={window.width} height={window.depth} fill="#d6edee" fillOpacity=".35" stroke="#42858c" strokeDasharray=".06 .04" strokeWidth=".025" pointerEvents="none" />)}
+    {hover && <g pointerEvents="none" stroke="#227d80" strokeWidth=".025" fill="none"><rect x={hover.object.x} y={hover.object.z} width={hover.object.width} height={hover.object.depth} /><path d={`M${hover.object.x} ${hover.object.z - .12} h${hover.object.width} M${hover.object.x - .12} ${hover.object.z} v${hover.object.depth}`} /><text x={hover.object.x + hover.object.width / 2} y={hover.object.z - .19} fill="#195c60" stroke="#fff" strokeWidth=".055" paintOrder="stroke" textAnchor="middle" fontSize=".16">{metres(hover.object.width)}</text><text x={hover.object.x - .2} y={hover.object.z + hover.object.depth / 2} fill="#195c60" stroke="#fff" strokeWidth=".055" paintOrder="stroke" textAnchor="end" fontSize=".16">{metres(hover.object.depth)}</text></g>}
+    <g className="measurement-lines" pointerEvents="none">{[...lines, ...(origin && cursor ? [{ start: origin, end: cursor }] : [])].map(({start, end}, index) => <g key={index}><line x1={start.x} y1={start.z} x2={end.x} y2={end.z} stroke="#b44736" strokeWidth=".028" strokeDasharray={index === lines.length ? '.08 .04' : undefined} />{[start, end].map((point, pointIndex) => <circle key={pointIndex} cx={point.x} cy={point.z} r=".045" fill="#b44736" />)}<text data-measurement={index < lines.length ? 'saved' : 'preview'} x={(start.x + end.x) / 2} y={(start.z + end.z) / 2 - .12} fontSize=".19" textAnchor="middle" fill="#913b2d" stroke="#fff" strokeWidth=".075" paintOrder="stroke">{metres(distance(start, end))}</text></g>)}</g>
+  </svg>{hover && <div className="measure-tooltip" role="tooltip" style={{left: hover.left, top: hover.top}}><strong>{hover.object.label}</strong><span>{metres(hover.object.width)} × {metres(hover.object.depth)}</span><span>{hover.object.details}</span></div>}</>
+}
