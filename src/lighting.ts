@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { area, elevations, floorIds, makeFloor, roofHeight, stair } from './model'
+import { area, elevations, floorIds, makeFloor, roofHeight, stair, stairOpeningParts } from './model'
 import type { FloorId } from './model'
 
 export type LightingCircuit = { id: string; label: string; floor: FloorId; defaultOn: boolean }
@@ -14,7 +14,7 @@ export function createRoomLighting(floors: FloorId[], materials: THREE.Material[
   const group = new THREE.Group(); group.name = 'room-lighting'
   const circuits = floors.flatMap(floorId => {
     const floor = makeFloor(floorId)
-    const stairRoom = { id: 'stairs', parts: [{ x: stair.x, z: stair.z, width: stair.width, depth: stair.depth }] }
+    const stairRoom = { id: 'stairs', parts: stairOpeningParts }
     return [...floor.rooms, stairRoom].map(room => {
       const id = `${floorId}-${room.id}`
       const isStair = room.id === 'stairs'

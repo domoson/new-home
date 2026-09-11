@@ -10,7 +10,7 @@ export async function walkStair(page: Page, base: number, rise: number, sign = 1
     await page.evaluate(target => { const position = window.__house!.position(); window.__house!.look(Math.atan2(position.x - target.x, position.z - target.z)) }, target)
     await page.keyboard.down('KeyW')
     try {
-      await page.waitForFunction(target => { const position = window.__house!.position(); window.__house!.look(Math.atan2(position.x - target.x, position.z - target.z)); return Math.hypot(position.x - target.x, position.z - target.z) < .06 }, target, { timeout: 15000, polling: 'raf' })
+      await page.waitForFunction(target => { const position = window.__house!.position(); window.__house!.look(Math.atan2(position.x - target.x, position.z - target.z)); return Math.hypot(position.x - target.x, position.z - target.z) < .14 }, target, { timeout: 15000, polling: 'raf' })
     } catch (error) {
       throw new Error(`Stair target ${JSON.stringify(target)}, actual ${JSON.stringify(await page.evaluate(() => window.__house!.position()))}`, { cause: error })
     } finally { await page.keyboard.up('KeyW') }

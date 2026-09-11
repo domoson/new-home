@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { area, house, makeFloor, roofWindows, stair } from './model'
+import { area, house, makeFloor, roofWindows, stairOpeningParts } from './model'
 import type { FloorId, Rect } from './model'
 
 export function roomDaylight(floorId: FloorId) {
@@ -10,7 +10,7 @@ export function roomDaylight(floorId: FloorId) {
     area: opening.width * opening.height,
   })))
   if (floorId === 'DG') for (const window of roofWindows) apertures.push({ east: window.x + window.width / 2, south: window.z + window.depth / 2, area: window.width * window.length })
-  const rooms = [...floor.rooms, { id: 'stairs', parts: [{ x: stair.x, z: stair.z, width: stair.width, depth: stair.depth }] }]
+  const rooms = [...floor.rooms, { id: 'stairs', parts: stairOpeningParts }]
   const contains = (parts: Rect[], east: number, south: number) => parts.some(part => east >= part.x && east <= part.x + part.width && south >= part.z && south <= part.z + part.depth)
   return rooms.map(room => {
     const windows = apertures.filter(window => contains(room.parts, window.east, window.south))

@@ -6,12 +6,12 @@ it('schneidet nur Bauteile auf der gewaehlten Achse', () => {
   expect(sectionSpan(rect(2, 3, 1, 4), 'EW', 4)).toEqual([2, 3])
   expect(sectionSpan(rect(2, 3, 1, 4), 'NS', 3)).toBeNull()
 })
-it('spart beide Dachfenster wirklich aus der Dachgeometrie aus', () => {
+it('spart alle drei Dachfenster wirklich aus der Dachgeometrie aus', () => {
   for (const opening of roofWindows) for (const panel of roofPanels()) {
     const overlap = Math.max(0, Math.min(panel.x + panel.width, opening.x + opening.width) - Math.max(panel.x, opening.x)) * Math.max(0, Math.min(panel.z + panel.depth, opening.z + opening.depth) - Math.max(panel.z, opening.z))
     expect(overlap).toBeLessThan(.000001)
   }
-  expect(roofPanels().reduce((area, panel) => area + panel.width * panel.depth, 0)).toBeCloseTo(7.85 * 10.5 - roofWindows.reduce((area, window) => area + window.width * window.depth, 0))
+  expect(roofPanels().reduce((area, panel) => area + panel.width * panel.depth, 0)).toBeCloseTo(7.35 * 10.5 - roofWindows.reduce((area, window) => area + window.width * window.depth, 0))
 })
 it('haelt Handlaeufe aus beiden Podest-Laufflaechen heraus', () => {
   const landings = stairSolids(2.95).filter(solid => solid.id.startsWith('landing'))

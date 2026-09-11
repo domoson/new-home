@@ -1,3 +1,4 @@
+import { house } from "./model"
 import { partner } from './context'
 import { distance, metres } from './measure'
 import { rectCorners, siteParking } from './parking'
@@ -7,7 +8,7 @@ import { terraceArea, terraceMain, terraceOutline } from './terrace'
 export type SiteItem = { id: string; name: string; points: [number, number][]; color: string; details: string; width?: number; depth?: number; dimensionPoints?: [number, number][] }
 const rectangle = (id: string, name: string, bounds: SiteRect, color: string, point = (x: number, z: number): [number, number] => [x, z]): SiteItem => ({ id, name, points: rectCorners(bounds).map(([x, z]) => point(x, z)), color, width: bounds.width, depth: bounds.depth, details: `${metres(bounds.width)} × ${metres(bounds.depth)}` })
 export const siteItems: SiteItem[] = [
-  rectangle('house-east', 'Haus Ost', { x: 0, z: 0, width: 7.5, depth: 10 }, '#e9e7df'),
+  rectangle('house-east', 'Haus Ost', { x: 0, z: 0, width: house.width, depth: 10 }, '#e9e7df'),
   rectangle('house-west', 'Haus West', partner, '#e9e7df'),
   ...(['east', 'west'] as const).map(side => {
     const point = (east: number, south: number): [number, number] => side === 'east' ? [east, south] : [-east, south + partner.z]

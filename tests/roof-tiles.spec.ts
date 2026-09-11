@@ -8,6 +8,13 @@ test('Ziegelreihen auf beiden Dachseiten folgen den getrennten Dachfarben', asyn
     const THREE = await import('/node_modules/.vite/deps/three.js')
     const { buildScene } = await import('/src/scene.ts')
     const model = buildScene('EG', false, true, true)
+    const drainage: { name: string; geometry: string; minX: number; maxX: number; minY: number; maxY: number; color?: string; metalness?: number }[] = []
+    model.group.traverse(object => {
+      if (!object.name.startsWith('main-')) return
+      const bounds = new THREE.Box3().setFromObject(object)
+      const material = Array.isArray(object.material) ? object.material[0] : object.material
+      drainage.push({ name: object.name, geometry: object.geometry.type, minX: bounds.min.x, maxX: bounds.max.x, minY: bounds.min.y, maxY: bounds.max.y, color: material.color?.getHexString(), metalness: material.metalness })
+    })
     const east = model.group.children.find(object => object.name === 'roof-tile-courses')!
     const west = model.group.getObjectByName('house-west')!.getObjectByName('roof-tile-courses')!
     const westBefore = west.material.color.getHexString()
@@ -35,8 +42,16 @@ test('Ziegelreihen auf beiden Dachseiten folgen den getrennten Dachfarben', asyn
     const render = (visible: boolean) => { east.visible = west.visible = visible; renderer.render(scene, camera) }
     view(false)
     Object.assign(window, { roofPreview: { model, renderer, view, render } })
-    return { samples, westBefore, westAfter, westExpected: new THREE.Color('#b45c42').multiplyScalar(.72).getHexString() }
+    return { samples, drainage, westBefore, westAfter, westExpected: new THREE.Color('#b45c42').multiplyScalar(.72).getHexString() }
   })
+  expect(colors.drainage.filter(item => item.name.startsWith('main-gutter-'))).toHaveLength(4)
+  expect(colors.drainage.filter(item => item.name.endsWith('-inner'))).toHaveLength(4)
+  expect(colors.drainage.filter(item => item.name.endsWith('-elbow'))).toHaveLength(4)
+  expect(colors.drainage.find(item => item.name === 'main-gutter-north')?.geometry).toBe('CylinderGeometry')
+  expect(colors.drainage.find(item => item.name === 'main-downpipe-north-inner')?.geometry).toBe('CylinderGeometry')
+  expect(colors.drainage.find(item => item.name === 'main-gutter-north')?.color).toBe('d6dbdc')
+  expect(colors.drainage.find(item => item.name === 'main-gutter-north')?.metalness).toBeCloseTo(.35)
+  expect(colors.drainage.filter(item => item.name.endsWith('-inner')).every(item => item.minY < -.13 && item.maxY > 5.8 && Math.min(Math.abs(item.minX), Math.abs(item.maxX)) > .4)).toBe(true)
   for (const sample of colors.samples) { expect(sample.actual).toBe(sample.expected); expect(sample.west).toBe(colors.westBefore) }
   expect(colors.westAfter).toBe(colors.westExpected)
   const canvas = page.locator('[data-roof-preview]')

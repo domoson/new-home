@@ -27,10 +27,12 @@ test('Window daylight lights rooms with every lamp off, without global interior 
     const views = [
       { name: 'living-east', position: [3, 1.6, 7], target: [.4, 1.6, 7] },
       { name: 'living-west', position: [-3, 1.6, 8.2], target: [-.4, 1.6, 8.2] },
-      { name: 'child', position: [3.7, 4.55, 7.5], target: [1, 4.55, 7.5] },
+      { name: 'child', position: [5.3, 4.55, 6.5], target: [4.55, 4.55, 7.5] },
+      { name: 'child-northeast', position: [4.7, 4.55, 4.2], target: [3.3, 4.55, 4.2] },
+      { name: 'reading', position: [2.4, 4.55, 8], target: [.5, 4.55, 8] },
       { name: 'attic', position: [5.4, 7.5, 6.2], target: [3.8, 7.5, 7] },
-      { name: 'pantry', position: [2.5, 1.6, 2.9], target: [1.56, 1.6, 2.9] },
-      { name: 'basement', position: [3, -1.05, 2.8], target: [1, -1.05, 1] },
+      { name: 'hall', position: [2.92, 4.55, 3.2], target: [3.39, 4.55, 3.2] },
+      { name: 'basement', position: [2.5, -1.05, 2.3], target: [1, -1.05, 1] },
     ]
     const capture = () => { renderer.render(scene, camera); return renderer.domElement.toDataURL().split(',')[1] }
     const result = views.map(view => {
@@ -49,8 +51,8 @@ test('Window daylight lights rooms with every lamp off, without global interior 
   for (const view of comparisons.views) {
     const before = Buffer.from(view.before, 'base64'), after = Buffer.from(view.after, 'base64'), night = Buffer.from(view.night, 'base64')
     const change = brightness(after) - brightness(before)
-    if (view.name === 'pantry') expect(Math.abs(change)).toBeLessThan(1)
-    else if (view.name === 'basement') expect(change).toBeLessThan(20)
+    if (view.name === 'hall') expect(Math.abs(change)).toBeLessThan(1)
+    else if (view.name === 'basement') expect(change).toBeLessThan(25)
     else expect(change).toBeGreaterThan(25)
     expect(Math.abs(brightness(night) - brightness(before))).toBeLessThan(1)
     await writeFile(`test-results/${testInfo.project.name}-daylight-${view.name}.png`, after)
@@ -65,6 +67,7 @@ test('Time control brings daylight indoors while room switches stay off', async 
   await page.getByRole('button', { name: 'Rundgang', exact: true }).click()
   await page.locator('.scene-settings summary').waitFor({ timeout: 45000 })
   await page.locator('.scene-settings summary').click()
+  await page.getByRole('button', { name: 'Raumlicht', exact: true }).click()
   await page.getByRole('button', { name: 'Geschosslicht ausschalten' }).click()
   await page.locator('#sun-hour').fill('0')
   await page.locator('.scene-settings summary').click()

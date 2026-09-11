@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test'
 
-test('Nordantritt und zwei Wendelungen sind in beiden Haelften auf- und abwaerts begehbar', async ({ page }) => {
+test('Nordantritt und zwei Wendelungen mit geradem Mittellauf sind beidseitig begehbar', async ({ page }) => {
   await page.goto('/')
   const results = await page.evaluate(async () => {
     const THREE = await import('/node_modules/.vite/deps/three.js')
@@ -32,7 +32,23 @@ test('Nordantritt und zwei Wendelungen sind in beiden Haelften auf- und abwaerts
       results.push({ sign, base, descending, blocked, height: walker.position().y - .9, expected: descending ? base : base + rise })
     }
     let approachBlocked = false
-    const accessRoutes = [[0, [[3.7, 1.6], [3.7, 3.7], [2.95, 4.05]]], [2.95, [[3.7, 5.35], [3.7, 5.85], [5.65, 5.85], [5.65, 7.4]]]] as const
+    const accessRoutes = [
+      [0, [[3.25, 1.6], [3.25, 3.3], [2.88, 3.3]]],
+      [0, [[3.25, 1.65], [1.5, 1.65], [1.25, 1.6], [1.1, 1.35], [.9, .9]]],
+      [0, [[2.88, 5.48], [3.95, 6.3], [3.95, 10.5]]],
+      [2.95, [[2.88, 5.48], [2.88, 3.3], [2.88, 1.8], [1.8, 1.8]]],
+      [2.95, [[2.88, 5.48], [2.88, 4.21], [4.4, 4.21], [5.2, 3.7], [5.2, 2.5]]],
+      [2.95, [[2.88, 5.48], [2.88, 5.83], [3.9, 5.83], [3.9, 7.4], [5.1, 7.4]]],
+      [2.95, [[2.88, 5.48], [2.88, 7.3], [1.6, 7.3], [1.6, 8.5]]],
+      [-2.7, [[2.88, 5.48], [2.88, 3.3], [2.88, 1.7]]],
+      [-2.7, [[2.88, 5.48], [2.88, 4.65], [5.1, 4.65], [5.1, 2.8]]],
+      [-2.7, [[2.88, 5.48], [2.88, 7.4], [3.8, 7.7]]],
+      [5.9, [[2.88, 5.48], [2.88, 3.5], [3.8, 3.5], [3.8, 2.75]]],
+      [5.9, [[2.88, 5.48], [2.88, 7.2], [4.1, 7.2], [4.1, 5.4]]],
+      [5.9, [[2.88, 5.48], [2.88, 7.2], [1.6, 7.2], [1.6, 7.7]]],
+      ...[0, 2.95, -2.7, 5.9].map(base => [base, [[2.88, 5.48], [2.88, 4.39], [2.1, 4.39], [2.88, 4.39]]] as const),
+    ] as const
+    const blockedRoutes = []
     for (const sign of [1, -1]) for (const [base, points] of accessRoutes) {
       const offset = sign === 1 ? 0 : 1.2
       walker.teleport(new THREE.Vector3(sign * points[0][0], base, points[0][1] + offset))
@@ -42,11 +58,12 @@ test('Nordantritt und zwei Wendelungen sind in beiden Haelften auf- und abwaerts
       while (Math.hypot(walker.position().x - east, walker.position().z - south) > .045 && frames++ < 240) {
         camera.lookAt(east, camera.position.y, south); walker.keys.add('KeyW'); walker.tick(); walker.keys.clear()
       }
-      if (frames >= 240) approachBlocked = true
+      if (frames >= 240) { approachBlocked = true; blockedRoutes.push({ sign, base, east, south, position: walker.position() }); break }
+      if (Math.abs(walker.position().y - .9 - base) > .12) { approachBlocked = true; blockedRoutes.push({ sign, base, east, south, position: walker.position() }); break }
       }
     }
     walker.dispose(); model.dispose()
-    return { results, approachBlocked }
+    return { results, approachBlocked, blockedRoutes }
   })
   expect(results.approachBlocked, JSON.stringify(results)).toBe(false)
   for (const result of results.results) {

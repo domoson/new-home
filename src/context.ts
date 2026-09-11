@@ -1,4 +1,5 @@
 import * as SunCalc from 'suncalc'
+import { house } from './model'
 
 export const siteBoundary: [number, number][] = [[-10.056098883413, -1.667802356868], [10.250012281990, -4.480603334238], [13.648101413502, 20.791970540504], [-14.323750719705, 23.472546642384]]
 export const siteLengths = [20.5, 25.5, 28.1, 25.5] as const
@@ -18,7 +19,7 @@ export function boundaryDistance(point: [number, number], side: number) {
   const start = siteBoundary[side], end = siteBoundary[(side + 1) % 4], east = end[0] - start[0], south = end[1] - start[1]
   return (east * (point[1] - start[1]) - south * (point[0] - start[0])) / Math.hypot(east, south)
 }
-export const partner = { x: -7.5, z: 1.2, width: 7.5, depth: 10 }
+export const partner = { x: -house.width, z: 1.2, width: house.width, depth: house.depth }
 export const finishes = {
   facade: [{ name: 'Kreideweiß', color: '#fafafa' }, { name: 'Lichtgrau', color: '#d3d7d6' }, { name: 'Salbeigrau', color: '#bfc9bd' }, { name: 'Muschelweiß', color: '#eeeae0' }, { name: 'Nebelblau', color: '#bdcdd3' }, { name: 'Mineralgrün', color: '#9eaea4' }, { name: 'Steingrau', color: '#b4b4b0' }, { name: 'Kohle', color: '#666b68' }],
   roof: [{ name: 'Graphit', color: '#424749' }, { name: 'Ziegelrot', color: '#99584c' }, { name: 'Zinkgrau', color: '#89928f' }, { name: 'Schwarz', color: '#252927' }, { name: 'Naturrot', color: '#b66b52' }, { name: 'Terrakotta', color: '#a95643' }, { name: 'Rotbraun', color: '#7e4039' }],
@@ -33,7 +34,7 @@ export type WoodProfile = typeof woodProfiles[number]['id']
 export type HouseAppearance = { facade: string; roof: string; frame: string; composition: FacadeComposition; woodTone: number; woodProfile: WoodProfile }
 export type SceneSettings = HouseAppearance & { hour: number; season: 'summer' | 'spring' | 'winter'; west: HouseAppearance; surroundings: boolean; landscaping: boolean; transparentGround: boolean; lights: Record<string, boolean>; lightingMode: 'room' | 'global' }
 export const initialAppearance: HouseAppearance = { facade: finishes.facade[3].color, roof: finishes.roof[0].color, frame: finishes.frame[2].color, composition: 'upper', woodTone: 3, woodProfile: 'boards' }
-export const initialSettings: SceneSettings = { ...initialAppearance, west: { ...initialAppearance }, hour: 14, season: 'summer', surroundings: true, landscaping: true, transparentGround: false, lights: {}, lightingMode: 'global' }
+export const initialSettings: SceneSettings = { ...initialAppearance, west: { ...initialAppearance, composition: 'plaster' }, hour: 14, season: 'summer', surroundings: true, landscaping: true, transparentGround: false, lights: {}, lightingMode: 'global' }
 export function sunPosition(hour: number, season: SceneSettings['season']) {
   const [month, day, offset] = { summer: [5, 21, 2], spring: [2, 20, 1], winter: [11, 21, 1] }[season]
   const date = new Date(Date.UTC(2026, month, day, 0, Math.round((hour - offset) * 60)))

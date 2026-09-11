@@ -12,6 +12,7 @@ test('Fassaden: acht Kompositionen, Holztoene und Lamellen ohne Kamerasprung', a
   const probe = await page.evaluate(async () => {
     const facadePath = '/src/facade.ts', scenePath = '/src/scene.ts', threePath = '/node_modules/.vite/deps/three.js'
     const { createFacadeMaterial } = await import(facadePath), { buildScene } = await import(scenePath), THREE = await import(threePath)
+    const { house } = await import('/src/model.ts')
     const texture = new THREE.DataTexture(new Uint8Array([180, 120, 60, 255]), 1, 1); texture.needsUpdate = true
     const finish = createFacadeMaterial(texture), renderer = new THREE.WebGLRenderer(), target = new THREE.WebGLRenderTarget(8, 8)
     renderer.setSize(8, 8); renderer.setRenderTarget(target)
@@ -22,8 +23,9 @@ test('Fassaden: acht Kompositionen, Holztoene und Lamellen ohne Kamerasprung', a
       finish.setComposition(mode, 0, profile); mesh.position.set(x, y, z); camera.position.set(x, y, z + 1); camera.lookAt(x, y, z)
       renderer.render(scene, camera); const pixels = new Uint8Array(4); renderer.readRenderTargetPixels(target, 4, 4, 1, 1, pixels); return [...pixels]
     }
-    const outer = sample(7.4, 3.5, 4.2, 'timber'), inner = sample(7.17, 3.5, 4.2, 'timber'), white = sample(7.17, 3.5, 4.2, 'plaster'), corner = sample(7.2, 3.5, .1, 'timber'), gableReturn = sample(7.4, 7, 4.2, 'gable')
-    const exteriorPlaster = sample(7.4, 7, 4.2, 'plaster'), og = sample(7.4, 3.5, 4.2, 'og'), dg = sample(7.4, 7, 4.2, 'og'), entry = sample(7.4, 1, 1.5, 'og-entry'), gap = sample(7.4, 3.5, 4.28, 'og', 'open-slats'), slat = sample(7.4, 3.5, 4.2, 'og', 'open-slats')
+    const outerX = house.width - .1, innerX = house.east + .035
+    const outer = sample(outerX, 3.5, 4.2, 'timber'), inner = sample(innerX, 3.5, 4.2, 'timber'), white = sample(innerX, 3.5, 4.2, 'plaster'), corner = sample(house.width - .3, 3.5, .1, 'timber'), gableReturn = sample(outerX, 7, 4.2, 'gable')
+    const exteriorPlaster = sample(outerX, 7, 4.2, 'plaster'), og = sample(outerX, 3.5, 4.2, 'og'), dg = sample(outerX, 7, 4.2, 'og'), entry = sample(outerX, 1, 1.5, 'og-entry'), gap = sample(outerX, 3.5, 4.28, 'og', 'open-slats'), slat = sample(outerX, 3.5, 4.2, 'og', 'open-slats')
     const model = buildScene('EG', false, true, false)
     const walls = model.group.children.filter((object: { name: string }) => object.name === 'EG-wall-east' || object.name === 'DG-wall-east').map((mesh: { name: string; material: { customProgramCacheKey: () => string }[] }) => ({ name: mesh.name, materials: mesh.material.map(material => material.customProgramCacheKey()) }))
     model.dispose(); geometry.dispose(); finish.material.dispose(); texture.dispose(); target.dispose(); renderer.dispose()
@@ -42,6 +44,7 @@ test('Fassaden: acht Kompositionen, Holztoene und Lamellen ohne Kamerasprung', a
   for (const wall of probe.walls) for (const [face, material] of wall.materials.entries()) expect(material.startsWith('facade-profiles-v3-room-bounce-')).toBe(face !== (wall.name.startsWith('DG') ? 4 : 1))
   await page.locator('.scene-settings summary').click()
   await page.getByRole('button', { name: 'Fassadenansicht', exact: true }).click()
+  await page.getByLabel('Fassadenentwurf', { exact: true }).selectOption('plaster')
   await page.locator('.scene-settings summary').click()
   const camera = await page.evaluate(() => ({ ...window.__house!.position() }))
   const baseline = PNG.sync.read(await page.locator('canvas').screenshot())

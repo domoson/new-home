@@ -26,9 +26,9 @@ test('Innenanschlag, begehbare Zimmer und passende Dachfenster', async ({ page }
     await initializePhysics()
     const camera = new THREE.PerspectiveCamera(), walker = createWalker(model, camera, new THREE.Vector3(3.8, 3.85, 6.15))
     const paths: number[] = []
-    for (const sign of [1, -1]) for (const [height, start, end] of [[2.95, 5.35, 7.9], [5.9, 5.35, 6.1]]) {
+    for (const sign of [1, -1]) for (const [height, start, end] of [[2.95, 5.48, 7.3], [5.9, 5.48, 7.2]]) {
       const offset = sign === 1 ? 0 : 1.2
-      walker.teleport(new THREE.Vector3(sign * 3.2, height, start + offset)); camera.rotation.set(0, Math.PI, 0)
+      walker.teleport(new THREE.Vector3(sign * 2.88, height, start + offset)); camera.rotation.set(0, Math.PI, 0)
       walker.keys.add('KeyW')
       for (let frame = 0; frame < 160 && walker.position().z < end + offset; frame++) walker.tick()
       walker.keys.clear(); paths.push(walker.position().z - offset - end)
@@ -36,8 +36,8 @@ test('Innenanschlag, begehbare Zimmer und passende Dachfenster', async ({ page }
     walker.dispose(); model.dispose()
     return { entranceTips, roofErrors, paths }
   })
-  expect(result.entranceTips[0]).toBeLessThan(7.135)
-  expect(result.entranceTips[1]).toBeGreaterThan(-7.135)
+  expect(result.entranceTips[0]).toBeLessThan(6.635)
+  expect(result.entranceTips[1]).toBeGreaterThan(-6.635)
   for (const error of result.roofErrors) { expect(error.height).toBeCloseTo(0, 5); expect(error.south).toBeCloseTo(0, 5); expect(error.drops).toBe(true) }
   for (const gap of result.paths) expect(gap).toBeGreaterThanOrEqual(-.03)
 })

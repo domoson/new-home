@@ -30,7 +30,7 @@ export function createOutdoorLighting(group: THREE.Object3D) {
         float localSouth = outdoorPosition.z - (outdoorPosition.x < 0.0 ? ${partner.z.toFixed(4)} : 0.0);
         float localEast = abs(outdoorPosition.x);
         float roofLimit = 5.9 + ${house.knee.toFixed(4)} + (min(localSouth, 10.0 - localSouth) - ${house.north.toFixed(4)}) * ${Math.tan(house.pitch * Math.PI / 180).toFixed(6)};
-        bool indoors = localEast > 0.02 && localEast < 7.48 && localSouth > 0.02 && localSouth < 9.98 && outdoorPosition.y < roofLimit + 0.12;
+        bool indoors = localEast > 0.02 && localEast < ${(house.width - .02).toFixed(4)} && localSouth > 0.02 && localSouth < 9.98 && outdoorPosition.y < roofLimit + 0.12;
         if (!indoors && outdoorPosition.y >= -0.15) {
           vec3 outdoorNormal = inverseTransformDirection(normal, viewMatrix);
           float skyView = 0.65 + 0.35 * clamp(outdoorNormal.y, -1.0, 1.0);

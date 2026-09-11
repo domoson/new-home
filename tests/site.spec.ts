@@ -43,12 +43,12 @@ test('Grundstuecksgrenzen, Garten und deckende kollidierende Tueren', async ({ p
     const movements = []
     for (const side of [1, -1]) {
       const south = side === 1 ? 1.6 : 2.8, id = `${side === 1 ? '' : 'west-'}EG-entrance`
-      walker.teleport(new THREE.Vector3(side * 5.9, 0, south))
+      walker.teleport(new THREE.Vector3(side * 5.2, 0, south))
       const closed = walker.setOpening(id, 0)
       camera.rotation.set(0, -side * Math.PI / 2, 0, 'YXZ')
       walker.keys.add('KeyW'); for (let frame = 0; frame < 100; frame++) walker.tick(); walker.keys.clear()
       const blocked = side * walker.position().x
-      walker.teleport(new THREE.Vector3(side * 5.9, 0, south))
+      walker.teleport(new THREE.Vector3(side * 5.2, 0, south))
       const opened = walker.setOpening(id, 1)
       camera.rotation.set(0, -side * Math.PI / 2, 0, 'YXZ')
       walker.keys.add('KeyW'); for (let frame = 0; frame < 100; frame++) walker.tick(); walker.keys.clear()
@@ -67,7 +67,7 @@ test('Grundstuecksgrenzen, Garten und deckende kollidierende Tueren', async ({ p
     expect(parts).toHaveLength(2)
     expect(parts.reduce((area, bounds) => area + bounds.area, 0)).toBeCloseTo(16.125)
     const main = parts.find(bounds => bounds.area > 10)!
-    expect(main.min[0]).toBeCloseTo(sign === 1 ? 3.25 : -8.25)
+    expect(main.min[0]).toBeCloseTo(sign === 1 ? 2.75 : -7.75)
     expect(main.min[2]).toBeCloseTo(sign === 1 ? 10 : 11.2)
     expect(main.max[2] - main.min[2]).toBeCloseTo(3)
   }
@@ -76,7 +76,7 @@ test('Grundstuecksgrenzen, Garten und deckende kollidierende Tueren', async ({ p
   for (const [index, end] of probe.hedgeEnds.entries()) expect(Math.abs(end - probe.division[index])).toBeLessThan(.04)
   for (const movement of probe.movements) {
     expect(movement.closed).toBe(true); expect(movement.opened).toBe(true)
-    expect(movement.blocked).toBeLessThan(7.1); expect(movement.blocked).toBeGreaterThan(6.9)
+    expect(movement.blocked).toBeLessThan(6.6); expect(movement.blocked).toBeGreaterThan(6.4)
     expect(movement.passed).toBeGreaterThan(7.8)
   }
   await page.locator('.scene-settings summary').click()

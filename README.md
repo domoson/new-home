@@ -51,8 +51,8 @@ Nicht ueber `file://` oeffnen. WebGL2 ist fuer 3D erforderlich, 2D funktioniert 
   Tueren starten offen und sind physisch kollidierend; die Hebeschiebetuer ist verglast.
   Geschlossene Tueren blockieren, geoeffnete geben nur die reale Oeffnung frei.
   Oeffnen oder Schliessen durch den eigenen Koerper wird verhindert.
-- Szene: Tueren und oeffenbare Fenster direkt anklicken oder gezielt im Auswahlfeld
-  oeffnen/schliessen. Der Regler stellt jede Oeffnung von 0 bis 100 Prozent ein.
+- Szene: Tueren und oeffenbare Fenster direkt anklicken zum Oeffnen/Schliessen.
+  Im Rundgang stellt das Mausrad die avisierte Oeffnung stufenweise ein.
   Fassadenfenster schwenken nach innen, Dachfenster kippen modellhaft nach innen.
   Die EG-Hebeschiebetuer hebt geringfuegig an und verschiebt sich bis 1,50 m vor das
   Festfeld. Festverglasungen bleiben fest. 2D zeigt das statische Oeffnungsschema,
@@ -193,8 +193,8 @@ unveraendert. Die Umgebungsmodelle folgen dem Schalter Nachbarschaft.
 
 Je Terrasse 5,00 x 3,00 m Hauptflaeche und ein Ruecklauf von 0,75 x 1,50 m
 ums aeussere Hauseck: zusammen 16,125 m2 statt zuvor 18 m2. Ost liegt die
-Hauptflaeche bei x=3,25 bis 8,25 m, z=10 bis 13 m; der Ruecklauf bei
-x=7,50 bis 8,25 m, z=8,50 bis 10 m. West gespiegelt mit 1,20 m Suedversatz.
+Hauptflaeche bei x=2,75 bis 7,75 m, z=10 bis 13 m; der Ruecklauf bei
+x=7,00 bis 7,75 m, z=8,50 bis 10 m. West gespiegelt mit 1,20 m Suedversatz.
 Die seitlichen Lichtschaechte bleiben frei. Grundriss, Messobjekte, Aussenplan,
 3D-Dielen und Moeblierung verwenden dieselben Terrassendaten.
 
@@ -254,10 +254,10 @@ Genehmigungs- oder Stellplatzsatzungsnachweis.
 
 | Ebene | Verteilung | Lichte Modellflaechen, gerundet |
 | --- | --- | --- |
-| EG | L-Dusch-WC, kleine Speis, Diele, offener Wohn-/Koch-/Essbereich | 4,7 / 1,8 / 8,5 / 40,0 m2 |
-| OG | Familienbad Nordwest, zwei Kinderzimmer, Lesen/Spielen Suedost, Flur | Bad 8,0 / Kind Nord 15,4 / Kind Sued 15,4 / Lesen-Spielen 8,8 / Flur 6,3 m2 |
-| DG | Eltern/Ankleide, Gaeste/Arbeit, Flur | Grundflaechen 19,8 / 16,2 / 3,6 m2; hoehengewichtet 16,5 / 12,9 / 3,6 m2 |
-| KG | Technik, Waschen/Lager, Kinderpartyraum, Flur | Nutzflaechen 12,2 / 14,2 / 24,8 / 3,6 m2 |
+| EG | Rechteckiges Dusch-WC, Diele, offener Wohn-/Koch-/Essbereich | 5,0 / 8,9 / 36,4 m2 |
+| OG | Familienbad Nord, Kind Nordost, Kind Suedost, Lesen/Abstellen, Flur inkl. Nische | 7,6 / 14,1 / 14,0 / 9,3 / 3,9 m2 |
+| DG | Eltern/Ankleide, Gaeste/Arbeit, Flur inkl. Nische | Bodenflaechen 21,0 / 12,2 / 2,4 m2; hoehengewichtet 17,9 / 9,2 / 2,4 m2 |
+| KG | Technik, Waschen/Lager, Kinderpartyraum, Flur inkl. Nische | Nutzflaechen 7,1 / 17,1 / 21,8 / 3,6 m2 |
 
 Im Ost-Carport steht ein grob modellierter grauer Seat Leon ST, mittig und
 vorwaerts eingeparkt: Front zur Rueckwand, Heck zur suedlichen Einfahrt.
@@ -276,14 +276,27 @@ Die Parkposition gilt fuer die aktuelle 3D-Szene und wird beim Neuaufbau zurueck
 Reine Anschauungsanimation ohne Verkehrsmodell, Fahrzeugkollision oder bewegliche
 Tueren; das Auto steht draussen quer zur Fahrbahn, keine Schleppkurvenpruefung.
 
-Die zweimal viertelgewendelte Treppe hat den Antritt im Norden zur Diele.
-Im EG greift das Dusch-WC die Nischenidee der Referenzplaene auf: 4,659 m2,
-mit 1,88 x 1,80 m Hauptbereich und einer 1,00 x 1,275 m tiefen suedlichen
-Nische fuer die 90 x 90 cm Dusche. Neben der Dusche liegt die kleinere Speis:
-1,63 x 1,115 m, 1,8175 m2, mit flachen Regalen und offenem 90-cm-Zugang.
-Eine Tuer ist noch nicht festgelegt. Die Diele gewinnt Platz fuer 1,80 m Garderobe;
-Wohnen/Kochen/Essen hat 40,0468 m2 einschliesslich Treppenzugang.
-Der Keller hat nur noch drei Nutzraeume: vergroesserte Technik im Nordwesten,
+Die zweimal viertelgewendelte Treppe hat zwischen den Wendeln einen geraden
+Mittellauf. Sie liegt laengs an der Westwand; An- und Austritt zeigen nach Osten.
+Der Kern misst jetzt 1,88 x 3,18 m: 26 cm breiter und 52 cm kuerzer als zuvor.
+Je eine weitere Stufe an beiden horizontalen Enden ersetzt zwei Stufen im
+Mittellauf. Anzahl und Hoehe der 16 Steigungen bleiben unveraendert.
+Die Wand im Zwischenraum rueckt 68 cm nach Westen auf x=1,60 m. Dahinter bleiben
+die Wendelstufen unberuehrt; davor entsteht eine 68 x 86 cm lichte Nische mit
+durchgehendem Geschossboden. Die eigentliche Treppenoeffnung hat 5,176 m2 statt
+des 5,9784-m2-Huellrechtecks. Wandflaechen werden nicht als Raumflaeche gezaehlt.
+Aussenhuelle 7 x 10 m und Wandstaerken bleiben unveraendert. Der Verteiler ist
+95 cm licht breit; im OG reicht er fuer die Zimmertuer 30 cm ueber das Treppenende.
+Prioritaeten: ausgeglichene Kinderzimmer, separates Lesen/Abstellen, breites Bad,
+Familienwohnen mit Bestandsmoebeln sowie Eltern/Ankleide und Gaeste/Arbeit.
+Im EG ersetzt ein 60-cm-Vorratshochschrank die kleine Speis; das Dusch-WC ist
+ein einfaches Rechteck von 2,18 x 2,275 m mit 90-x-90-cm-Dusche.
+Die Diele bietet weiterhin 1,80 m Garderobe und eine Bank.
+Wohnen/Kochen/Essen hat 36,3874 m2 einschliesslich Treppenzugang und Nische:
+netto 0,642 m2 mehr als zuvor. Davon entfallen 0,5848 m2 auf die Nische;
+der vollbreite suedliche Wohnbereich beginnt zudem 52 cm frueher bei z=6,14 m.
+Das vorhandene Regal rueckt mit der Treppensuedwand nach Norden, unverkleinert.
+Der Keller hat drei Nutzraeume: kompaktere Technik im Nordwesten,
 Waschen/Lager im Nordosten und einen rechteckigen Hobbyraum ueber die ganze
 suedliche Hausbreite. Als Kinderpartyraum eingerichtet: freie Tanzflaeche,
 Sitzbank, niedriger Snacktisch und kleines Spielzeugregal am Rand. Diskokugel
@@ -297,32 +310,38 @@ Kein separater Abstellraum.
 Der Installationsschacht ist in allen vier Geschossen vollstaendig aus der
 Planung entfernt, einschliesslich seiner Flaechenabzuege. Leitungsfuehrung und
 erforderliche Installationsflaechen sind spaeter neu zu planen.
-Das OG-Bad bleibt im Nordwesten: 7,995 m2, 2,60 x 3,075 m, ohne Zugangsnische.
-Die Tuer oeffnet nach innen; Wanne, separate Dusche, WC und Waschtisch bleiben.
-Kind Nord: 15,3797 m2, breite noerdliche Kopfzone und L-Zuschnitt am Flur.
-Kind Sued: 15,3775 m2 mit 4,50 x 3,175 m Hauptbereich und einer
-2,18 x 0,50 m Garderobennische im Nordwesten.
-Beide haben eigene Zugaenge, Bett, Schreibtisch und Schraenke. In Kind Sued
-steht der Arbeitsplatz jetzt an der Suedwand, nicht mehr im Eingangslaufweg.
-Nur noch ein 1,80 m breiter Kleiderschrank in der nordwestlichen Nische.
-Die gemeinsame
-Lese-/Spielzone ist an die Suedostfassade verlegt: ein zusammenhaengendes
-Rechteck mit 2,075 x 4,235 m, 8,7876 m2, Arbeitsplatz und Sitzbank. Eigener
-offener Flurzugang, Ost- und Suedfenster, kein Kinderzimmer als Durchgang.
-Der Flur mit 90 cm tiefem Querzugang hat 6,2952 m2. Kind Sued hat ein verbreitertes
-Suedfenster; das zweite Suedfenster liegt in der gemeinsamen Zone.
-Leitungen, Bewegungsflaechen und Belichtung fachlich ungeprueft.
+Das OG-Bad liegt im Norden: 7,5985 m2, 3,34 x 2,275 m,
+mit Wanne 180 x 80 cm, Dusche 100 x 100 cm, WC und 110-cm-Waschplatz.
+Die Tuer oeffnet nach innen. Das breitere Bad ueberdeckt das EG-WC;
+Fallleitungen, Versorgung und Installationsflaechen sind dennoch nicht ausgeplant.
+Das Nordfenster erhaelt 1,20 m Bruestung, das Suedwestfenster wieder 90 cm.
+Kind Nordost: 14,0637 m2, mit 2,735 m breitem Arbeitsbereich neben dem Bad
+und Hauptflaeche von 3,085 x 2,40 m.
+Kind Suedost: 14,0191 m2 mit 3,345 x 3,195 m grosser Suedflaeche und
+3,085 x 1,08 m grossem Eingangsbereich. Beide bleiben ueber 14 m2; das Bad gibt
+26 cm Breite ab, damit die breitere Treppe nicht allein die Kinderzimmer verkleinert.
+Beide haben ein 90-x-200-cm-Bett,
+140-x-60-cm-Schreibtisch, 180-x-60-cm-Schrank, eigene Fenster und einen
+eigenen 90-cm-Flurzugang. Kein Durchgangszimmer. Das Suedostfenster rueckt
+auf x=4,40 m, innerhalb des Suedostzimmers.
+Lesen/Abstellen liegt separat im Suedwesten: 9,2864 m2, mit 2,73 x 3,195 m
+grosser Hauptflaeche und 1,88 x 0,30 m tiefer nordwestlicher Erweiterung,
+mit eigenem Suedfenster und eigener 90-cm-Tuer. Kein zusaetzliches Schlafzimmer.
+Der OG-Verteiler misst 0,95 x 3,48 m = 3,306 m2 plus 0,5848 m2 Nische,
+zusammen 3,8908 m2. Alle vier Raeume gehen direkt davon ab. Die Nische ist keine
+zusaetzliche Durchgangsflaeche; EG, KG und DG besitzen denselben Wandruecksprung.
 
-Der Elternbereich hat mit dem breiteren Flur 19,8170 m2 Grundflaeche, das Gaeste-/Arbeitszimmer
-hat ohne Schachtabzug 16,1944 m2. Das 180 x 200 cm Elternbett steht quer mit Kopfteil
-am Ostgiebel und mindestens 60 cm Durchgang am Fussende. Im Suedwesten liegt
-die Ankleide mit wandnahen Schraenken; das Raumteilerregal ist entfernt.
-Die Raummitte bleibt frei. Eine einzige Zimmertuer direkt suedlich am oberen
-Treppenaustritt, bei z=5,80 m; der Flur hat 3,564 m2.
-Die Tuer oeffnet ins Elternzimmer. Das Nordzimmer bietet jetzt ein
-160 x 200 cm Doppelbett, 140-cm-Schreibtisch und Stauraum. Mindestens 60 cm
-Zugang an einer Bettseite und am Fussende; der Kopfbereich liegt unter der
-Dachschraege. Beide Zimmer haben je ein gleich grosses Ostgiebelfenster.
+Der Elternbereich hat 20,9774 m2 Bodenflaeche und 17,9144 m2 hoehengewichtet.
+Das 180-x-200-cm-Bett steht mit Kopfteil am Ostgiebel und freiem Fusszugang;
+Ankleide im Suedwesten. Die eigene Tuer liegt bei z=5,98 m am Verteiler,
+der im DG 2,4088 m2 einschliesslich Nische hat. Die Elternzimmertuer oeffnet
+in den Verteiler, die Gaestezimmertuer nach innen, damit die Nische frei bleibt.
+Gaeste/Arbeit hat 12,2396 m2 Bodenflaeche beziehungsweise 9,1766 m2 hoehengewichtet.
+Statt dauerndem Doppelbett ein 140-x-200-cm-Gaesteschlafsofa; im Modell
+als ausgezogene Liegeflaeche dargestellt, damit der volle Platzbedarf pruefbar ist.
+140-cm-Schreibtisch und niedriger Stauraum bleiben.60cm Zugang an einer Seite
+und am Fussende; das Kopfende liegt unter der Dachschraege. Kein Ausklappmechanismus
+simuliert. Beide Zimmer behalten gleich grosse Ostgiebelfenster.
 Nord- und Suedtraufstreifen unter 1,20 m sind mit 16 cm starken Waenden
 geschlossen, ohne Tueren oder separat waehlbare Raeume. Raumseitige Wandkanten
 bei z=1,525 m und z=8,475 m, lichte Hoehe dort etwa 1,31 m. Die 1,20-m-Linie
@@ -341,14 +360,14 @@ Tuerhohes Seitenlicht am Eingang: 35 x 210 cm Festverglasung.
 L-Vordach in Holz mit 120 cm Ausladung, 220 cm Laenge und Unterkante 235 cm;
 16 cm Dachstaerke und 12 cm noerdliche Seitenwange. Konstruktion ungeprueft.
 
-Kueche: 270 x 100 cm Halbinsel bei z=4,55 m mit Induktionsfeld und angedeuteter
+Kueche: 240 x 100 cm Halbinsel bei z=4,55 m mit Induktionsfeld und angedeuteter
 Muldenlueftung, Siebtraeger an der Suedkante ausserhalb des Fensterschwenkbereichs.
-Kurze 155-cm-Ostzeile mit Spuele; 180 cm Hochschrankwand mit Backofen plus separater
-Kuehlschrank, jeweils 255 cm hoch. Zwischen Hochschraenken und Halbinsel 165 cm.
-Freie Arbeitsflaeche neben Spuele und Kochfeld, neue Speis noerdlich am Kern.
+Kurze 110-cm-Ostzeile mit Spuele; Hochschrankwand mit Vorratsschrank und separatem
+Kuehlschrank, jeweils 255 cm hoch. Zwischen Hochschraenken und Halbinsel 115 cm.
+Freie Arbeitsflaeche neben Spuele und Kochfeld; westlich der Halbinsel knapp 1,80 m Durchgang.
 Moebelfronten, Geraete, Anschluesse und Lueftung bleiben eine Entwurfsannahme.
 
-- Aussenhuelle: 7,50 m Ost-West x 10,00 m Nord-Sued. 75 m2 je Ebene sind NICHT
+- Aussenhuelle: 7,00 m Ost-West x 10,00 m Nord-Sued. 70 m2 je Ebene sind NICHT
   die Wohnflaeche oder die Gesamt-BGF des Hauses.
 - Aussenwaende 36,5 cm, westlicher Trennwand-Platzbedarf 40 cm, Innenwaende 16 cm.
   Wandstaerke allein garantiert keinen Schallschutz; Aufbau, Anschluesse und
@@ -356,16 +375,15 @@ Moebelfronten, Geraete, Anschluesse und Lueftung bleiben eine Entwurfsannahme.
 - EG/OG: 2,65 m lichte Hoehe, 30 cm Decken-/Fussbodenpaket, 2,95 m Geschosshoehe.
   KG: 2,40 m lichte Hoehe und 2,70 m Geschosshoehe.
 - Haupttreppe: ein durchgehender Lauf mit zwei Viertelwendelungen, ohne Podest.
-  16 Steigungen je Ebene: vier gerade Nordstufen, acht Wendelstufen, drei
-  Suedstufen und der Austritt auf die Geschossdecke. Auftritt gerade 27 cm,
-  letzte Stufe 54 cm; auf der angenommenen Wendel-Lauflinie rund 25,5 cm.
-  Nominell 90 cm Laufbreite, durch Gelaender und Handlaeufe reduziert.
-  Kern 2,18 m Ost-West x 2,20 m Nord-Sued, x=0,40..2,58, z=3,60..5,80.
-  Kernflaeche 4,796 statt 5,2452 m2, Ersparnis 0,4492 m2 (8,6 Prozent).
-  Antritt Nordost bei z=4,05 statt 5,03 m: 98 cm naeher an der Diele.
-  Austritt Suedost bei z=5,35 m; Flurbreite 1,62 statt 1,01 m.
-  Kern plus unmittelbarer Flur 8,36 statt 7,14 m2, ohne Waende. Der breitere
-  Verteiler kostet Zimmerflaeche; kein pauschaler Wohnflaechengewinn.
+  16 Steigungen je Ebene: zwei Nordstufen, vier Wendelstufen, drei mittlere
+  gerade Stufen, vier weitere Wendelstufen, zwei Suedstufen und der Geschossaustritt.
+  Auftritt mittig 26 cm, Endstufen 34 cm; angenommene Wendel-Lauflinie rund 27,5 cm.
+  Nominell 100 cm Laufbreite, durch Gelaender und Handlaeufe reduziert.
+  Kern 1,88 m Ost-West x 3,18 m Nord-Sued, x=0,40..2,28,z=2,80..5,98.
+  Huellrechteck 5,9784 m2, echte Deckenaussparung 5,176 m2 durch Bodenruecksprung.
+  Antritt Nordost bei z=3,30 m, Austritt Suedost bei z=5,48 m.
+  Lichte Flurbreite 95 cm. Beide Enden liegen auf derselben Seite.
+  OG-Tuerverteiler reicht 30 cm weiter nach Sueden; kein zusaetzlicher Querflur.
   Radiale Innenkanten nur etwa 7,8 cm: fachgerechte Stufenverziehung und
   gleichmaessige Auftritte sind noch zu planen. Handlaeufe bisher segmentiert.
   Nutzbare Laufbreite, Kopffreiheit, Treppennorm, Tragwerk und Brandschutz
@@ -377,14 +395,21 @@ Moebelfronten, Geraete, Anschluesse und Lueftung bleiben eine Entwurfsannahme.
   sind 12 mm hoch und folgen als dunklere Abstufung der jeweils gewaehlten
   Dachfarbe, getrennt fuer Ost und West. Dachfenster bleiben ausgespart.
   Nur eine Oberflaechenstudie, keine konkrete Ziegel- oder Deckungsspezifikation.
+- Beide Haushaelften erhalten je eine Dachrinne an der Nord- und Suedtraufe.
+  Je Traufe sitzt ein trennwandnahes Fallrohr auf der inneren Seite; zusammen
+  sind das vier sichtbare Fallrohre fuer das Doppelhaus, die bis zum Gelaende
+  reichen. Unterirdische Leitungen, Gefaelle, Kanal- oder Zisternenanschluss
+  sowie hydraulische Bemessung sind nicht modelliert und fachlich zu planen.
 - Satteldach: 35 Grad, First Ost-West. 50 cm Kniestock wird hier als LICHTE Hoehe
   ueber Fertigfussboden am inneren Dachansatz interpretiert. Das ist eine Annahme,
   nicht die nachgewiesene baurechtliche Kniestockdefinition. Dachpaket 25 cm normal
   zur Dachflaeche. Kostenreduzierte Variante mit drei Dachfenstern je Haelfte:
   Gaeste/Arbeit Nord bei x=0,80 / z=1,90 m, Eltern Sued bei x=1,05 / z=6,60 m,
-  jeweils 114 x 140 cm; Treppe bei x=1,40 / z=3,55 m, 78 x 118 cm.
+  jeweils 114 x 140 cm; Treppe bei x=0,60 / z=3,55 m, 78 x 118 cm.
+  Treppenfenster nach Westen ueber den Lauf verschoben, damit die neue Nischenwand
+  nicht unter dem Fenster steht. Brandschutzabstand zur Haustrennwand ungeprueft.
   Gaengige Nennformate in der Dachflaeche; Projektionstiefe ist Laenge mal cos(35 Grad).
-  Zwei gleiche Ostgiebelfenster, je 98 x 118 cm, Bruestung 90 cm, bei z=3,30
+  Zwei gleiche Ostgiebelfenster, je 98 x 118 cm, Bruestung 90 cm, bei z=2,80
   und 4,95 m. Beide Zimmer haben Licht von Dach- und Giebelseite.
   Dachpaneele und Kollision lassen alle drei Oeffnungen frei. Einbau-/Rohbaumasse
   und Produktverfuegbarkeit beim gewaehlten Hersteller bestaetigen; kein Tageslichtnachweis.
@@ -413,10 +438,10 @@ die aus der schematischen Zeichnung abgeleiteten Winkel bleiben eine Naeherung.
 
 Mittige Nord-Sued-Teilung ist als exakt flaechengleiche Gerade x=0 interpretiert,
 entlang der Haustrennlinie: je 303,6321 m2. Schnittpunkte bei z=-3,0608 und
-z=22,0999 m. Osthaus bleibt x=0..7,5/z=0..10, Westhaus x=-7,5..0/z=1,2..11,2.
-Das Grundstueck ist relativ dazu platziert, sodass der kleinste senkrechte
-Hauskoerperabstand mindestens 3 m betraegt: Nord/Osthaus 3,0318 m,
-Nord/Westhaus 3,1914 m, West 3,0000 m, Ost 3,3226 m. Alle vier Hausecken werden
+z=22,0999m. Osthaus x=0..7/z=0..10, Westhaus x=-7..0/z=1,2..11,2.
+Grundstueck und Nachbarn bleiben unveraendert; die Hauskoerper werden von der
+gemeinsamen Wand aus jeweils50cm schmaler. Der kleinste senkrechte
+Hauskoerperabstand bleibt mindestens3m. Alle vier Hausecken werden
 gegen die Nord-, Ost- und Westgrenze getestet. Die 3-m-Vorgabe stammt vom Nutzer;
 kein vermessener Lageplan oder Nachweis aller Vorschriften des Bebauungsplans.
 Dachueberstaende, Vordach, Grenzwanddetails und rechtliche Abstandsdefinitionen

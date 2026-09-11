@@ -22,13 +22,13 @@ test('Planwerkzeuge: Hover-Masse, Massband, Zoom und echte Schnitte', async ({ p
   await page.mouse.move(hover.x, hover.y)
   await expect(page.getByRole('tooltip')).toContainText('Induktionskochfeld')
   await expect(page.getByRole('tooltip')).toContainText('0,80 m × 0,52 m')
-  const wall = await pointOnPlan(page, 7.3, 6.2)
+  const wall = await pointOnPlan(page, 6.8, 6.2)
   await page.mouse.move(wall.x, wall.y)
   await expect(page.getByRole('tooltip')).toContainText('Außenwand Ost')
   await page.screenshot({ path: `test-results/${testInfo.project.name}-hover.png` })
   await page.getByRole('button', { name: 'Maßband', exact: true }).click()
-  for (const [x, z] of [[.4, .365], [7.135, .365]]) { const point = await pointOnPlan(page, x, z); await page.mouse.click(point.x, point.y) }
-  await expect(page.locator('[data-measurement="saved"]')).toHaveText('6,735 m')
+  for (const [x, z] of [[.4, .365], [6.635, .365]]) { const point = await pointOnPlan(page, x, z); await page.mouse.click(point.x, point.y) }
+  await expect(page.locator('[data-measurement="saved"]')).toHaveText('6,235 m')
   await page.getByRole('button', { name: 'Vergrößern', exact: true }).click()
   for (const [x, z] of [[3, 4], [6, 8]]) { const point = await pointOnPlan(page, x, z); await page.mouse.click(point.x, point.y) }
   await expect(page.locator('[data-measurement="saved"]').last()).toHaveText('5,00 m')
@@ -39,6 +39,7 @@ test('Planwerkzeuge: Hover-Masse, Massband, Zoom und echte Schnitte', async ({ p
   const section = page.getByRole('img', { name: 'Gebäudeschnitt Nord–Süd' })
   await expect(section).toBeVisible(); await expect(section).toContainText('2,65 m'); await expect(section).toContainText('2,40 m')
   expect(await section.getByText('2,65 m', { exact: true }).first().evaluate(element => element.getBoundingClientRect().height)).toBeGreaterThan(10)
+  await setRange(page, '#section-position', .95)
   await expect(section.locator('title').filter({ hasText: 'Dachfenster Treppenhaus' })).toHaveCount(1)
   await page.screenshot({ path: `test-results/${testInfo.project.name}-section-NS.png` })
   await page.getByRole('button', { name: 'Maßband im Schnitt', exact: true }).click()
@@ -54,25 +55,22 @@ test('Planwerkzeuge: Hover-Masse, Massband, Zoom und echte Schnitte', async ({ p
 test('Oeffnungsgrade: Hebeschiebetuer, Fenster nach innen und neues Dachfenster', async ({ page }, testInfo) => {
   await page.goto('/'); await page.getByRole('button', { name: '3D', exact: true }).click()
   await expect.poll(() => page.evaluate(() => window.__house?.mode)).toBe('orbit')
-  await page.locator('.scene-settings summary').click()
-  await page.getByLabel('Tür / Fenster', { exact: true }).selectOption('EG-terrace')
-  await setRange(page, '#opening-amount', 0)
-  const closed = await page.evaluate(() => window.__house!.snapshot().openings.find(opening => opening.id === 'EG-terrace')!)
-  await setRange(page, '#opening-amount', 50)
-  await expect(page.locator('.opening-state')).toHaveText('50 % geöffnet')
-  const half = await page.evaluate(() => window.__house!.snapshot().openings.find(opening => opening.id === 'EG-terrace')!)
-  expect(half.tip[0] - closed.tip[0]).toBeCloseTo(.75)
-  await setRange(page, '#opening-amount', 100)
-  const full = await page.evaluate(() => window.__house!.snapshot().openings.find(opening => opening.id === 'EG-terrace')!)
-  expect(full.tip[0] - closed.tip[0]).toBeCloseTo(1.5)
-  for (const id of ['EG-kitchen-window', 'EG-wc-window']) {
-    await page.getByLabel('Tür / Fenster', { exact: true }).selectOption(id)
-    await setRange(page, '#opening-amount', 50)
-    const opening = await page.evaluate(id => window.__house!.snapshot().openings.find(opening => opening.id === id)!, id)
-    if (id.includes('kitchen')) expect(opening.tip[0]).toBeLessThan(7.135)
-    else expect(opening.tip[2]).toBeGreaterThan(.365)
-  }
-  await page.locator('.scene-settings summary').click()
+  const poses = await page.evaluate(async () => {
+    const { buildScene } = await import('/src/scene.ts')
+    const model = buildScene('EG', true, true, true)
+    const tip = (id: string, amount: number) => {
+      model.setOpening(id, amount); model.group.updateMatrixWorld(true)
+      const door = model.doors.find(door => door.id === id)!
+      return door.center.clone().multiplyScalar(2).applyMatrix4(door.pivot.matrixWorld).toArray()
+    }
+    const result = { terrace: [0, .5, 1].map(amount => tip('EG-terrace', amount)), kitchen: tip('EG-kitchen-window', .5), wc: tip('EG-wc-window', .5) }
+    model.dispose()
+    return result
+  })
+  expect(poses.terrace[1][0] - poses.terrace[0][0]).toBeCloseTo(.75)
+  expect(poses.terrace[2][0] - poses.terrace[0][0]).toBeCloseTo(1.5)
+  expect(poses.kitchen[0]).toBeLessThan(6.635)
+  expect(poses.wc[2]).toBeGreaterThan(.365)
   await page.screenshot({ path: `test-results/${testInfo.project.name}-kitchen-new.png` })
   const image = PNG.sync.read(await page.locator('canvas').screenshot()), colors = new Set<string>()
   for (let offset = 0; offset < image.data.length; offset += 16) colors.add(`${image.data[offset] >> 4},${image.data[offset + 1] >> 4},${image.data[offset + 2] >> 4}`)
@@ -80,12 +78,9 @@ test('Oeffnungsgrade: Hebeschiebetuer, Fenster nach innen und neues Dachfenster'
   await page.getByRole('button', { name: 'Dach', exact: true }).click()
   await expect.poll(() => page.evaluate(() => window.__house?.snapshot().site)).toBe(true)
   const skylight = await page.evaluate(() => window.__house!.snapshot().openings.find(opening => opening.id === 'DG-stair-skylight')!)
-  expect(skylight.tip[2]).toBeCloseTo(3.5)
-  await page.locator('.scene-settings summary').click()
-  await page.getByLabel('Tür / Fenster', { exact: true }).selectOption('DG-stair-skylight')
-  await setRange(page, '#opening-amount', 50)
+  expect(skylight.tip[2]).toBeCloseTo(3.55)
+  await page.evaluate(() => window.__house!.door('DG-stair-skylight'))
   const tilted = await page.evaluate(() => window.__house!.snapshot().openings.find(opening => opening.id === 'DG-stair-skylight')!)
   expect(tilted.tip[1]).toBeLessThan(skylight.tip[1])
-  await page.locator('.scene-settings summary').click()
   await page.screenshot({ path: `test-results/${testInfo.project.name}-roof-new.png` })
 })

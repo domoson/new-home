@@ -46,7 +46,7 @@ test('Volle Wandhoehe, ebene Giebelflaechen und L-Vordach', async ({ page }, tes
   expect(probe.flat).toBe(true)
   expect(probe.canopy).toEqual(['entry-canopy-roof', 'entry-canopy-side'])
   expect(probe.knees).toHaveLength(2)
-  for (const knee of probe.knees) { expect(knee.width).toBeCloseTo(6.735); expect(knee.height).toBeGreaterThan(1.2); expect(knee.height).toBeLessThan(1.35) }
+  for (const knee of probe.knees) { expect(knee.width).toBeCloseTo(6.235); expect(knee.height).toBeGreaterThan(1.2); expect(knee.height).toBeLessThan(1.35) }
   await toggle.click()
   await expect(toggle).toHaveAttribute('aria-pressed', 'false')
 })

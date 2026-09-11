@@ -16,7 +16,7 @@ it('bietet reale Masse fuer Moebel, Oeffnungen, Waende, Podeste und Aussenanlage
   expect(objects.find(object => object.label === 'Terrassenrücklauf')?.width).toBe(.75)
   expect(objects.filter(object => object.label === 'Treppenpodest')).toHaveLength(0)
   expect(objects.filter(object => object.label === 'Treppenstufe')).toHaveLength(15)
-  expect(objects.find(object => object.label === 'Treppenkern')).toMatchObject({ width: 2.18, depth: 2.2 })
+  expect(objects.find(object => object.label === 'Treppenkern')).toMatchObject({ width: 1.88, depth: 3.18 })
   expect(planObjects(makeFloor('EG'), false).some(object => object.label === 'Sofa')).toBe(false)
   expect(planObjects(makeFloor('KG'), true).filter(object => object.label.startsWith('Lichtschacht')).every(object => object.width * object.depth === .5)).toBe(true)
 })

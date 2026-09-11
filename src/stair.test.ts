@@ -3,12 +3,13 @@ import { floorSlabs, roofHeight, stair, stairGuards, stairHandrails, stairSolids
 import { sectionSpan } from './section'
 
 it('bildet eine kompakte zweimal viertelgewendelte Treppe ohne Podest', () => {
-  expect(stair.width * stair.depth).toBeCloseTo(4.796)
+  expect(stair.width * stair.depth).toBeCloseTo(5.9784)
   expect(stair.width * stair.depth).toBeLessThan(2.08 * 3.35)
   for (const rise of [2.7, 2.95]) {
     const solids = stairSolids(rise).sort((first, second) => first.bottom + first.height - second.bottom - second.height)
-    expect(solids.filter(solid => solid.id.startsWith('north'))).toHaveLength(4)
-    expect(solids.filter(solid => solid.id.startsWith('south'))).toHaveLength(3)
+    expect(solids.filter(solid => solid.id.startsWith('north'))).toHaveLength(2)
+    expect(solids.filter(solid => solid.id.startsWith('south'))).toHaveLength(2)
+    expect(solids.filter(solid => solid.id.startsWith('middle'))).toHaveLength(3)
     const landing = solids.filter(solid => solid.id.startsWith('landing'))
     expect(landing).toHaveLength(0)
     expect(solids.filter(solid => solid.id.startsWith('winder'))).toHaveLength(8)

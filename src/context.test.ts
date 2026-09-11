@@ -1,4 +1,5 @@
 import { expect, it } from 'vitest'
+import { house } from './model'
 import { boundaryDistance, finishes, initialSettings, partner, polygonArea, siteArea, siteBoundary, siteDivision, siteLengths, siteParcels, sunPosition } from './context'
 
 it('rekonstruiert die vier Grenzlaengen und eine flaechengleiche Nord-Sued-Teilung', () => {
@@ -15,12 +16,13 @@ it('rekonstruiert die vier Grenzlaengen und eine flaechengleiche Nord-Sued-Teilu
 })
 
 it('haelt beide Hauskoerper mindestens drei Meter von Nord-, Ost- und Westgrenze entfernt', () => {
-  for (const house of [{x: 0, z: 0, width: 7.5, depth: 10}, partner]) {
-    for (const east of [house.x, house.x + house.width]) for (const south of [house.z, house.z + house.depth]) {
+  for (const building of [{x: 0, z: 0, width: house.width, depth: house.depth}, partner]) {
+    for (const east of [building.x, building.x + building.width]) for (const south of [building.z, building.z + building.depth]) {
       for (const side of [0, 1, 3]) expect(boundaryDistance([east, south], side)).toBeGreaterThanOrEqual(3 - .000001)
     }
   }
-  expect(boundaryDistance([-7.5, 1.2], 3)).toBeCloseTo(3, 8)
+  expect(partner.width).toBe(house.width)
+  expect(boundaryDistance([partner.x, partner.z], 3)).toBeGreaterThan(3)
 })
 
 it('verwendet die gewuenschten Farbdefaults fuer beide Haushaelften', () => {

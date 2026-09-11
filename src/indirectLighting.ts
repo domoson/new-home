@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { area, elevations, makeFloor, roofHeight, stair } from './model'
+import { area, elevations, makeFloor, roofHeight, stairOpeningParts } from './model'
 import type { FloorId } from './model'
 import { roomDaylight } from './roomDaylight'
 
@@ -7,7 +7,7 @@ export function createIndirectLighting(floors: FloorId[], materials: THREE.Mater
   const volumes = floors.flatMap(floorId => {
     const floor = makeFloor(floorId)
     const daylight = roomDaylight(floorId)
-    return [...floor.rooms.map(room => ({ id: `${floorId}-${room.id}`, parts: room.parts, strength: room.id === 'living' ? .65 : THREE.MathUtils.clamp(800 / area(room.parts) / 55, .4, .85) })), { id: `${floorId}-stairs`, parts: [{ x: stair.x, z: stair.z, width: stair.width, depth: stair.depth }], strength: .55 }].flatMap(room => room.parts.map(part => ({
+    return [...floor.rooms.map(room => ({ id: `${floorId}-${room.id}`, parts: room.parts, strength: room.id === 'living' ? .65 : THREE.MathUtils.clamp(800 / area(room.parts) / 55, .4, .85) })), { id: `${floorId}-stairs`, parts: stairOpeningParts, strength: .55 }].flatMap(room => room.parts.map(part => ({
       id: room.id, floor: floorId, strength: room.strength,
       daylight: daylight.find(source => source.id === room.id)!,
       min: new THREE.Vector3(part.x - .025, elevations[floorId] - .025, part.z - .025),

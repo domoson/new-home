@@ -25,10 +25,10 @@ test('Aussenanlagen: Masse, Auswahl, Massband, Zoom und SVG-Export', async ({ pa
   await page.getByRole('button', { name: 'Maßband', exact: true }).click()
   const points = await plan.evaluate(element => {
     const matrix = (element as SVGSVGElement).getScreenCTM()!
-    return [[0, 0], [7.5, 0]].map(([x, z]) => { const point = new DOMPoint(x, z).matrixTransform(matrix); return { x: point.x, y: point.y } })
+    return [[0, 0], [7, 0]].map(([x, z]) => { const point = new DOMPoint(x, z).matrixTransform(matrix); return { x: point.x, y: point.y } })
   })
   for (const point of points) await page.mouse.click(point.x, point.y)
-  await expect(plan.locator('[data-measurement="saved"]')).toHaveText('7,50 m')
+  await expect(plan.locator('[data-measurement="saved"]')).toHaveText('7,00 m')
   await page.getByRole('button', { name: 'Bemaßung', exact: true }).click()
   await expect(plan.locator('.site-dimension')).toHaveCount(0)
   await page.getByRole('button', { name: 'Bemaßung', exact: true }).click()

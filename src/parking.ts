@@ -1,4 +1,5 @@
 import { boundaryDistance, boundaryX, siteBoundary } from './context'
+import { house } from './model'
 
 export type SiteRect = { x: number; z: number; width: number; depth: number }
 export const carportRoof = { pitch: 5, lowEdge: 2.5, thickness: .06 }
@@ -29,7 +30,7 @@ export const siteParking = (['east', 'west'] as const).map(side => {
   const bins = { x: carport.x + .5, z: carport.z - .95, width: 2.25, depth: .9 }
   const binAccess = { x: carport.x, z: carport.z - 1.85, width: 3.25, depth: .9 }
   const passagePoints: [number, number][] = [[passage.x, passage.z], [passage.x + passage.width, passage.z], [passage.x + passage.width, streetZ(passage.x + passage.width)], [passage.x, streetZ(passage.x)]]
-  const entrance: [number, number] = side === 'east' ? [8.5, 1.1] : [-8.5, 2.3]
+  const entrance: [number, number] = side === 'east' ? [house.width + 1, 1.1] : [-house.width - 1, 2.3]
   const join = point(passage.x + passage.width / 2, passage.z)
   const approach: [number, number][] = [[entrance[0] - .45, entrance[1]], [entrance[0] + .45, entrance[1]], [join[0] + .45, join[1]], [join[0] - .45, join[1]]]
   return { side, carport, covered, open, passage, bins, binAccess, angle, origin, point, streetZ, passagePoints, approach }
