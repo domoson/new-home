@@ -20,11 +20,11 @@ describe('Maßhaltiger Vorentwurf', () => {
     const children = floor.rooms.filter(room => room.id.startsWith('child-'))
     for (const child of children) {
       expect(roomArea(child, 'OG').floor).toBeGreaterThanOrEqual(14)
-      expect(child.parts.every(part => part.width >= 2.1)).toBe(true)
+      expect(child.parts.every(part => part.width >= 1.8)).toBe(true)
       expect(roomArea(child, 'OG').floor).toBeLessThanOrEqual(21)
     }
     expect(children[1].parts).toHaveLength(2)
-    expect(children[1].parts[1].width).toBeCloseTo(3.345)
+    expect(children[1].parts[0].width).toBeCloseTo(4.195)
     expect(children[0].parts[0].x).toBeGreaterThan(bath.parts[0].x + bath.parts[0].width)
     const hall = floor.rooms.find(room => room.id === 'hall')!.parts[0]
     expect(hall.width).toBeCloseTo(.95)
@@ -37,13 +37,13 @@ describe('Maßhaltiger Vorentwurf', () => {
       expect([desk.width, desk.depth]).toEqual([1.4, .6])
       expect(wardrobe.width * wardrobe.depth).toBeCloseTo(1.8 * .6)
     }
-    expect(bath.parts).toHaveLength(1)
+    expect(bath.parts).toHaveLength(2)
     expect(bath.parts[0].width / bath.parts[0].depth).toBeGreaterThan(1.4)
-    expect(floor.walls.find(wall => wall.openings.some(opening => opening.id === 'bath'))!.id).toBe('bath-south')
+    expect(floor.walls.find(wall => wall.openings.some(opening => opening.id === 'bath'))!.id).toBe('east-divider')
     const sharedWindow = floor.walls.find(wall => wall.id === 'east')!.openings.find(opening => opening.id === 'east-south')!
     const windowStrip = rect(house.east - .01, sharedWindow.start, .01, sharedWindow.width)
     expect(children[1].parts.reduce((sum, part) => sum + overlapArea(part, windowStrip), 0)).toBeCloseTo(area([windowStrip]))
-    const benchAccess = rect(.9, 7.6, .7, .8)
+    const benchAccess = rect(.9, 6.35, .7, .8)
     for (const item of floor.furniture) {
       expect(overlapArea(benchAccess, item), `Sitzbank-Zugang/${item.id}`).toBeLessThan(.000001)
       expect(overlapArea(rect(2.8, 5.52, .6, .8), item), `Zimmerzugang/${item.id}`).toBeLessThan(.000001)
@@ -67,19 +67,30 @@ describe('Maßhaltiger Vorentwurf', () => {
       expect(part.z + part.depth).toBeLessThanOrEqual(south - interiorWallThickness + .00001)
     }
     const bedroom = floor.rooms.find(room => room.id === 'bedroom')!, office = floor.rooms.find(room => room.id === 'office')!
-    expect(roomArea(bedroom, 'DG').floor).toBeGreaterThan(20)
+    expect(roomArea(bedroom, 'DG').floor).toBeGreaterThan(18)
     expect(roomArea(bedroom, 'DG').floor).toBeLessThan(23)
     expect(roomArea(office, 'DG').floor).toBeGreaterThan(12)
-    expect(roomArea(bedroom, 'DG').living).toBeGreaterThan(16.5)
+    expect(roomArea(bedroom, 'DG').living).toBeGreaterThan(15.5)
     expect(roomArea(bedroom, 'DG').floor).toBeGreaterThan(roomArea(office, 'DG').floor)
     const gable = floor.walls.find(wall => wall.id === 'east')!.openings.find(opening => opening.id === 'gable-office')!
     const windowStrip = rect(house.east - .01, gable.start, .01, gable.width)
     expect(bedroom.parts.reduce((sum, part) => sum + overlapArea(part, windowStrip), 0)).toBeCloseTo(area([windowStrip]), 6)
   })
-  it('verwendet Bestandssofa, Ostwandbank und ein tuerhohes Seitenlicht', () => {
-    const floor = makeFloor('EG'), sofa = floor.furniture.find(item => item.id === 'sofa')!, chaise = floor.furniture.find(item => item.id === 'sofa-chaise')!
-    expect([sofa.width, sofa.depth]).toEqual([.8, 2.5])
-    expect(sofa.x + sofa.width - chaise.x).toBeCloseTo(1.7)
+  it('ordnet Sofa, Recamiere, Regal und Medienmoebel im Wohnbereich an', () => {
+    const floor = makeFloor('EG'), sofa = floor.furniture.find(item => item.id === 'sofa')!, chaise = floor.furniture.find(item => item.id === 'sofa-chaise')!, bookshelf = floor.furniture.find(item => item.id === 'bookshelf')!, sideboard = floor.furniture.find(item => item.id === 'sideboard')!, tv = floor.furniture.find(item => item.id === 'tv')!
+    expect([sofa.x, sofa.width, sofa.depth, sofa.angle]).toEqual([.48, 2.5, .8, 0])
+    expect(sofa.z).toBeCloseTo(6.29)
+    expect([chaise.x, chaise.width, chaise.depth]).toEqual([.48, .8, .9])
+    expect(chaise.z).toBeCloseTo(sofa.z + sofa.depth)
+    expect(sofa.x - .4).toBeGreaterThanOrEqual(.05)
+    expect(sofa.z - (stairFor().end + interiorWallThickness)).toBeGreaterThanOrEqual(.05 - .000001)
+    expect(bookshelf.x).toBe(.48)
+    expect(bookshelf.z).toBeCloseTo(5.81)
+    expect(bookshelf.z + bookshelf.depth).toBeLessThan(sofa.z)
+    expect([sideboard.x, sideboard.z, sideboard.width, sideboard.depth]).toEqual([.65, 9.025, 1.8, .45])
+    expect([tv.x, tv.z, tv.width, tv.depth, tv.angle]).toEqual([.9, 9.395, 1.3, .08, Math.PI / 2])
+    expect(sideboard.x + sideboard.width).toBeLessThan(2.6)
+    expect(sideboard.z + sideboard.depth).toBeCloseTo(house.south - interiorWallThickness)
     expect(floor.furniture.some(item => item.id === 'larder')).toBe(false)
     const bench = floor.furniture.find(item => item.kind === 'bench')!, table = floor.furniture.find(item => item.id === 'dining')!
     expect(bench.x + bench.width).toBeCloseTo(house.east)
@@ -89,8 +100,8 @@ describe('Maßhaltiger Vorentwurf', () => {
   })
   it('bildet einen durchgehenden Lauf mit zwei Viertelwendelungen und gleichmaessigen Steigungen', () => {
     const core = stairFor()
-    expect([core.width, core.depth, core.z]).toEqual([1.88, 3.18, 2.8])
-    expect(core.end).toBeCloseTo(5.98)
+    expect([core.width, core.depth, core.z]).toEqual([1.88, 3.18, 2.45])
+    expect(core.end).toBeCloseTo(5.63)
     for (const rise of [2.7, 2.95]) {
       const steps = stairSolids(rise).sort((first, second) => first.bottom + first.height - second.bottom - second.height)
       expect(steps.filter(step => step.id.startsWith('landing'))).toHaveLength(0)
@@ -109,7 +120,7 @@ describe('Maßhaltiger Vorentwurf', () => {
         for (const slab of floorSlabs('DG')) expect(overlapArea(step, slab)).toBeLessThan(.000001)
       }
       expect(stairGuards(rise)).toHaveLength(15)
-      expect(roofHeight(core.z)).toBeGreaterThan(2)
+      expect(roofHeight(core.z + core.runWidth / 2)).toBeGreaterThan(2)
       expect(roofHeight(core.end)).toBeGreaterThan(2)
     }
   })
@@ -129,7 +140,7 @@ describe('Maßhaltiger Vorentwurf', () => {
     if (id === 'KG') {
       expect(floor.rooms.map(room => room.name)).toEqual(['Technik', 'Waschen / Lager', 'Kinderpartyraum', 'Flur'])
       expect(roomArea(floor.rooms[0], id).floor).toBeGreaterThan(7)
-      expect(floor.rooms[1].parts).toHaveLength(2)
+      expect(floor.rooms[1].parts).toHaveLength(1)
       expect(floor.rooms[2].parts).toHaveLength(1)
       expect(floor.rooms[2].parts[0].z).toBeCloseTo(core.end + interiorWallThickness)
     }
@@ -164,7 +175,9 @@ describe('Maßhaltiger Vorentwurf', () => {
       for (const item of floor.furniture) expect(Math.min(roofHeight(item.z), roofHeight(item.z + item.depth)), item.id).toBeGreaterThan(item.height)
       const bed = floor.furniture.find(item => item.id === 'parents-bed')!
       const bedroom = floor.rooms.find(room => room.id === 'bedroom')!.parts[0]
-      expect(Math.min(roofHeight(bed.z - .6), roofHeight(bed.z + bed.depth + .6))).toBeGreaterThan(2)
+      expect(Math.min(roofHeight(bed.z), roofHeight(bed.z + bed.depth))).toBeGreaterThan(2)
+      expect(roofHeight(bed.z + bed.depth + .3)).toBeGreaterThan(2)
+      expect(house.east - bed.x - bed.width).toBeGreaterThanOrEqual(.6)
       expect(bed.x - bedroom.x).toBeGreaterThanOrEqual(.6)
       const chair = floor.furniture.find(item => item.id === 'office-chair')!
       expect(Math.min(roofHeight(chair.z), roofHeight(chair.z + chair.depth))).toBeGreaterThan(2)
@@ -187,18 +200,17 @@ describe('Maßhaltiger Vorentwurf', () => {
   })
   it('hält im südlichen Kinderzimmer den geöffneten Türflügel vom Bett frei', () => {
     const floor = makeFloor('OG')
-    const divider = floor.walls.find(wall => wall.id === 'east-divider')!
+    const divider = floor.walls.find(wall => wall.id === 'store-north')!
     const opening = divider.openings.find(opening => opening.id === 'child-south')!
     const bed = floor.furniture.find(item => item.id === 'bed-south')!
-    expect(bed.z).toBeGreaterThan(divider.z + opening.start + opening.width)
+    expect(bed.x).toBeGreaterThan(divider.x + opening.start + opening.width)
   })
   {
     it(`erfüllt Raumziele im Hauptentwurf`, () => {
       const eg = makeFloor('EG'), og = makeFloor('OG')
       const wcArea = roomArea(eg.rooms.find(room => room.id === 'wc')!, 'EG').floor
       expect(wcArea).toBeGreaterThanOrEqual(3)
-      expect(wcArea).toBeGreaterThan(4.8)
-      expect(wcArea).toBeLessThan(5.1)
+      expect(wcArea).toBeCloseTo(3.619)
       expect(eg.rooms.some(room => room.id === 'pantry')).toBe(false)
       const pantry = eg.furniture.find(item => item.id === 'pantry-cabinet')!
       expect([pantry.width, pantry.depth]).toEqual([.6, .6])
@@ -218,7 +230,7 @@ describe('Maßhaltiger Vorentwurf', () => {
       expect(eg.walls.flatMap(wall => wall.openings).find(opening => opening.id === 'living')!.kind).toBe('passage')
       for (const step of stairSolids(2.95)) expect(Math.min(roofHeight(step.z), roofHeight(step.z + step.depth)) + 2.95 - step.bottom - step.height).toBeGreaterThan(2)
       const sideboard = eg.furniture.find(item => item.id === 'sideboard')!
-      expect([sideboard.width, sideboard.depth, sideboard.height]).toEqual([.45, 1.8, .6])
+      expect([sideboard.width, sideboard.depth, sideboard.height]).toEqual([1.8, .45, .6])
       const shelf = eg.furniture.find(item => item.id === 'bookshelf')!
       expect(shelf.width * shelf.depth).toBeCloseTo(2.12 * .4)
       expect(shelf.height).toBe(2.12)

@@ -35,25 +35,25 @@ for (const id of floorIds) test(`${id}: rooms and furniture fit the new envelope
   }
 })
 
-test('compact children, a north bathroom and a separate room share a short distributor', () => {
+test('compact children, a north bathroom and open reading share a distributor', () => {
   const floor = makeFloor('OG'), children = floor.rooms.filter(room => room.id.startsWith('child-'))
   for (const child of children) {
-    expect(child.parts.every(part => part.width >= 2.1)).toBe(true)
+    expect(child.parts.every(part => part.width >= 1.8)).toBe(true)
     expect(area(child.parts)).toBeGreaterThan(14)
   }
   const southwest = children.find(room => room.id === 'child-south')!
   expect(southwest.parts).toHaveLength(2)
-  expect(southwest.parts[1].width).toBeCloseTo(3.345)
+  expect(southwest.parts[0].width).toBeCloseTo(4.195)
   const bath = floor.rooms.find(room => room.id === 'bath')!
   expect(bath.parts[0].z).toBe(house.north)
   expect(bath.parts[0].width / bath.parts[0].depth).toBeGreaterThan(1.4)
-  expect(area(bath.parts)).toBeCloseTo(7.5985)
-  expect(area(floor.rooms.find(room => room.id === 'multifunction')!.parts)).toBeGreaterThan(9)
-  expect(area(floor.rooms.find(room => room.id === 'hall')!.parts)).toBeCloseTo(3.8908)
+  expect(area(bath.parts)).toBeCloseTo(9.303)
+  expect(area(floor.rooms.find(room => room.id === 'multifunction')!.parts)).toBeCloseTo(3.6472)
+  expect(area(floor.rooms.find(room => room.id === 'hall')!.parts)).toBeCloseTo(4.6508)
   expect(floor.rooms.find(room => room.id === 'hall')!.parts).toHaveLength(2)
   const parents = roomArea(makeFloor('DG').rooms.find(room => room.id === 'bedroom')!, 'DG')
-  expect(parents.floor).toBeGreaterThan(20)
-  expect(parents.living).toBeGreaterThan(16.5)
+  expect(parents.floor).toBeGreaterThan(18)
+  expect(parents.living).toBeGreaterThan(15.5)
 })
 
 test('recess has continuous floor, a set-back wall and adds useful living space', () => {

@@ -136,6 +136,13 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
       if (item.angle) box(item.angle < 0 ? x : x + width - .065, z, .065, depth, .45, .33, timber, true)
       else box(x, z, width, .065, .45, .33, timber, true)
       for (const east of [x + .04, x + width - .08]) for (const south of [z + .04, z + depth - .08]) box(east, south, .04, .04, .01, .42, timber)
+    } else if (item.id === 'stair-cabinet') {
+      box(x + .004, z + .004, width - .004, depth - .008, .004, height - .004, timber)
+      const frontX = x + width + .004
+      for (let panel = 0; panel < 2; panel++) {
+        box(frontX - .025, z + panel * depth / 2 + .005, .025, depth / 2 - .01, .02, height - .04, linen)
+        box(frontX + .001, z + depth / 2 + (panel === 0 ? -.055 : .04), .003, .015, 1, .18, dark)
+      }
     } else if (kind === 'cabinet' || kind === 'counter') {
       surface(.06, height - .09, kind === 'counter' ? sage : timber)
       surface(height - .03, .03, kind === 'counter' ? stone : timber)
@@ -171,6 +178,8 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
       surface(.015, .025, ceramic); box(x + width - .02, z, .015, depth * .65, .04, 1.95, glass)
       beam(new THREE.Vector3(x + .12, elevation + 1, z + .12), new THREE.Vector3(x + .12, elevation + 2.1, z + .12), .015, dark)
       box(x + .05, z + .05, .2, .2, 2.1, .025, dark)
+    } else if (kind === 'tv' && item.angle === Math.PI / 2) {
+      box(x, z, width, depth, .88, .73, dark); box(x + .025, z + depth, width - .05, .003, .9, .68, teal)
     } else if (kind === 'tv') {
       box(x, z, width, depth, .88, .73, dark); box(x + width, z + .025, .003, depth - .05, .9, .68, teal)
     } else if (kind === 'machine') {
@@ -262,7 +271,7 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
           pivot.rotation.y = closedAngle + (sliding ? 0 : direction * Math.PI / 2)
           if (sliding) { pivot.position.x += opening.width; pivot.position.z -= .07; pivot.position.y += .012 }
           const names: Record<string, string> = { entrance: 'Eingang', terrace: 'Terrasse', wc: 'Dusch-WC', bath: 'Bad / Technik', 'child-north': 'Kind Nord / Waschen', 'child-south': 'Kind Süd / Hobby', store: 'Abstellraum', pantry: 'Speisekammer', bedroom: 'Büro / Gäste', office: 'Eltern', 'attic-office': 'Büro / Gäste', 'attic-parents': 'Eltern', 'low-storage': 'Dachstauraum' }
-          const roomName = floor.rooms.find(room => room.id === opening.id)?.name ?? (opening.id === 'attic-parents-south' ? 'Eltern / Ankleide' : undefined)
+          const roomName = floor.rooms.find(room => room.id === opening.id)?.name ?? ({ 'attic-parents-south': 'Eltern / Ankleide', 'stair-lower': 'Treppe nach oben', 'stair-upper': 'Treppe nach unten' }[opening.id])
           doors.push({ id: `${id}-${opening.id}`, label: `${id} · ${sliding ? 'Hebeschiebetür' : 'Tür'} ${roomName ?? names[opening.id] ?? opening.id}`, kind: 'door', pivot, closedAngle, direction, amount: 1, open, size: new THREE.Vector3(opening.width, openHeight, .036), center: mesh.position.clone(), position, object: mesh, sliding })
         }
       }

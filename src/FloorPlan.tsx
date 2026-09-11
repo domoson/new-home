@@ -24,7 +24,7 @@ function Furnishing({ item }: { item: Furniture }) {
     {kind === 'counter' && item.id === 'kitchen' && depth > 2.3 && <g fill="#495854"><rect x=".05" y="1.75" width=".5" height=".55" rx=".03" /><circle cx=".2" cy="1.9" r=".08" stroke="#a8b4b1" /><circle cx=".4" cy="2.1" r=".09" stroke="#a8b4b1" /></g>}
     {kind === 'hob' && <g fill="#384441" stroke="#afbeb6"><rect width={width} height={depth} />{[.18, width - .18].flatMap(east => [.14, depth - .14].map(south => <circle key={`${east}-${south}`} cx={east} cy={south} r=".095" />))}</g>}
     {kind === 'espresso' && <g fill="#63726e"><rect x=".025" y=".025" width={width - .05} height={depth * .55} /><path d={`M${width / 2} ${depth * .5} V${depth}`} strokeWidth=".035" /></g>}
-    {kind === 'cabinet' && <path d={`M${width / 2} 0 V${depth}`} stroke="#b09a79" />}
+    {kind === 'cabinet' && <path d={item.id === 'stair-cabinet' ? `M0 ${depth / 2} H${width} M${width - .03} 0 V${depth}` : `M${width / 2} 0 V${depth}`} stroke="#b09a79" />}
     {kind === 'bench' && <rect x={width - .08} y="0" width=".08" height={depth} fill="#9eae98" />}
     {kind === 'bookcase' && <path d={width > depth ? `M${width / 3} 0 V${depth} M${width * 2 / 3} 0 V${depth}` : `M0 ${depth / 3} H${width} M0 ${depth * 2 / 3} H${width}`} />}
     {kind === 'plant' && <><circle cx={width / 2} cy={depth / 2} r={width * .46} /><path d={`M0 0 L${width} ${depth} M0 ${depth} L${width} 0`} /></>}
@@ -53,8 +53,9 @@ export default function FloorPlan({ floor, selected, onSelect, dimensions, furni
   }
   const labels: Record<string, [number, number]> = floor.id === 'EG' ? { living: [3.8, 6.4], hall: [5.1, 1.65], wc: [1.65, 1.8] } : { bath: [2.1, 1.6], 'child-north': [4.6, 4.5], 'child-south': [3.3, 7.7], hall: [2.915, 4.8], multifunction: [1.75, 8.1], bedroom: [3.2, 7.4], office: [3.7, 3.4] }
   const viewWidth = 10.2 / zoom, viewHeight = (floor.id === 'EG' ? 15 : 12.6) / zoom
-  if (floor.id === 'KG') { labels.bath = [2.1, 1.65]; labels['child-south'] = [3.3, 7.8] }
-  if (floor.id === 'OG') { labels.bath = [2.3, 1.7]; labels['child-north'] = [4.55, 4.25]; labels['child-south'] = [4.6, 7.1] }
+  if (floor.id === 'KG') { labels.bath = [4.5, 1.45]; labels['child-south'] = [3.3, 7.8] }
+  if (floor.id === 'OG') { labels.bath = [2.3, 1.7]; labels['child-north'] = [4.65, 5.65]; labels['child-south'] = [4.3, 8]; labels.multifunction = [1.3, 6.75] }
+  if (floor.id === 'DG') labels.office = [4.8, 3.35]
   const core = stairFor()
   const walkingLine = stairWalkingLine(2.95)
   if (floor.id === 'DG') walkingLine.reverse()

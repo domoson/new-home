@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import { area, makeFloor, rect, roofHeight, roofPanels, roofWindows, stair, stairRecess } from './model'
+import { area, makeFloor, rect, roofHeight, roofPanels, roofWindows, stair } from './model'
 
 test('Haustuer schwenkt innen und Kind Sued hat einen freien Eingang', () => {
   expect(makeFloor('EG').walls.flatMap(wall => wall.openings).find(opening => opening.id === 'entrance')?.swing).toBe('reverse')
@@ -15,10 +15,9 @@ test('Haustuer schwenkt innen und Kind Sued hat einen freien Eingang', () => {
 test('DG-Zugang am Treppenaustritt und Dachoeffnungen auf beiden Dachseiten', () => {
   const floor = makeFloor('DG'), entry = floor.walls.find(wall => wall.id === 'parents-entry-south')!
   expect(entry.z).toBeCloseTo(stair.end)
-  expect(area(floor.rooms.find(room => room.id === 'hall')!.parts)).toBeCloseTo(2.4088)
-  const stairWindow = roofWindows.find(window => window.id === 'DG-stair-skylight')!
-  expect(stairWindow.x + stairWindow.width).toBeLessThan(stairRecess.x)
-  expect(roofWindows).toHaveLength(3)
+  expect(area(floor.rooms.find(room => room.id === 'hall')!.parts)).toBeCloseTo(2.6558)
+  expect(roofWindows.some(window => window.id === 'DG-stair-skylight')).toBe(false)
+  expect(roofWindows).toHaveLength(2)
   expect(roofWindows.filter(window => window.z > 5)).toHaveLength(1)
   const gables = floor.walls.find(wall => wall.id === 'east')!.openings
   expect(gables).toHaveLength(2)

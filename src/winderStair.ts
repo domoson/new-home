@@ -1,5 +1,5 @@
 export type StairPoint = [number, number]
-export const winderCore = { x: .4, z: 2.8, width: 1.88, depth: 3.18, end: 5.98, tread: .26, risers: 16, runWidth: 1, arrivalDepth: .95 }
+export const winderCore = { x: .4, z: 2.45, width: 1.88, depth: 3.18, end: 5.63, tread: .26, risers: 16, runWidth: 1, arrivalDepth: .95 }
 export type WinderStep = { id: string; footprint: StairPoint[]; inner: [StairPoint, StairPoint]; height: number }
 
 export function stairPrism(footprint: StairPoint[], bottom: number, height: number) {

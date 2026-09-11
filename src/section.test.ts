@@ -6,7 +6,7 @@ it('schneidet nur Bauteile auf der gewaehlten Achse', () => {
   expect(sectionSpan(rect(2, 3, 1, 4), 'EW', 4)).toEqual([2, 3])
   expect(sectionSpan(rect(2, 3, 1, 4), 'NS', 3)).toBeNull()
 })
-it('spart alle drei Dachfenster wirklich aus der Dachgeometrie aus', () => {
+it('spart beide Dachfenster wirklich aus der Dachgeometrie aus', () => {
   for (const opening of roofWindows) for (const panel of roofPanels()) {
     const overlap = Math.max(0, Math.min(panel.x + panel.width, opening.x + opening.width) - Math.max(panel.x, opening.x)) * Math.max(0, Math.min(panel.z + panel.depth, opening.z + opening.depth) - Math.max(panel.z, opening.z))
     expect(overlap).toBeLessThan(.000001)

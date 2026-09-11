@@ -2,6 +2,8 @@ import { expect, test } from 'vitest'
 import { stairWalkingLine, winderCore, winderSteps } from './winderStair'
 
 test('Two quarter turns flank a straight middle flight with both exits facing east', () => {
+  expect(winderCore.z).toBeCloseTo(2.8 - .35)
+  expect(winderCore.end).toBeCloseTo(5.98 - .35)
   expect(winderCore.width * winderCore.depth).toBeCloseTo(5.9784)
   for (const rise of [2.7, 2.95]) {
     const steps = winderSteps(rise)
