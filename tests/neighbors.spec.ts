@@ -9,13 +9,13 @@ test('Nachbardaechern fehlt kein Hoehenanschluss an den Hauskoerper', async ({ p
     const { createSurroundings } = await import('/src/surroundings.ts')
     const { Box3 } = await import('/node_modules/.vite/deps/three.js')
     const model = createSurroundings()
-    const bodies = model.neighborhood.children.filter(object => object.name === 'neighbor-body')
-    const roofs = model.neighborhood.children.filter(object => object.name === 'neighbor-roof')
+    const bodies = [], roofs = []
+    model.neighborhood.traverse(object => { if (object.name === 'neighbor-body') bodies.push(object); if (object.name === 'neighbor-roof') roofs.push(object) })
     const result = bodies.map((body, index) => ({ gap: new Box3().setFromObject(roofs[index]).min.y - new Box3().setFromObject(body).max.y, vertices: roofs[index].geometry.getAttribute('position').count }))
     model.dispose()
     return result
   })
-  expect(gaps.length).toBe(5)
+  expect(gaps.length).toBe(15)
   for (const roof of gaps) { expect(roof.gap).toBeCloseTo(0, 5); expect(roof.vertices).toBe(24) }
 })
 
@@ -89,7 +89,8 @@ for (const number of [12, 50, 52]) test(`Direkter Nachbar ${number}: Lage, Dacha
     const THREE = await import('/node_modules/.vite/deps/three.js')
     const { createSurroundings } = await import('/src/surroundings.ts')
     const { directNeighbors, directNeighborPoint } = await import('/src/directNeighbors.ts')
-    const { boundaryDistance, boundaryZ } = await import('/src/context.ts')
+    const { boundaryDistance } = await import('/src/context.ts')
+    const { streetBoundaryZ } = await import('/src/neighborhoodLayout.ts')
     const spec = directNeighbors.find(item => item.number === number)!
     const model = createSurroundings(), group = model.neighborhood.getObjectByName(`neighbor-${number}`)!
     group.updateWorldMatrix(true, true)
@@ -119,7 +120,7 @@ for (const number of [12, 50, 52]) test(`Direkter Nachbar ${number}: Lage, Dacha
     let streetContacts = 0
     for (let index = 0; index < vertices.count; index++) {
       const position = new THREE.Vector3().fromBufferAttribute(vertices, index).applyMatrix4(driveway.matrixWorld)
-      if (Math.abs(position.z - boundaryZ(position.x, spec.northAccess ? 0 : 2) - (spec.northAccess ? -13.3 : 0)) < .001) streetContacts++
+      if (Math.abs(position.z - streetBoundaryZ(position.x, spec.northAccess)) < .001) streetContacts++
     }
     const data = { parcel: group.userData.parcel, insideOwnSite, gaps, roofs: roofs.length, annexGap, annex: !!annex, panels: group.children.filter(object => object.name === 'detailed-solar-panel').length, skylights: group.children.filter(object => object.name === 'detailed-skylight').length, balcony: !!group.getObjectByName('detailed-south-balcony'), streetContacts }
     const scene = new THREE.Scene(); scene.background = new THREE.Color('#edf1ed'); scene.add(model.neighborhood)

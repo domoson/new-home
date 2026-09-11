@@ -6,6 +6,7 @@ import { neighbor8, neighbor8Point } from './neighbor8'
 import { addDirectNeighbors } from './directNeighbors'
 import { createSeatLeon } from './seatLeon'
 import { createCarParking } from './carParking'
+import { contextAnnexes, contextBuildings, contextRoofRise, drivewayEnd, footprintPlacement, mapPolygon, neighborhoodParcels, neighborhoodRoads, placementMatrix, polylineZ } from './neighborhoodLayout'
 
 export function createSurroundings() {
   const neighborhood = new THREE.Group(), garden = new THREE.Group()
@@ -16,7 +17,7 @@ export function createSurroundings() {
   const material = (color: string, map?: THREE.Texture) => {
     const result = new THREE.MeshStandardMaterial({ color, roughness: 1, map: map ?? null }); materials.push(result); return result
   }
-  const paving = material('#c0c3bd'), walls = material('#dddeda'), roof = material('#838984'), redRoof = material('#a78678'), glass = material('#a7b8ba'), fence = material('#64766c'), trunk = material('#82786b')
+  const paving = material('#c0c3bd'), walls = material('#dddeda'), roof = material('#838984'), glass = material('#a7b8ba'), fence = material('#64766c'), trunk = material('#82786b')
   const carportWood = { east: material(woodTones[initialAppearance.woodTone].color), west: material(woodTones[initialAppearance.woodTone].color) }
   const roofEdge = material('#535c58'), roofMetal = material('#69716f'), grassPaving = material('#a0ab8d')
   const foliage = ['#72856b', '#879879', '#6c826c'].map(color => material(color))
@@ -47,30 +48,69 @@ export function createSurroundings() {
     geometry.rotateX(Math.PI / 2); geometry.translate(0, height, 0); finish.side = THREE.DoubleSide
     const mesh = new THREE.Mesh(geometry, finish); mesh.receiveShadow = true; mesh.name = name; parent.add(mesh); return mesh
   }
-  for (const side of [0, 2] as const) {
-    const offset = side === 0 ? -20 : 1.1
-    const street = (start: number, depth: number, height: number, finish: THREE.Material, name: string) => band(neighborhood, [[-60, boundaryZ(-60, side) + start], [60, boundaryZ(60, side) + start], [60, boundaryZ(60, side) + start + depth], [-60, boundaryZ(-60, side) + start + depth]], height, finish, name)
-    street(offset, 5.6, -.135, asphalt, side === 0 ? 'street-hallerstrasse' : 'street-an-der-roeth')
-    for (const edge of [-1.1, 5.6]) street(offset + edge, 1.1, -.095, paving, 'sidewalk')
+  for (const road of neighborhoodRoads) {
+    const inward = (edge: [number, number][], other: [number, number][]) => edge.map(([east, south], index): [number, number] => {
+      const length = Math.hypot(other[index][0] - east, other[index][1] - south)
+      return [east + (other[index][0] - east) * 1.1 / length, south + (other[index][1] - south) * 1.1 / length]
+    })
+    const north = inward(road.north, road.south), south = inward(road.south, road.north)
+    band(neighborhood, [...north, ...south.toReversed()], -.135, asphalt, `street-${road.id}`)
+    band(neighborhood, [...road.north, ...north.toReversed()], -.095, paving, 'sidewalk')
+    band(neighborhood, [...south, ...road.south.toReversed()], -.095, paving, 'sidewalk')
   }
-  const house = (x: number, z: number, width: number, depth: number, height: number, warm: boolean) => {
-    const body = box(neighborhood, x, -.14, z, width, height, depth, walls)
-    body.name = 'neighbor-body'
-    height = body.position.y + height / 2
-    const ridge = height + 2.4
-    const vertices = new Float32Array([x-.2,height,z-.2, x+width+.2,height,z-.2, x+width+.2,height,z+depth+.2, x-.2,height,z+depth+.2, x-.2,ridge,z+depth/2, x+width+.2,ridge,z+depth/2])
-    const geometry = flatGeometry(vertices, new Uint32Array([0,4,5,0,5,1, 4,3,2,4,2,5, 0,3,4, 1,5,2, 0,1,2,0,2,3]))
-    const cover = new THREE.Mesh(geometry, warm ? redRoof : roof); cover.castShadow = true; cover.receiveShadow = true; cover.name = 'neighbor-roof'; neighborhood.add(cover)
-    for (const level of [1.1, 3.6]) for (let offset = 1.1; offset < width - 1; offset += 2.6) {
-      box(neighborhood, x + offset, level, z + depth + .01, 1, 1.2, .025, glass)
-      box(neighborhood, x + offset, level, z - .035, 1, 1.2, .025, glass)
+  const parcelColors = ['#adb59f', '#b6bba9', '#a5b09d'].map(color => material(color))
+  const boundaryMaterial = material('#748072')
+  neighborhoodParcels.forEach((parcel, index) => {
+    const surface = band(neighborhood, parcel.points, -.17, parcelColors[index % parcelColors.length], `neighbor-parcel-${parcel.id}`)
+    surface.userData.estimated = true
+    for (let edge = 0; edge < parcel.points.length; edge++) {
+      const [east, south] = parcel.points[edge], [endEast, endSouth] = parcel.points[(edge + 1) % parcel.points.length]
+      const length = Math.hypot(endEast - east, endSouth - south), offsetEast = -(endSouth - south) * .035 / length, offsetSouth = (endEast - east) * .035 / length
+      band(neighborhood, [[east+offsetEast,south+offsetSouth],[endEast+offsetEast,endSouth+offsetSouth],[endEast-offsetEast,endSouth-offsetSouth],[east-offsetEast,south-offsetSouth]], -.155, boundaryMaterial, 'neighbor-parcel-boundary')
     }
-    box(neighborhood, x + width + .25, -.14, z + 1, 2.4, .04, depth + 3, paving).castShadow = false
+  })
+  const house = (parent: THREE.Group, width: number, depth: number, spec: typeof contextBuildings[number]) => {
+    const x = 0, z = 0, facade = material(spec.facade), tiles = material(spec.roof), trim = material('#e9eae4')
+    const body = box(parent, x, -.14, z, width, spec.height, depth, facade)
+    body.name = 'neighbor-body'
+    const height = body.position.y + spec.height / 2
+    const ridge = height + contextRoofRise(depth, spec.pitch)
+    const vertices = new Float32Array([x,height,z-.2, x+width,height,z-.2, x+width,height,z+depth+.2, x,height,z+depth+.2, x,ridge,z+depth/2, x+width,ridge,z+depth/2])
+    const geometry = flatGeometry(vertices, new Uint32Array([0,4,5,0,5,1, 4,3,2,4,2,5, 0,3,4, 1,5,2, 0,1,2,0,2,3]))
+    const cover = new THREE.Mesh(geometry, tiles); cover.castShadow = true; cover.receiveShadow = true; cover.name = 'neighbor-roof'; parent.add(cover)
+    const slope = (ridge - height) / (depth / 2 + .2)
+    const roofHeight = (south: number) => height + (depth / 2 + .2 - Math.abs(south - depth / 2)) * slope
+    const roofDetail = (east: number, south: number, width: number, depth: number, thickness: number, lift: number, finish: THREE.Material, name: string) => {
+      const mesh = box(parent, east, 0, south, width, thickness, depth, finish), positions = mesh.geometry.getAttribute('position')
+      for (let index = 0; index < positions.count; index++) positions.setY(index, positions.getY(index) + roofHeight(mesh.position.z + positions.getZ(index)) + lift)
+      positions.needsUpdate = true; mesh.geometry.computeVertexNormals(); mesh.geometry.computeBoundingBox(); mesh.geometry.computeBoundingSphere(); mesh.name = name
+    }
+    for (const south of [-.2, depth + .2]) box(parent, 0, height - .05, south - .04, width, .1, .08, roofEdge).name = 'context-gutter'
+    for (let index = 0; index < spec.dormers; index++) {
+      const dormerWidth = Math.min(1.15, width / (spec.dormers + 1) * .65), east = (index + 1) * width / (spec.dormers + 1) - dormerWidth / 2
+      const south = depth * .16, dormerDepth = Math.min(1.35, depth * .18), bottom = roofHeight(south) - .06, top = roofHeight(south + dormerDepth) + .15
+      box(parent, east, bottom, south, dormerWidth, top - bottom, dormerDepth, facade).name = 'context-dormer'
+      box(parent, east - .08, top, south - .08, dormerWidth + .16, .12, dormerDepth + .12, tiles)
+      box(parent, east + .12, bottom + .14, south - .025, dormerWidth - .24, Math.max(.35, top - bottom - .28), .025, glass)
+    }
+    for (let index = 0; index < spec.skylights; index++) {
+      const east = (index + 1) * width / (spec.skylights + 1) - .34, south = depth * .33
+      roofDetail(east - .07, south - .07, .82, .96, .065, .025, trim, 'context-skylight-frame')
+      roofDetail(east, south, .68, .82, .025, .1, glass, 'context-skylight')
+    }
+    if (Number.parseInt(spec.id) % 2 === 1) box(parent, width * .72, roofHeight(depth * .47), depth * .45, .35, .65, .4, roofEdge).name = 'context-chimney'
+    for (const level of [1.1, 3.6]) for (let offset = 1.1; offset < width - 1; offset += 2.6) {
+      for (const south of [depth, -.07]) {
+        box(parent, x + offset - .07, level - .07, south, 1.14, 1.34, .07, trim)
+        box(parent, x + offset, level, south < 0 ? south - .015 : south + .07, 1, 1.2, .025, glass)
+      }
+    }
+    box(parent, width / 2 - .45, -.14, -.04, .9, 2.1, .04, fence).name = 'context-entrance'
   }
   addDirectNeighbors(neighborhood, { material, box, band, tree })
   {
     const building = new THREE.Group(); building.name = 'neighbor-8'; building.userData.parcel = neighbor8.parcel
-    building.position.set(neighbor8.origin.x, 0, neighbor8.origin.z); building.rotation.y = -neighbor8.angle; neighborhood.add(building)
+    building.matrix.copy(placementMatrix(neighbor8.placement)); building.matrixAutoUpdate = false; building.matrixWorldNeedsUpdate = true; neighborhood.add(building)
     const shell = material('#e4e3df'), trim = material('#f0eee7'), tiles = material('#727b83'), metal = material('#636d72'), glazing = material('#83999e'), garageDoor = material('#8b8e8a')
     const { house: body, garage, ground, roofPitch } = neighbor8
     const eaves = ground + body.eaves, slope = Math.tan(roofPitch * Math.PI / 180), ridgeZ = body.z + body.depth / 2
@@ -114,24 +154,33 @@ export function createSurroundings() {
     box(building, garage.x, ground + garage.height, garage.z, garage.width, .14, garage.depth, metal).name = 'neighbor-8-garage-roof'
     box(building, garage.x + .2, ground, garage.z + garage.depth + .01, garage.width - .4, 2.15, .06, garageDoor).name = 'neighbor-8-garage-door'
     for (let level = .2; level < 2.1; level += .24) box(building, garage.x + .22, level, garage.z + garage.depth + .075, garage.width - .44, .015, .008, metal)
-    const toStreet = (east: number) => {
-      const start = neighbor8Point(east, 0), next = neighbor8Point(east, 1)
-      const rate = next[1] - start[1] - (boundaryZ(next[0], 2) - boundaryZ(start[0], 2))
-      return (boundaryZ(start[0], 2) - start[1]) / rate
-    }
+    const toStreet = (east: number) => drivewayEnd(neighbor8Point, east, false)
     band(building, [[0,garage.z+garage.depth],[garage.width,garage.z+garage.depth],[garage.width,toStreet(garage.width)],[0,toStreet(0)]], -.105, paving, 'neighbor-8-driveway')
     band(building, [[body.x,body.depth],[body.x+body.width,body.depth],[body.x+body.width,toStreet(body.x+body.width)-.3],[body.x,toStreet(body.x)-.3]], -.13, foliage[1], 'neighbor-8-front-garden')
     band(building, [[body.x+.3,body.depth],[body.x+body.width-.3,body.depth],[body.x+body.width-.3,body.depth+1.7],[body.x+.3,body.depth+1.7]], -.1, paving, 'neighbor-8-terrace')
     for (const east of [body.x + 1.6, body.x + 5.3, body.x + 7.9]) tree(building, east, toStreet(east) - 2.1, 2.4 + random(), .9)
   }
-  house(boundaryX(10.5, 1) + 16.2, -.7, 8, 10, 5.3, false)
-  for (const east of [-22]) house(east, Math.min(boundaryZ(east, 0), boundaryZ(east + 10, 0)) - 12.2, 10, 9, 5.6, true)
-  for (const east of [-20, -5, 10]) house(east, boundaryZ(east, 2) + 11, 10, 9, 5.4, east === -5)
+  for (const spec of contextBuildings) {
+    const points = mapPolygon(spec.points), width = Math.hypot(points[1][0] - points[0][0], points[1][1] - points[0][1]), depth = Math.hypot(points[3][0] - points[0][0], points[3][1] - points[0][1])
+    const building = new THREE.Group(); building.name = `neighbor-${spec.id}`; building.userData.estimated = true
+    building.matrix.copy(placementMatrix(footprintPlacement(spec.points, width, depth))); building.matrixAutoUpdate = false; building.matrixWorldNeedsUpdate = true; neighborhood.add(building)
+    house(building, width, depth, spec)
+    const northAccess = Number.parseInt(spec.id) % 2 === 1
+    const streetZ = (east: number) => polylineZ(neighborhoodRoads[northAccess ? 1 : 0].south, east)
+    if (northAccess || spec.id === '48') {
+      const center = [(points[0][0] + points[1][0]) / 2, (points[0][1] + points[1][1]) / 2]
+      band(neighborhood, [[center[0]-.55,center[1]],[center[0]+.55,center[1]],[center[0]+.55,streetZ(center[0]+.55)],[center[0]-.55,streetZ(center[0]-.55)]], -.105, paving, 'context-access')
+    }
+  }
+  for (const points of contextAnnexes) {
+    const annex = new THREE.Group(); annex.name = 'context-annex'; annex.matrix.copy(placementMatrix(footprintPlacement(points, 1, 1))); annex.matrixAutoUpdate = false; annex.matrixWorldNeedsUpdate = true; neighborhood.add(annex)
+    box(annex, 0, -.14, 0, 1, 2.55, 1, walls)
+    box(annex, 0, 2.41, 0, 1, .12, 1, roof)
+  }
   for (const south of [15, 19, 25]) {
     if (south > 23) tree(neighborhood, boundaryX(south, 3) - 3.5, south, 5 + random() * 2, 1.8)
     if (south > 23) tree(neighborhood, boundaryX(south, 1) + 4.5, south, 5 + random() * 2, 1.8)
   }
-  for (const east of [-12, 3, 18]) tree(neighborhood, east, boundaryZ(east, 2) + 9, 5.5, 1.6)
   for (const east of [-3.5, 3.5]) tree(garden, east, boundaryZ(east, 2) - 2.5, 4.2 + random(), 1.35)
   for (const east of [-5.8, 5.6]) tree(garden, east, (boundaryZ(east, 0) + (east < 0 ? partner.z : 0)) / 2, 3.6, 1)
   for (const { side, carport, open, bins, binAccess, angle, origin, point, streetZ, passagePoints, approach } of siteParking) {

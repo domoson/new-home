@@ -53,9 +53,17 @@ function shell(id: FloorId): Wall[] {
   return [wall('west', 'z', 0, 0, 10, .4), wall('east', 'z', house.east, 0, 10, .365, east), wall('north', 'x', .4, 0, (house.east - house.west), .365, north.map(open => ({ ...open, start: open.start - .4 }))), wall('south', 'x', .4, 9.635, (house.east - house.west), .365, south.map(open => ({ ...open, start: open.start - .4 })))]
 }
 
-export function makeFloor(id: FloorId): Floor {
+export function makeFloor(id: FloorId, houseSide: 'east' | 'west' = 'east'): Floor {
   const floor: Floor = { id, name: { KG: 'Nutzkeller', EG: 'Erdgeschoss', OG: 'Obergeschoss', DG: 'Dachgeschoss' }[id], elevation: elevations[id], height: id === 'KG' ? 2.4 : 2.65, rooms: [], walls: [], furniture: [] }
   buildMainFloor(floor)
+  if (id === 'EG' && houseSide === 'east') {
+    floor.walls.find(wall => wall.id === 'south')!.openings = [
+      windowOpening('garden-fixed', 2.6 - house.west, 1.05, 0, 2.35),
+      door('terrace', house.east - 2.4 - house.west, 1.2, 2.35),
+      windowOpening('terrace-fixed', house.east - 1.2 - house.west, 1.2, 0, 2.35),
+    ]
+    floor.walls.find(wall => wall.id === 'east')!.openings.push(windowOpening('corner-fixed', house.south - .7, .7, 0, 2.35))
+  }
   return floor
 }
 function buildMainFloor(floor: Floor) {

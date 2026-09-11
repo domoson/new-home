@@ -54,7 +54,8 @@ Nicht ueber `file://` oeffnen. WebGL2 ist fuer 3D erforderlich, 2D funktioniert 
 - Szene: Tueren und oeffenbare Fenster direkt anklicken zum Oeffnen/Schliessen.
   Im Rundgang stellt das Mausrad die avisierte Oeffnung stufenweise ein.
   Fassadenfenster schwenken nach innen, Dachfenster kippen modellhaft nach innen.
-  Die EG-Hebeschiebetuer hebt geringfuegig an und verschiebt sich bis 1,50 m vor das
+  Die EG-Hebeschiebetuer hebt geringfuegig an und verschiebt sich im Osthaus bis
+  1,20 m, im Westhaus bis 1,50 m vor das
   Festfeld. Festverglasungen bleiben fest. 2D zeigt das statische Oeffnungsschema,
   keine Live-Fluegelstellungen. Der Schwenkweg wird immer gegen
   den Spieler geprueft; das ist kein vollstaendiger Beschlag-/Moebelkollisionsnachweis.
@@ -95,6 +96,20 @@ Nicht ueber `file://` oeffnen. WebGL2 ist fuer 3D erforderlich, 2D funktioniert 
   erhalten, werden beim Neuladen zurueckgesetzt. Kein CAD-Editor.
 
 ## Entwurf
+
+### EG-Suedfenster Osthaus
+
+Die Schiebeanlage sitzt am Ostrand: 2,40 x 2,35 m, davon je 1,20 m Schiebefluegel
+und Festfeld. Sie reicht von x = 4,235 bis 6,635 m. In der Ostwand schliesst sich
+eine 0,70 x 2,35 m grosse Festverglasung bei z = 8,935 bis 9,635 m an.
+Der massive 36,5-cm-Eckpfosten bleibt bestehen; keine stuetzenlose Glasecke.
+Das westliche Sued-Festfeld ist auf 1,05 x 2,35 m verkleinert und beginnt bei
+x = 2,60 m. Alle drei Glasbereiche sind bodentief mit gleicher Oberkante.
+Die Terrassensitzgruppe im Osten ist um 65 cm nach Sueden versetzt, damit vor
+dem neuen Ausgang ein 1 m tiefer Vorbereich frei bleibt. Terrassengroesse unveraendert.
+Das Westhaus behaelt die bisherige Fensteraufteilung. Masse sind Modellmasse;
+Eckstatik, Stuerze, Anschlussdetails und tatsaechliche lichte Durchgangsbreite
+sind durch Fachplanung und den gewaehlten Hebeschiebetuer-Hersteller zu pruefen.
 
 ### Beleuchtung
 
@@ -157,9 +172,10 @@ geschlossene Giebel, Dachfenster, langer Suedbalkon und westlich unmittelbar
 angebaute niedrige Flachdachgarage mit suedlicher Zufahrt und Vorgarten.
 Die verzerrte Fotogrammetrie ist nicht als Fassadentextur uebernommen.
 
-Angenommene Modellmasse: Haus 9,00 x 9,50 m, Traufe 5,50 m ueber Gelaende,
-Dachneigung 38 Grad; Garage 3,20 x 10,00 m, Hoehe 2,60 m. Lage und Drehung
-orientieren sich an der oestlichen Grundstuecksgrenze. Fensteraufteilung,
+Kartengestuetzte Modellmasse: Haus ca. 10,7 x 8,8 m, Traufe weiterhin 5,50 m
+ueber Gelaende; Garage ca. 3,8 x 11,1 m, Hoehe 2,60 m. Die lokale Dachneigung
+38 Grad wird mit dem Grundriss transformiert. Lage, Orientierung und Grundflaeche
+folgen jetzt den abgelesenen Gebaeudekanten statt einem Grenzversatz. Fensteraufteilung,
 Balkondetails, Dachaufbauten und Vegetation sind angenaehert. Ohne vermessene
 Bestandsmasse ist dies kein belastbarer Abstands- oder Verschattungsnachweis.
 Das bestehende Haus und die Garage auf eurem Flurstueck 74 werden nicht
@@ -174,20 +190,53 @@ an der Flurstueckkarte und den bereitgestellten Luftbildansichten orientierte
 Modelle ersetzt. Dachkoerper sind geschlossen; Dachfenster, Ziegelreihen,
 Schornsteine, Rinnen, Fallrohre, Fassadenfenster und Terrassen sind modelliert.
 
-| Flurstueck / Haus | Angenommener Hauskoerper | Traufe / Dach | Markante Merkmale |
+| Flurstueck / Haus | Kartengestuetzter Hauskoerper, ca. | Traufe / lokale Dachneigung | Markante Merkmale |
 | --- | --- | --- | --- |
-| 75/4 / Nr. 12 | 9,20 x 9,60 m | 5,10 m / 34 Grad | Graubraunes Walmdach, oestliche Garage 4,50 x 6,20 m, Hoehe 2,60 m, dunkellaubiger Baum im rueckwaertigen Garten |
-| 74/4 / Hallerstrasse 50 | 9,00 x 9,00 m | 5,25 m / 39 Grad | Rotes Satteldach, Suedbalkon, niedriger Ostanbau 9,60 x 5,50 m, Hoehe 2,75 m, fuenf Solarmodule |
-| 73/4 / Hallerstrasse 52 | 8,50 x 9,20 m | 5,20 m / 36 Grad | Heller Putz, graubraunes Satteldach, westliche Zufahrt, Suedterrasse und Garten |
+| 75/4 / Nr. 12 | 12,5 x 9,2 m | 5,10 m / 34 Grad | Graubraunes Walmdach, oestliche Garage ca. 7,5 x 6,6 m, Hoehe 2,60 m, dunkellaubiger Baum im rueckwaertigen Garten |
+| 74/4 / Hallerstrasse 50 | 12,3 x 9,8 m | 5,25 m / 39 Grad | Rotes Satteldach, Suedbalkon, zusammengefasster niedriger Ostanbau ca. 17,0 x 8,1 m, Hoehe 2,75 m, fuenf Solarmodule |
+| 73/4 / Hallerstrasse 52 | 11,5 x 9,8 m | 5,20 m / 36 Grad | Heller Putz, graubraunes Satteldach, westliche Zufahrt, Suedterrasse und Garten |
 
-Nr. 12 ist an der westlichen Grenzrichtung ausgerichtet und von An der Roeth
-erschlossen; Nr. 50 und 52 folgen der Hallerstrasse mit noerdlichen Zufahrten.
+Nr. 12 folgt den Gebaeudekanten der Karte, nicht mehr der westlichen Grenzrichtung,
+und ist von An der Roeth erschlossen; Nr. 50 und 52 haben noerdliche Zufahrten.
 Die Modellgeometrie bleibt ausserhalb des eigenen Flurstuecks 74.
 Nachbarparzellengrenzen sind nicht neu vermessen oder verbindlich rekonstruiert.
 Alle genannten Masse, Dachformen, Fensteraufteilungen, Solarfeld- und
 Gartendetails sind Bildschaetzungen, keine gesicherten Bestandsangaben.
-Der geplante Doppelhausentwurf und das bereits modellierte Haus Nr. 8 bleiben
-unveraendert. Die Umgebungsmodelle folgen dem Schalter Nachbarschaft.
+Der geplante Doppelhausentwurf bleibt unveraendert. Die Umgebungsmodelle folgen
+dem Schalter Nachbarschaft.
+
+### Flurkartenumfeld und suedliche Strassenseite
+
+Die Karte mit blauem Marker wird ueber ihre vier eigenen Parzellenecken auf das
+bestehende Modellgrundstueck eingepasst. Dessen vier Grenzlaengen, Flaeche,
+Hauspositionen und Stellplaetze bleiben erhalten. Die projektive Einpassung
+gleicht die abweichenden Vierecksformen aus; sie ist keine amtliche
+Georeferenzierung und kann mit wachsender Entfernung verzerren. Pixelablesung,
+bisherige Grundstueckswinkel und Gebaeudevereinfachung begrenzen die Genauigkeit.
+Es gibt keinen vermessenen Abstands- oder Verschattungsnachweis.
+
+19 Nachbarparzellen, beide geknickten Strassenkanten und 15 weitere Hauskoerper
+ersetzen die gleichmaessigen Platzhalter. Suedlich stehen nun die Paare
+19/17, 15/13, 11b/11a, 9b/9a, das Einzelhaus 7 und 5a/5 mit Nebengebaeuden.
+Nr. 4 und 6 sind ebenfalls getrennt angeschlossene Baukoerper. Kleine Erker,
+Rueckspruenge und die getrennten Teile des Anbaus von Nr. 50 bleiben vereinfacht.
+Parzellengrenzen sind Bodenlinien, keine behaupteten vorhandenen Zaunanlagen.
+Altbestand und Garage unter dem Marker werden weiterhin nicht dargestellt.
+
+Die zusaetzliche Vogelperspektive dient der vorlaeufigen Zuordnung von Farben
+und Hoehen: 9a/9b mit niedrigerem roten Dach (Traufe 5,1 m, 30 Grad),
+11a/11b mit grauem Dach (5,6 m, 40 Grad), 13/15 mit grauem Dach und Gauben
+(5,4 m, 42 Grad), 17/19 mit rotbraunem Dach (5,6 m, 38 Grad),
+Nr. 7 mit hoeherem grauem Dach, drei Gauben und Dachfenstern (5,9 m, 42 Grad).
+Helle weissliche Fassaden, Fenster, Rinnen und Schornsteine sind angenaehert.
+Diese Hausnummernzuordnung, Gaubenzahlen, Dachformen und Meterwerte sind
+Bildinterpretationen, keine gesicherten Bestandsdaten. Nicht deutlich sichtbare
+Gebaeude bleiben schematisch; die weiter entfernte Flachdachreihe ist nicht erfasst.
+
+Der Aussenanlagenplan zeigt dieselben Hausumrisse wie 3D. Das Kartensymbol passt
+die Nachbarschaft ein; Nachbarobjekte lassen sich auswaehlen und mit dem
+vorhandenen Massband an Haus- und Parzellenecken messen. Angezeigte Nachbarmasse
+sind Modellmasse mit dem Hinweis auf die Flurkarten-Naeherung.
 
 ### Parken und Garten
 
@@ -463,14 +512,12 @@ Keine spektrale Transmission, Lichtbrechung, Kaustik oder indirekte Tageslichtsi
 Statische Orbitbilder werden nur bei Aenderung neu gezeichnet; Schattenkarten
 bei Sonnen-/Oeffnungs-/Szenenaenderungen. Der Rundgang rendert kontinuierlich.
 
-Die abschaltbare Nachbarschaft folgt der Struktur des bereitgestellten Luftbilds,
-nicht dessen vermessener Geometrie: An der Roeth suedlich, Hallerstrasse/noerdliche
-Haeuserreihe, seitliche Nachbarn, zurueckhaltende Baeume und entsaettigte Materialien.
-Die bestehenden Modellachsen bleiben erhalten; keine Georeferenzierung oder
-exakte Abbildung einzelner Nachbargebaeude. Strassen folgen jetzt den schraegen
-Nord-/Suedgrenzen; seitliche Nachbarn liegen ausserhalb der neuen Grenzen und
-die noerdliche Reihe ist daran ausgerichtet. Nur die eigenen vier Grenzlaengen
-sind vorgegeben. Nachbarhoehen und Positionen sind keine belastbare Verschattungsgrundlage.
+Die abschaltbare Nachbarschaft folgt der auf die eigene Parzelle eingepassten
+Flurkarte; Farben und Hoehen der suedlichen Reihe sind anhand der zusaetzlichen
+Vogelperspektive angenaehert. Bestehende Modellachsen bleiben erhalten.
+Strassen, Nachbargrenzen und Hausumrisse verwenden dieselbe Lagebasis in 2D/3D.
+Nur die eigenen vier Grenzlaengen sind vorgegeben. Nachbarhoehen und Positionen
+sind keine belastbare Verschattungsgrundlage; siehe Flurkartenumfeld oben.
 Garten: vier Baeume, Randpflanzung, Zaun mit seitlichen Zugangsluecken und eine
 45 cm breite, 1,45 m hohe Trennhecke von Nord nach Sued, ausgenommen die Haeuser.
 Zaun, Hecke, Wege und Hintergrund sind ohne physikalische Kollisionskoerper;

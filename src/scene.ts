@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js'
 import { house, elevations, floorIds, floorSlabs, lightWells, makeFloor, rect, roofHeight, roofPanels, roofWindows, stairFor, stairGuards, stairHandrails, stairSolids, wallSolids } from './model'
-import { terraceFurniture, terraceParts } from './terrace'
+import { terraceFurniture, terraceParts, westTerraceFurniture } from './terrace'
 import { createPartyRoom } from './partyRoom'
 import { createRoomLighting } from './lighting'
 import { createIndirectLighting } from './indirectLighting'
@@ -191,7 +191,7 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
   const party = furnished && renderedFloors.includes('KG') ? createPartyRoom(materials) : undefined
   if (party) group.add(party.group)
   for (const id of renderedFloors) {
-    const floor = makeFloor(id), base = floor.elevation
+    const floor = makeFloor(id, includeSite ? 'east' : 'west'), base = floor.elevation
     const cut = cutWalls && !walk && !showRoof
     for (const slab of floorSlabs(id)) {
       const texture = oak.clone(); texture.repeat.set(slab.width / 2, slab.depth / 2); texture.needsUpdate = true; textures.push(texture)
@@ -325,7 +325,7 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
     addBox(rect(house.width, .3, 1.5, 3), -.14, .14, stone)
     addBox(rect(house.width, .35, 1.2, 2.2), 2.35, .16, canopyFinish.material).name = 'entry-canopy-roof'
     addBox(rect(house.width, .35, 1.2, .12), 0, 2.35, canopyFinish.material).name = 'entry-canopy-side'
-    if (furnished) for (const item of terraceFurniture) addFurniture(item, 0)
+    if (furnished) for (const item of includeSite ? terraceFurniture : westTerraceFurniture) addFurniture(item, 0)
   }
   if (walk || showRoof || floorId === 'KG') {
     const wells = lightWells
@@ -355,7 +355,7 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
     target.userData.opening = opening; target.name = 'opening-target'; group.add(target)
   }
   const west = includeSite ? buildScene(floorId, walk, showRoof, furnished, cutWalls, false) : undefined
-  const indirectLighting = createIndirectLighting(renderedFloors, materials, coordinates)
+  const indirectLighting = createIndirectLighting(renderedFloors, materials, coordinates, includeSite ? 'east' : 'west')
   if (west) {
     west.group.name = 'house-west'; west.group.scale.x = -1; west.group.position.z = partner.z; group.add(west.group)
     for (const collider of west.colliders) colliders.push({ position: new THREE.Vector3(-collider.position.x, collider.position.y, collider.position.z + partner.z), size: collider.size.clone(), rotation: new THREE.Quaternion(collider.rotation.x, -collider.rotation.y, -collider.rotation.z, collider.rotation.w) })

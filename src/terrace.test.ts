@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest'
 import { boundaryDistance, partner } from './context'
 import { house, lightWells } from './model'
-import { terraceArea, terraceFurniture, terraceMain, terraceOutline, terraceParts } from './terrace'
+import { terraceArea, terraceFurniture, terraceMain, terraceOutline, terraceParts, westTerraceFurniture } from './terrace'
 
 test('Kompakte Eckterrassen bleiben auf beiden Haelften frei von Haus und Lichtschaechten', () => {
   expect(terraceMain.width).toBe(5)
@@ -17,7 +17,9 @@ test('Kompakte Eckterrassen bleiben auf beiden Haelften frei von Haus und Lichts
     const overlap = Math.max(0, Math.min(part.x + part.width, obstacle.x + obstacle.width) - Math.max(part.x, obstacle.x)) * Math.max(0, Math.min(part.z + part.depth, obstacle.z + obstacle.depth) - Math.max(part.z, obstacle.z))
     expect(overlap).toBe(0)
   }
-  for (const item of terraceFurniture) {
+  expect(Math.min(...terraceFurniture.map(item => item.z)) - house.depth).toBeCloseTo(1)
+  for (const [index, item] of terraceFurniture.entries()) expect(item.z - westTerraceFurniture[index].z).toBeCloseTo(.65)
+  for (const item of [...terraceFurniture, ...westTerraceFurniture]) {
     expect(item.x).toBeGreaterThanOrEqual(terraceMain.x)
     expect(item.x + item.width).toBeLessThanOrEqual(terraceMain.x + terraceMain.width)
     expect(item.z).toBeGreaterThanOrEqual(terraceMain.z)

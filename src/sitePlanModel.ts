@@ -4,9 +4,27 @@ import { distance, metres } from './measure'
 import { rectCorners, siteParking } from './parking'
 import type { SiteRect } from './parking'
 import { terraceArea, terraceMain, terraceOutline } from './terrace'
+import { contextAnnexes, contextBuildings, footprintPlacement, placementPoint } from './neighborhoodLayout'
+import { directNeighborPoint, directNeighbors } from './directNeighbors'
+import { neighbor8, neighbor8Point } from './neighbor8'
 
 export type SiteItem = { id: string; name: string; points: [number, number][]; color: string; details: string; width?: number; depth?: number; dimensionPoints?: [number, number][] }
 const rectangle = (id: string, name: string, bounds: SiteRect, color: string, point = (x: number, z: number): [number, number] => [x, z]): SiteItem => ({ id, name, points: rectCorners(bounds).map(([x, z]) => point(x, z)), color, width: bounds.width, depth: bounds.depth, details: `${metres(bounds.width)} × ${metres(bounds.depth)}` })
+export const neighborItems: SiteItem[] = [
+  ...directNeighbors.flatMap(spec => [
+    rectangle(`neighbor-${spec.number}`, `Nr. ${spec.number}`, { x: 0, z: 0, width: spec.width, depth: spec.depth }, '#c6cbc5', (east, south) => directNeighborPoint(spec, east, south)),
+    ...(spec.annex.depth ? [rectangle(`neighbor-annex-${spec.number}`, `Anbau Nr. ${spec.number}`, spec.annex, '#d4d8d1', (east, south) => directNeighborPoint(spec, east, south))] : []),
+  ]),
+  rectangle('neighbor-8', 'Nr. 8', neighbor8.house, '#c6cbc5', neighbor8Point),
+  rectangle('neighbor-annex-8', 'Garage Nr. 8', neighbor8.garage, '#d4d8d1', neighbor8Point),
+  ...contextBuildings.map(spec => rectangle(`neighbor-${spec.id}`, `Nr. ${spec.id}`, { x: 0, z: 0, width: 1, depth: 1 }, '#c6cbc5', (east, south) => placementPoint(footprintPlacement(spec.points, 1, 1), east, south))),
+  ...contextAnnexes.map((points, index) => rectangle(`neighbor-annex-context-${index}`, 'Nebengebaeude', { x: 0, z: 0, width: 1, depth: 1 }, '#d4d8d1', (east, south) => placementPoint(footprintPlacement(points, 1, 1), east, south))),
+].map(item => {
+  const width = distance({ x: item.points[0][0], z: item.points[0][1] }, { x: item.points[1][0], z: item.points[1][1] })
+  const depth = distance({ x: item.points[1][0], z: item.points[1][1] }, { x: item.points[2][0], z: item.points[2][1] })
+  return { ...item, width, depth, details: `ca. ${metres(width)} x ${metres(depth)} · Flurkarten-Naeherung, nicht vermessen` }
+})
+
 export const siteItems: SiteItem[] = [
   rectangle('house-east', 'Haus Ost', { x: 0, z: 0, width: house.width, depth: 10 }, '#e9e7df'),
   rectangle('house-west', 'Haus West', partner, '#e9e7df'),

@@ -3,10 +3,10 @@ import { area, elevations, makeFloor, roofHeight, stairOpeningParts } from './mo
 import type { FloorId } from './model'
 import { roomDaylight } from './roomDaylight'
 
-export function createIndirectLighting(floors: FloorId[], materials: THREE.Material[], coordinates = new THREE.Matrix4()) {
+export function createIndirectLighting(floors: FloorId[], materials: THREE.Material[], coordinates = new THREE.Matrix4(), houseSide: 'east' | 'west' = 'east') {
   const volumes = floors.flatMap(floorId => {
-    const floor = makeFloor(floorId)
-    const daylight = roomDaylight(floorId)
+    const floor = makeFloor(floorId, houseSide)
+    const daylight = roomDaylight(floorId, houseSide)
     return [...floor.rooms.map(room => ({ id: `${floorId}-${room.id}`, parts: room.parts, strength: room.id === 'living' ? .65 : THREE.MathUtils.clamp(800 / area(room.parts) / 55, .4, .85) })), { id: `${floorId}-stairs`, parts: stairOpeningParts, strength: .55 }].flatMap(room => room.parts.map(part => ({
       id: room.id, floor: floorId, strength: room.strength,
       daylight: daylight.find(source => source.id === room.id)!,
