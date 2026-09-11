@@ -1,4 +1,4 @@
-.finish-row>div{flex-wrap:wrap}.finish-row{align-items:flex-start}.finish-row>span{flex-shrink:0}.finish-row>div{max-width:192px}
+.finish-row>div{flex-wrap:nowrap;overflow-x:auto;max-width:192px;padding:3px 2px 5px}.finish-row{align-items:flex-start}.finish-row>span{flex-shrink:0}.finish-row>div{scrollbar-width:thin}
 .scene-settings { position: absolute; top: 74px; right: 18px; z-index: 8; max-width: calc(100% - 36px); color: #385044; }
 .scene-settings > summary { margin-left: auto; width: 86px; height: 38px; display: flex; gap: 9px; align-items: center; justify-content: center; background: #fff; border: 1px solid #d8e0d6; border-radius: 4px; font-size: 12px; cursor: pointer; list-style: none; }
 .scene-settings > summary::-webkit-details-marker { display: none; }
@@ -13,6 +13,8 @@
 .settings-body input[type=range] { width: 100%; height: 24px; accent-color: #526f5a; }
 .sun-altitude, .opening-state { display: block; font-size: 10px; color: #738172; margin-top: 6px; }
 .finish-settings { margin: 16px 0 8px; border: 0; border-top: 1px solid #dfe5dc; padding: 12px 0 0; }
+.sun-settings { margin: 16px 0 8px; border: 0; border-top: 1px solid #dfe5dc; padding: 12px 0 0; }
+.sun-settings legend { font-size: 12px; padding-right: 8px; }
 .finish-settings legend { font-size: 12px; padding-right: 8px; }
 .finish-settings select { margin-bottom: 14px; }
 .wood-tone { margin-top: 4px; }

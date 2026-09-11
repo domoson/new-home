@@ -20,9 +20,9 @@ export function boundaryDistance(point: [number, number], side: number) {
 }
 export const partner = { x: -7.5, z: 1.2, width: 7.5, depth: 10 }
 export const finishes = {
-  facade: [{ name: 'Kreideweiß', color: '#fafafa' }, { name: 'Lichtgrau', color: '#d3d7d6' }, { name: 'Salbeigrau', color: '#bfc9bd' }, { name: 'Muschelweiß', color: '#eeeae0' }, { name: 'Nebelblau', color: '#bdcdd3' }, { name: 'Mineralgrün', color: '#9eaea4' }, { name: 'Steingrau', color: '#b4b4b0' }, { name: 'Roséton', color: '#d8c2be' }, { name: 'Kohle', color: '#666b68' }],
-  roof: [{ name: 'Graphit', color: '#424749' }, { name: 'Ziegelrot', color: '#99584c' }, { name: 'Zinkgrau', color: '#89928f' }, { name: 'Schwarz', color: '#252927' }, { name: 'Naturrot', color: '#b66b52' }, { name: 'Patinagrün', color: '#63887c' }],
-  frame: [{ name: 'Weiß', color: '#f7f7f4' }, { name: 'Anthrazit', color: '#3b4243' }, { name: 'Eiche', color: '#b79a70' }, { name: 'Schwarz', color: '#202624' }, { name: 'Aluminium', color: '#a8b1b0' }, { name: 'Moosgrün', color: '#536b5d' }, { name: 'Bronze', color: '#8b7760' }],
+  facade: [{ name: 'Kreideweiß', color: '#fafafa' }, { name: 'Lichtgrau', color: '#d3d7d6' }, { name: 'Salbeigrau', color: '#bfc9bd' }, { name: 'Muschelweiß', color: '#eeeae0' }, { name: 'Nebelblau', color: '#bdcdd3' }, { name: 'Mineralgrün', color: '#9eaea4' }, { name: 'Steingrau', color: '#b4b4b0' }, { name: 'Kohle', color: '#666b68' }],
+  roof: [{ name: 'Graphit', color: '#424749' }, { name: 'Ziegelrot', color: '#99584c' }, { name: 'Zinkgrau', color: '#89928f' }, { name: 'Schwarz', color: '#252927' }, { name: 'Naturrot', color: '#b66b52' }, { name: 'Terrakotta', color: '#a95643' }, { name: 'Rotbraun', color: '#7e4039' }],
+  frame: [{ name: 'Weiß', color: '#f7f7f4' }, { name: 'Anthrazit', color: '#3b4243' }, { name: 'Eiche', color: '#b79a70' }, { name: 'Aluminium', color: '#a8b1b0' }, { name: 'Moosgrün', color: '#536b5d' }, { name: 'Bronze', color: '#8b7760' }],
 } as const
 export type FinishKey = keyof typeof finishes
 export const facadeCompositions = [{ id: 'plaster', name: 'Putz durchgehend' }, { id: 'timber', name: 'Holzfassade ab EG' }, { id: 'upper', name: 'Putz + Holz OG und DG' }, { id: 'gable', name: 'Putz + Holzgiebelfeld' }, { id: 'entry', name: 'Putz + Holz am Eingang' }, { id: 'og', name: 'Nur OG in Holz' }, { id: 'og-entry', name: 'OG + Eingang in Holz' }, { id: 'panels', name: 'Vertikale Holzfelder' }] as const
@@ -32,7 +32,7 @@ export const woodProfiles = [{ id: 'boards', name: 'Vertikale Bretter' }, { id: 
 export type WoodProfile = typeof woodProfiles[number]['id']
 export type HouseAppearance = { facade: string; roof: string; frame: string; composition: FacadeComposition; woodTone: number; woodProfile: WoodProfile }
 export type SceneSettings = HouseAppearance & { hour: number; season: 'summer' | 'spring' | 'winter'; west: HouseAppearance; surroundings: boolean; landscaping: boolean; transparentGround: boolean; lights: Record<string, boolean>; lightingMode: 'room' | 'global' }
-export const initialAppearance: HouseAppearance = { facade: finishes.facade[3].color, roof: finishes.roof[0].color, frame: finishes.frame[2].color, composition: 'plaster', woodTone: 3, woodProfile: 'boards' }
+export const initialAppearance: HouseAppearance = { facade: finishes.facade[3].color, roof: finishes.roof[0].color, frame: finishes.frame[2].color, composition: 'upper', woodTone: 3, woodProfile: 'boards' }
 export const initialSettings: SceneSettings = { ...initialAppearance, west: { ...initialAppearance }, hour: 14, season: 'summer', surroundings: true, landscaping: true, transparentGround: false, lights: {}, lightingMode: 'global' }
 export function sunPosition(hour: number, season: SceneSettings['season']) {
   const [month, day, offset] = { summer: [5, 21, 2], spring: [2, 20, 1], winter: [11, 21, 1] }[season]
