@@ -4,12 +4,15 @@ import { flatGeometry } from './geometry'
 import { carportRoof, parkingEntrance, rectCorners, siteParking } from './parking'
 import { neighbor8, neighbor8Point } from './neighbor8'
 import { addDirectNeighbors } from './directNeighbors'
+import { createSeatLeon } from './seatLeon'
+import { createCarParking } from './carParking'
 
 export function createSurroundings() {
   const neighborhood = new THREE.Group(), garden = new THREE.Group()
   neighborhood.name = 'neighborhood'; garden.name = 'landscaping'
   const materials: THREE.Material[] = [], textures: THREE.Texture[] = []
   const colliders: { position: THREE.Vector3; size: THREE.Vector3; rotation: THREE.Quaternion }[] = []
+  let carParking: ReturnType<typeof createCarParking> | undefined
   const material = (color: string, map?: THREE.Texture) => {
     const result = new THREE.MeshStandardMaterial({ color, roughness: 1, map: map ?? null }); materials.push(result); return result
   }
@@ -150,7 +153,7 @@ export function createSurroundings() {
       const collider = colliders[colliders.length - 1]; collider.position.y += depth * slope / 2; collider.size.y += depth * slope
       return mesh
     }
-    sloped(carport.x, -.14, carport.z, carport.width, carportRoof.lowEdge + .14, .08, wood, 'carport-back-wall')
+    sloped(carport.x + .16, -.14, carport.z, carport.width - .32, carportRoof.lowEdge + .14, .08, wood, 'carport-back-wall')
     band(parking, rectCorners(binAccess), -.105, paving, 'bin-access')
     band(parking, rectCorners(bins), -.105, paving, 'bin-pad')
     for (const [index, color] of ['#71805d', '#565c59', '#4f7586'].entries()) {
@@ -159,17 +162,17 @@ export function createSurroundings() {
       box(structure, east - .015, .93, south - .01, .63, .06, .77, material(color)).name = 'bin-lid'
     }
     for (const east of [carport.x, carport.x + carport.width - .16]) for (const south of [carport.z, carport.z + carport.depth - .16]) {
-      solid(east, -.14, south, .16, 2.48 + (south - carport.z) * slope, .16, wood, 'carport-post')
-      box(structure, east + .02, -.14, south + .02, .12, .12, .12, roofEdge)
+      solid(east, -.14, south, .16, 2.38 + (south - carport.z) * slope, .16, wood, 'carport-post')
+      box(structure, east - .01, -.14, south - .01, .18, .1, .18, roofEdge)
     }
     for (const east of [carport.x, carport.x + carport.width - .16]) sloped(east, 2.24, carport.z, .16, .26, carport.depth, wood, 'carport-beam')
     for (let offset = .16; offset < carport.depth - .08; offset += .6) sloped(carport.x + .16, 2.34, carport.z + offset, carport.width - .32, .16, .08, wood, 'carport-rafter')
     sloped(carport.x, carportRoof.lowEdge, carport.z, carport.width, carportRoof.thickness, carport.depth, roofMetal, 'carport-roof')
     for (let offset = .12; offset < carport.width - .06; offset += .25) sloped(carport.x + offset, carportRoof.lowEdge + carportRoof.thickness, carport.z + .08, .045, .025, carport.depth - .08, roofEdge, 'carport-roof-rib')
-    for (const east of [carport.x, carport.x + carport.width - .035]) sloped(east, 2.43, carport.z, .035, .16, carport.depth, roofEdge, 'carport-roof-flashing')
-    solid(carport.x + .05, 2.44, carport.z + .01, carport.width - .1, .1, .12, roofEdge, 'carport-gutter')
+    for (const east of [carport.x - .02, carport.x + carport.width]) sloped(east, 2.43, carport.z, .02, .16, carport.depth, roofEdge, 'carport-roof-flashing')
+    solid(carport.x + .16, 2.38, carport.z + .08, carport.width - .32, .1, .1, roofEdge, 'carport-gutter')
     const pipeX = side === 'east' ? carport.x + carport.width - .27 : carport.x + .18
-    solid(pipeX, -.1, carport.z + .09, .08, 2.6, .08, roofEdge, 'carport-downpipe')
+    solid(pipeX, -.1, carport.z + .09, .08, 2.48, .08, roofEdge, 'carport-downpipe')
     const screenX = side === 'east' ? carport.x + carport.width - .06 : carport.x
     for (let offset = .22; offset < 2.4; offset += .14) solid(screenX, .28, carport.z + offset, .06, 1.8, .06, wood, 'carport-slat')
     for (const [kind, rectangle] of [['covered', carport], ['open', open]] as const) {
@@ -185,6 +188,13 @@ export function createSurroundings() {
     }
     band(parking, passagePoints, -.105, paving, 'garden-path')
     band(garden, approach, -.105, paving, 'entrance-path')
+    if (side === 'east') {
+      const car = createSeatLeon(materials)
+      car.position.set(carport.x + carport.width / 2, -.1, carport.z + carport.depth / 2)
+      car.rotation.y = Math.PI
+      parking.add(car)
+      carParking = createCarParking(car, streetZ(car.position.x) + 3.9)
+    }
   }
   for (const [start, end] of [[Math.max(boundaryZ(-.225, 0), boundaryZ(.225, 0)), 0], [partner.z + partner.depth, Math.min(boundaryZ(-.225, 2), boundaryZ(.225, 2))]]) {
     const hedge = box(garden, -.225, -.14, start, .45, 1.45, end - start, foliage[0]); hedge.name = 'division-hedge'
@@ -210,5 +220,5 @@ export function createSurroundings() {
   }
   const posts = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), fence, fenceMatrices.length)
   fenceMatrices.forEach((matrix, index) => posts.setMatrixAt(index, matrix)); posts.castShadow = true; posts.receiveShadow = true; posts.name = 'boundary-fence'; garden.add(posts)
-  return { neighborhood, garden, colliders, setWoodTone(side: 'east' | 'west', tone: number) { carportWood[side].color.set(woodTones[tone].color) }, dispose() { for (const group of [neighborhood, garden]) group.traverse(object => { if (object instanceof THREE.Mesh) object.geometry.dispose() }); materials.forEach(material => material.dispose()); textures.forEach(texture => texture.dispose()) } }
+  return { neighborhood, garden, colliders, activateVehicle(object: THREE.Object3D) { return carParking?.activate(object) ?? false }, updateVehicle(delta: number, reducedMotion: boolean) { return carParking?.update(delta, reducedMotion) ?? false }, setWoodTone(side: 'east' | 'west', tone: number) { carportWood[side].color.set(woodTones[tone].color) }, dispose() { for (const group of [neighborhood, garden]) group.traverse(object => { if (object instanceof THREE.Mesh) object.geometry.dispose() }); materials.forEach(material => material.dispose()); textures.forEach(texture => texture.dispose()) } }
 }

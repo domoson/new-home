@@ -259,6 +259,23 @@ Genehmigungs- oder Stellplatzsatzungsnachweis.
 | DG | Eltern/Ankleide, Gaeste/Arbeit, Flur | Grundflaechen 19,8 / 16,2 / 3,6 m2; hoehengewichtet 16,5 / 12,9 / 3,6 m2 |
 | KG | Technik, Waschen/Lager, Kinderpartyraum, Flur | Nutzflaechen 12,2 / 14,2 / 24,8 / 3,6 m2 |
 
+Im Ost-Carport steht ein grob modellierter grauer Seat Leon ST, mittig und
+vorwaerts eingeparkt: Front zur Rueckwand, Heck zur suedlichen Einfahrt.
+Abmessungen aus der bereitgestellten Zeichnung:
+4,642 m Laenge, 1,799 m Karosseriebreite ohne Spiegel, 1,991 m mit Spiegeln,
+1,448 m Hoehe und 2,686 m Radstand. Form und Farbe orientieren sich schematisch
+am Fahrzeugfoto; Foto und Masszeichnung zeigen unterschiedliche Modellgenerationen.
+Zwischen Spiegeln und innerer Pfostenlinie bleiben mittig rund 47 cm je Seite;
+das ist kein Nachweis fuer geoeffnete Tueren. Ein Klick oder Antippen des Autos
+laesst es gerade rueckwaerts auf die suedliche Fahrbahn rollen; erneutes Anklicken
+faehrt es vorwaerts auf denselben Carportplatz zurueck. Waehrend der Fahrt kann
+die Richtung erneut umgekehrt werden. Raeder und Schatten bewegen sich mit.
+Die Aussenansicht zoomt bei Bedarf etwas heraus, damit der Wagen anklickbar bleibt.
+Bei reduzierter Bewegung wird direkt zwischen den Positionen gewechselt.
+Die Parkposition gilt fuer die aktuelle 3D-Szene und wird beim Neuaufbau zurueckgesetzt.
+Reine Anschauungsanimation ohne Verkehrsmodell, Fahrzeugkollision oder bewegliche
+Tueren; das Auto steht draussen quer zur Fahrbahn, keine Schleppkurvenpruefung.
+
 Die zweimal viertelgewendelte Treppe hat den Antritt im Norden zur Diele.
 Im EG greift das Dusch-WC die Nischenidee der Referenzplaene auf: 4,659 m2,
 mit 1,88 x 1,80 m Hauptbereich und einer 1,00 x 1,275 m tiefen suedlichen
@@ -355,6 +372,11 @@ Moebelfronten, Geraete, Anschluesse und Lueftung bleiben eine Entwurfsannahme.
   sind nicht nachgewiesen. Die Simulation ist keine Ausfuehrungsvorlage.
   Alle vier Geschosse verwenden ausschliesslich den Hauptentwurf. 2D, Stufen,
   Gelaender, Deckenloecher und Kollisionen verwenden dieselbe Geometrie.
+- Beide Hausdaecher zeigen leicht erhoehte Ziegelreihen im 32-cm-Raster entlang
+  der Dachneigung, entsprechend der schematischen Nachbardarstellung. Die Reihen
+  sind 12 mm hoch und folgen als dunklere Abstufung der jeweils gewaehlten
+  Dachfarbe, getrennt fuer Ost und West. Dachfenster bleiben ausgespart.
+  Nur eine Oberflaechenstudie, keine konkrete Ziegel- oder Deckungsspezifikation.
 - Satteldach: 35 Grad, First Ost-West. 50 cm Kniestock wird hier als LICHTE Hoehe
   ueber Fertigfussboden am inneren Dachansatz interpretiert. Das ist eine Annahme,
   nicht die nachgewiesene baurechtliche Kniestockdefinition. Dachpaket 25 cm normal

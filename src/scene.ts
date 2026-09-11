@@ -6,6 +6,7 @@ import { createPartyRoom } from './partyRoom'
 import { createRoomLighting } from './lighting'
 import { createIndirectLighting } from './indirectLighting'
 import { stairPrism } from './winderStair'
+import { roofTileGeometry } from './roofTiles'
 import type { FloorId, Furniture, Rect, Solid } from './model'
 import { initialAppearance, partner, siteBoundary } from './context'
 import type { FacadeComposition, FinishKey, WoodProfile } from './context'
@@ -15,7 +16,7 @@ import { createSurroundings } from './surroundings'
 
 export type ColliderShape = { position: THREE.Vector3; size: THREE.Vector3; rotation: THREE.Quaternion }
 export type DoorModel = { id: string; label: string; kind: 'door' | 'window'; pivot: THREE.Group; closedAngle: number; closedPitch?: number; direction?: number; amount: number; open: boolean; size: THREE.Vector3; center: THREE.Vector3; position: THREE.Vector3; object: THREE.Mesh; sliding: boolean }
-export type SceneModel = { setDaylight: (strength: number) => void; group: THREE.Group; colliders: ColliderShape[]; triangles: { vertices: Float32Array; indices: Uint32Array }[]; doors: DoorModel[]; setLighting: (states: Record<string, boolean>, activeFloor: FloorId) => void; updateAnimations: (seconds: number) => boolean; setOpening: (id: string, amount: number) => boolean; toggleOpening: (id: string) => boolean; setFinish: (key: FinishKey, color: string, house?: 'east' | 'west') => void; setCladding: (composition: FacadeComposition, tone: number, profile?: WoodProfile, house?: 'east' | 'west') => void; setGroundOpacity: (value: number) => void; dispose: () => void }
+export type SceneModel = { activateVehicle: (object: THREE.Object3D) => boolean; updateVehicle: (delta: number, reducedMotion?: boolean) => boolean; setDaylight: (strength: number) => void; group: THREE.Group; colliders: ColliderShape[]; triangles: { vertices: Float32Array; indices: Uint32Array }[]; doors: DoorModel[]; setLighting: (states: Record<string, boolean>, activeFloor: FloorId) => void; updateAnimations: (seconds: number) => boolean; setOpening: (id: string, amount: number) => boolean; toggleOpening: (id: string) => boolean; setFinish: (key: FinishKey, color: string, house?: 'east' | 'west') => void; setCladding: (composition: FacadeComposition, tone: number, profile?: WoodProfile, house?: 'east' | 'west') => void; setGroundOpacity: (value: number) => void; dispose: () => void }
 
 function oakTexture() {
   const canvas = document.createElement('canvas'); canvas.width = 512; canvas.height = 512
@@ -50,6 +51,8 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
   canopyFinish.setComposition(initialAppearance.composition, initialAppearance.woodTone, 'boards')
   const timber = mat('#ffffff', .75, oak), plaster = mat('#ffffff'), ceramic = mat('#f4f7f3', .28), linen = mat('#e6e5db'), sage = mat('#9fab94'), teal = mat('#687d77'), dark = mat('#343e3b'), stone = mat('#cfcec6'), roofMaterial = mat(initialAppearance.roof), frameMaterial = mat(initialAppearance.frame)
   const doorMaterial = mat('#dfd6c2', .75, oak)
+  const roofCourseMaterial = mat(initialAppearance.roof)
+  roofCourseMaterial.color.copy(roofMaterial.color).multiplyScalar(.72)
   const groundMaterial = mat('#a6b894'); groundMaterial.side = THREE.DoubleSide
   const glass = new THREE.MeshStandardMaterial({ color: '#bddadc', roughness: .15, transparent: true, opacity: .22, depthWrite: false, side: THREE.DoubleSide }); materials.push(glass)
   const addBox = (bounds: Rect, bottom: number, height: number, material: THREE.Material | THREE.Material[], collide = true, round = false, parent: THREE.Object3D = group) => {
@@ -280,7 +283,9 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
   if (walk || showRoof) {
     const thickness = .25 / Math.cos(35 * Math.PI / 180)
     const roofAt = (south: number) => 5.9 + .5 + Math.min(south - .365, 9.635 - south) * Math.tan(35 * Math.PI / 180)
-    for (const part of roofPanels()) { const bottom: [number, number] = [roofAt(part.z), roofAt(part.z + part.depth)]; wedge(part, bottom, [bottom[0] + thickness, bottom[1] + thickness], [plaster, roofMaterial]) }
+    for (const part of roofPanels()) { const bottom: [number, number] = [roofAt(part.z), roofAt(part.z + part.depth)]; wedge(part, bottom, [bottom[0] + thickness, bottom[1] + thickness], [plaster, roofMaterial, roofMaterial, roofMaterial, roofMaterial, roofMaterial]) }
+    const tileCourses = new THREE.Mesh(roofTileGeometry(roofPanels(), roofAt, thickness), roofCourseMaterial)
+    tileCourses.name = 'roof-tile-courses'; tileCourses.castShadow = true; tileCourses.receiveShadow = true; group.add(tileCourses)
     for (const skylight of roofWindows) {
       const southSlope = skylight.z >= 5
       const pivot = new THREE.Group(); pivot.position.set(skylight.x, roofAt(skylight.z + skylight.depth), skylight.z + skylight.depth); const pitch = Math.PI / 2 + (southSlope ? 1 : -1) * 35 * Math.PI / 180; pivot.rotation.x = pitch; group.add(pivot)
@@ -345,7 +350,7 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
   group.updateMatrixWorld(true)
   const surroundings = includeSite && (walk || showRoof || floorId === 'KG') ? createSurroundings() : undefined
   if (surroundings) { group.add(surroundings.neighborhood, surroundings.garden); colliders.push(...surroundings.colliders) }
-  const model: SceneModel = { setDaylight(strength) { indirectLighting.setDaylight(strength); west?.setDaylight(strength) }, group, colliders, triangles, doors, setLighting(states, activeFloor) { roomLighting.update(states, activeFloor); indirectLighting.update(states, activeFloor); party?.setEnabled(states['KG-party-effects'] ?? true, activeFloor === 'KG'); west?.setLighting(Object.fromEntries(Object.entries(states).filter(([id]) => id.startsWith('west-')).map(([id, value]) => [id.slice(5), value])), activeFloor) }, updateAnimations(seconds) { party?.update(seconds); const westActive = west?.updateAnimations(seconds); return !!party || !!westActive }, setCladding(composition, tone, profile = 'boards', house = 'east') { surroundings?.setWoodTone(house, tone); if (house === 'west') { west?.setCladding(composition, tone, profile); return } facadeFinish.setComposition(composition, tone, profile); canopyFinish.setComposition(composition, tone, 'boards') }, toggleOpening(id) {
+  const model: SceneModel = { activateVehicle(object) { return surroundings?.activateVehicle(object) ?? false }, updateVehicle(delta, reducedMotion = false) { return surroundings?.updateVehicle(delta, reducedMotion) ?? false }, setDaylight(strength) { indirectLighting.setDaylight(strength); west?.setDaylight(strength) }, group, colliders, triangles, doors, setLighting(states, activeFloor) { roomLighting.update(states, activeFloor); indirectLighting.update(states, activeFloor); party?.setEnabled(states['KG-party-effects'] ?? true, activeFloor === 'KG'); west?.setLighting(Object.fromEntries(Object.entries(states).filter(([id]) => id.startsWith('west-')).map(([id, value]) => [id.slice(5), value])), activeFloor) }, updateAnimations(seconds) { party?.update(seconds); const westActive = west?.updateAnimations(seconds); return !!party || !!westActive }, setCladding(composition, tone, profile = 'boards', house = 'east') { surroundings?.setWoodTone(house, tone); if (house === 'west') { west?.setCladding(composition, tone, profile); return } facadeFinish.setComposition(composition, tone, profile); canopyFinish.setComposition(composition, tone, 'boards') }, toggleOpening(id) {
     const door = doors.find(door => door.id === id); if (!door) return false
     return model.setOpening(id, door.amount > 0 ? 0 : 1)
   }, setOpening(id, value) {
@@ -356,7 +361,7 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
     door.pivot.rotation.set(door.closedPitch === undefined ? 0 : door.closedPitch - amount * Math.PI / 5, door.closedAngle + (!door.sliding && door.closedPitch === undefined ? amount * (door.direction ?? 1) * Math.PI / 2 : 0), 0)
     if (door.sliding) { door.pivot.position.x += amount * door.size.x; door.pivot.position.z -= Math.min(1, amount * 10) * .07; door.pivot.position.y += Math.min(1, amount * 10) * .012 }
     door.pivot.updateMatrixWorld(true); return true
-  }, setFinish(key, color, house = 'east') { if (house === 'west') { west?.setFinish(key, color); return } ({ facade, roof: roofMaterial, frame: frameMaterial })[key].color.set(color) }, setGroundOpacity(value) { groundMaterial.opacity = value; groundMaterial.transparent = value < 1; groundMaterial.depthWrite = value === 1 }, dispose() { if (surroundings) { group.remove(surroundings.neighborhood, surroundings.garden); surroundings.dispose() } if (west) { group.remove(west.group); west.dispose() } const geometries = new Set<THREE.BufferGeometry>(); group.traverse(object => { if (object instanceof THREE.Mesh) geometries.add(object.geometry); if (object instanceof THREE.SpotLight || object instanceof THREE.PointLight) object.dispose() }); for (const geometry of geometries) geometry.dispose(); for (const material of materials) material.dispose(); for (const texture of textures) texture.dispose() } }
+  }, setFinish(key, color, house = 'east') { if (house === 'west') { west?.setFinish(key, color); return } ({ facade, roof: roofMaterial, frame: frameMaterial })[key].color.set(color); if (key === 'roof') roofCourseMaterial.color.copy(roofMaterial.color).multiplyScalar(.72) }, setGroundOpacity(value) { groundMaterial.opacity = value; groundMaterial.transparent = value < 1; groundMaterial.depthWrite = value === 1 }, dispose() { if (surroundings) { group.remove(surroundings.neighborhood, surroundings.garden); surroundings.dispose() } if (west) { group.remove(west.group); west.dispose() } const geometries = new Set<THREE.BufferGeometry>(); group.traverse(object => { if (object instanceof THREE.Mesh) geometries.add(object.geometry); if (object instanceof THREE.SpotLight || object instanceof THREE.PointLight) object.dispose() }); for (const geometry of geometries) geometry.dispose(); for (const material of materials) material.dispose(); for (const texture of textures) texture.dispose() } }
   model.setLighting({}, floorId)
   return model
 }

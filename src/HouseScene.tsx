@@ -12,7 +12,7 @@ import { facadeCompositions, finishes, siteBoundary, sunPosition, woodProfiles, 
 import type { FacadeComposition, FinishKey, HouseAppearance, SceneSettings, WoodProfile } from './context'
 import './scene-controls.css'
 
-type SceneDebug = { position: () => { x: number; y: number; z: number }; teleport: (x: number, y: number, z: number) => void; look: (yaw: number) => void; door: (id?: string) => boolean; mode: string; meshes: number; snapshot: () => { openings: { id: string; open: boolean; rotation: number[]; tip: number[] }[]; sun: number[]; slabs: { name: string; colors: string[]; maps: boolean[] }[]; site: boolean } }
+type SceneDebug = { vehicle?: () => { position: number[]; screen: number[] } | null; position: () => { x: number; y: number; z: number }; teleport: (x: number, y: number, z: number) => void; look: (yaw: number) => void; door: (id?: string) => boolean; mode: string; meshes: number; snapshot: () => { openings: { id: string; open: boolean; rotation: number[]; tip: number[] }[]; sun: number[]; slabs: { name: string; colors: string[]; maps: boolean[] }[]; site: boolean } }
 declare global { interface Window { __house?: SceneDebug } }
 
 export default function HouseScene({ floorId, mode, furnished, roof, cutWalls, selected, reset, settings, onSettings }: { floorId: FloorId; mode: 'orbit' | 'walk'; furnished: boolean; roof: boolean; cutWalls: boolean; selected: string; reset: number; settings: SceneSettings; onSettings: (settings: SceneSettings) => void }) {
@@ -116,11 +116,12 @@ export default function HouseScene({ floorId, mode, furnished, roof, cutWalls, s
       const down = (event: PointerEvent) => { press = { x: event.clientX, y: event.clientY }; if (mode === 'walk') { renderer.domElement.focus(); if (!pointer.isLocked) { dragging = { x: event.clientX, y: event.clientY }; renderer.domElement.setPointerCapture(event.pointerId) } } }
       const move = (event: PointerEvent) => { if (dragging && !pointer.isLocked) { camera.rotation.order = 'YXZ'; camera.rotation.y -= (event.clientX - dragging.x) * .004; camera.rotation.x = THREE.MathUtils.clamp(camera.rotation.x - (event.clientY - dragging.y) * .004, -1.35, 1.35); dragging = { x: event.clientX, y: event.clientY } } }
       const up = (event: PointerEvent) => {
-        if (press && Math.hypot(event.clientX - press.x, event.clientY - press.y) < 5) {
+        if (event.type !== 'pointercancel' && press && Math.hypot(event.clientX - press.x, event.clientY - press.y) < 5) {
           const bounds = renderer.domElement.getBoundingClientRect(), ray = new THREE.Raycaster()
           ray.setFromCamera(new THREE.Vector2((event.clientX - bounds.left) / bounds.width * 2 - 1, -(event.clientY - bounds.top) / bounds.height * 2 + 1), camera)
           const hit = ray.intersectObjects(model.group.children, true)[0]
-          if (hit) { const door = hit.object.userData.opening ?? model.doors.find(door => { let object: THREE.Object3D | null = hit.object; while (object) { if (object === door.pivot) return true; object = object.parent } return false }); if (door) { setOpeningId(door.id); toggleOpening(door.id) } }
+          if (hit && model.activateVehicle(hit.object)) renderRequested = true
+          else if (hit) { const door = hit.object.userData.opening ?? model.doors.find(door => { let object: THREE.Object3D | null = hit.object; while (object) { if (object === door.pivot) return true; object = object.parent } return false }); if (door) { setOpeningId(door.id); toggleOpening(door.id) } }
         }
         press = null; dragging = null
       }
@@ -154,15 +155,32 @@ export default function HouseScene({ floorId, mode, furnished, roof, cutWalls, s
       let last = performance.now(), accumulator = 0, lastFloor = floorId as string
       const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
       renderer.setAnimationLoop(() => {
-        const now = performance.now(); accumulator += Math.min((now - last) / 1000, .1); last = now
+        const now = performance.now(), delta = Math.min((now - last) / 1000, .1); accumulator += delta; last = now
         while (accumulator >= 1 / 60) { walker?.tick(); accumulator -= 1 / 60 }
         if (walker) { const elevation = walker.position().y - .9; const found = elevation > 5.75 ? 'DG' : elevation > 2.8 ? 'OG' : elevation > -.15 ? 'EG' : 'KG'; if (found !== lastFloor) { lastFloor = found; lightingFloor = found; applyRoomLights(latestSettings.current); renderer.shadowMap.needsUpdate = true; setCurrentFloor(found); setLightFloor(found) } }
         const moved = mode === 'orbit' && controls.update()
         const animated = model.updateAnimations(reducedMotion ? 0 : now / 1000) && !reducedMotion && (floorId === 'KG' || mode === 'walk')
+        if (model.updateVehicle(delta, reducedMotion)) {
+          renderer.shadowMap.needsUpdate = true
+          const car = model.group.getObjectByName('seat-leon-st-grey')
+          if (car && mode === 'orbit') {
+            for (let adjustment = 0; adjustment < (reducedMotion ? 24 : 1); adjustment++) {
+              const corners = [-1, 1].flatMap(east => [0, 1.45].flatMap(height => [-2.33, 2.33].map(south => car.localToWorld(new THREE.Vector3(east, height, south)).project(camera))))
+              if (corners.every(point => Math.max(Math.abs(point.x), Math.abs(point.y)) <= .86)) break
+              camera.position.sub(controls.target).multiplyScalar(1.04).add(controls.target); controls.update()
+            }
+          }
+        }
         if (walker || moved || animated || renderRequested || renderer.shadowMap.needsUpdate) { renderer.render(scene, camera); renderRequested = false }
       })
       if (import.meta.env.DEV) { let meshes = 0; model.group.traverse(object => { if (object instanceof THREE.Mesh) meshes++ }); window.__house = { position: () => walker?.position() ?? camera.position, teleport: (x, y, z) => walker?.teleport(new THREE.Vector3(x, y, z)), look: yaw => { camera.rotation.set(0, yaw, 0, 'YXZ') }, door: toggleOpening, mode, meshes, snapshot: () => ({ openings: model.doors.map(door => ({ id: door.id, open: door.open, rotation: door.pivot.quaternion.toArray(), tip: door.center.clone().multiplyScalar(2).applyMatrix4(door.pivot.matrixWorld).toArray() })), sun: sun.position.toArray(), slabs: model.group.children.filter(object => object.name.endsWith('-slab')).map(object => { const mesh = object as THREE.Mesh; const materials = mesh.material as THREE.MeshStandardMaterial[]; return { name: mesh.name, colors: materials.map(material => material.color.getHexString()), maps: materials.map(material => !!material.map) } }), site: !!model.group.getObjectByName('site-ground') }) } }
       setLoading(false)
+      if (import.meta.env.DEV && window.__house) window.__house.vehicle = () => {
+        const car = model.group.getObjectByName('seat-leon-st-grey')
+        if (!car) return null
+        const rear = car.localToWorld(new THREE.Vector3(0, .58, -2.322)).project(camera)
+        return { position: car.position.toArray(), screen: [rear.x, rear.y] }
+      }
       cleanup = () => { commands.current = null; delete window.__house; renderer.setAnimationLoop(null); observer.disconnect(); pointer.unlock(); pointer.dispose(); controls.dispose(); walker?.dispose(); model.dispose(); sun.dispose(); sky.dispose(); renderer.dispose(); renderer.domElement.remove(); window.removeEventListener('keydown', keydown); window.removeEventListener('keyup', keyup); window.removeEventListener('blur', clear); document.removeEventListener('visibilitychange', clear) }
     }
     start().catch(reason => { if (!cancelled) { setError(reason instanceof Error ? reason.message : '3D konnte nicht gestartet werden.'); setLoading(false) } })
