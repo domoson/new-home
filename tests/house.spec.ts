@@ -67,8 +67,8 @@ test('Rundgang: Bewegung, Wandkollision und Türen', async ({ page }, testInfo) 
   const before = await page.evaluate(() => window.__house!.position())
   const touch = testInfo.project.name === 'mobile' ? await page.context().newCDPSession(page) : null
   if (touch) {
-    const button = (await page.getByRole('button', { name: 'Vorwärts', exact: true }).boundingBox())!
-    await touch.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: button.x + button.width / 2, y: button.y + button.height / 2 }] })
+    const joystick = (await page.getByRole('group', { name: 'Virtueller Joystick zum Gehen' }).boundingBox())!
+    await touch.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x: joystick.x + joystick.width / 2, y: joystick.y + joystick.height / 4 }] })
   } else await page.keyboard.down('KeyW')
   await expect.poll(async () => (await page.evaluate(() => window.__house!.position())).z).toBeGreaterThan(before.z + .45)
   if (touch) await touch.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] })

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { ArrowDown, ArrowLeft, ArrowRight, ArrowUp, DoorOpen, House, Lightbulb, LightbulbOff, MousePointer2, RotateCcw, Settings2, Sun } from 'lucide-react'
+import { DoorOpen, House, Lightbulb, LightbulbOff, MousePointer2, RotateCcw, Settings2, Sun } from 'lucide-react'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js'
@@ -15,9 +15,92 @@ import './scene-controls.css'
 type SceneDebug = { vehicle?: () => { position: number[]; screen: number[] } | null; position: () => { x: number; y: number; z: number }; teleport: (x: number, y: number, z: number) => void; look: (yaw: number) => void; door: (id?: string) => boolean; mode: string; meshes: number; snapshot: () => { openings: { id: string; open: boolean; rotation: number[]; tip: number[] }[]; sun: number[]; slabs: { name: string; colors: string[]; maps: boolean[] }[]; site: boolean } }
 declare global { interface Window { __house?: SceneDebug } }
 
+function Joystick({ onMove }: { onMove: (x: number, y: number) => void }) {
+  const activePointerId = useRef<number | null>(null)
+  const baseRef = useRef<HTMLDivElement>(null)
+  const knobRef = useRef<HTMLDivElement>(null)
+
+  const updatePosition = (clientX: number, clientY: number) => {
+    if (!baseRef.current) return
+    const rect = baseRef.current.getBoundingClientRect()
+    const centerX = rect.left + rect.width / 2
+    const centerY = rect.top + rect.height / 2
+    const dx = clientX - centerX
+    const dy = clientY - centerY
+
+    const knobWidth = knobRef.current ? knobRef.current.offsetWidth : 44
+    const maxRadius = Math.max(10, (rect.width - knobWidth) / 2)
+    const distance = Math.hypot(dx, dy)
+    const clampedDistance = Math.min(distance, maxRadius)
+    const angle = Math.atan2(dy, dx)
+
+    const knobX = Math.cos(angle) * clampedDistance
+    const knobY = Math.sin(angle) * clampedDistance
+
+    if (knobRef.current) {
+      knobRef.current.style.transform = `translate(${knobX}px, ${knobY}px)`
+    }
+
+    if (clampedDistance < 3) {
+      onMove(0, 0)
+      return
+    }
+
+    const normX = knobX / maxRadius
+    const normY = -knobY / maxRadius
+    onMove(normX, normY)
+  }
+
+  const reset = () => {
+    if (knobRef.current) {
+      knobRef.current.style.transform = 'translate(0px, 0px)'
+    }
+    onMove(0, 0)
+  }
+
+  return (
+    <div
+      ref={baseRef}
+      className="joystick-base"
+      aria-label="Virtueller Joystick zum Gehen"
+      role="group"
+      onPointerDown={event => {
+        event.stopPropagation()
+        activePointerId.current = event.pointerId
+        event.currentTarget.setPointerCapture(event.pointerId)
+        updatePosition(event.clientX, event.clientY)
+      }}
+      onPointerMove={event => {
+        if (activePointerId.current === event.pointerId) {
+          updatePosition(event.clientX, event.clientY)
+        }
+      }}
+      onPointerUp={event => {
+        if (activePointerId.current === event.pointerId) {
+          activePointerId.current = null
+          reset()
+        }
+      }}
+      onPointerCancel={event => {
+        if (activePointerId.current === event.pointerId) {
+          activePointerId.current = null
+          reset()
+        }
+      }}
+    >
+      <div className="joystick-ring" />
+      <div className="joystick-arrow joystick-arrow-up" />
+      <div className="joystick-arrow joystick-arrow-down" />
+      <div className="joystick-arrow joystick-arrow-left" />
+      <div className="joystick-arrow joystick-arrow-right" />
+      <div ref={knobRef} className="joystick-knob" />
+    </div>
+  )
+}
+
 export default function HouseScene({ floorId, mode, furnished, roof, cutWalls, selected, reset, settings, onSettings }: { floorId: FloorId; mode: 'orbit' | 'walk'; furnished: boolean; roof: boolean; cutWalls: boolean; selected: string; reset: number; settings: SceneSettings; onSettings: (settings: SceneSettings) => void }) {
   const container = useRef<HTMLDivElement>(null)
-  const commands = useRef<{ key: (key: string, down: boolean) => void; door: (id?: string) => boolean; opening: (id: string, amount: number) => void; lock: () => void; home: () => void; facade: () => void; settings: (value: SceneSettings) => void } | null>(null)
+  const commands = useRef<{ key: (key: string, down: boolean) => void; move: (x: number, y: number) => void; door: (id?: string) => boolean; opening: (id: string, amount: number) => void; lock: () => void; home: () => void; facade: () => void; settings: (value: SceneSettings) => void } | null>(null)
   const latestSettings = useRef(settings)
   const [materialHouse, setMaterialHouse] = useState<'east' | 'west'>('east')
   const [lightHouse, setLightHouse] = useState<'east' | 'west'>('east')
@@ -122,7 +205,7 @@ export default function HouseScene({ floorId, mode, furnished, roof, cutWalls, s
         }
         press = null; dragging = null
       }
-      const clear = () => { walker?.keys.clear(); dragging = null }
+      const clear = () => { if (walker) { walker.keys.clear(); walker.moveVector.x = 0; walker.moveVector.y = 0 }; dragging = null }
       const wheel = (event: WheelEvent) => {
         if (!walker) return
         event.preventDefault()
@@ -148,7 +231,7 @@ export default function HouseScene({ floorId, mode, furnished, roof, cutWalls, s
         const distance = 11 / Math.sin(Math.min(vertical, 2 * Math.atan(Math.tan(vertical / 2) * aspect)) / 2)
         controls.target.set(0, 4.5, 5.6); camera.position.copy(controls.target).addScaledVector(new THREE.Vector3(1, .55, 1.1).normalize(), distance); controls.update()
       }
-      commands.current = { key(key, pressed) { if (pressed) walker?.keys.add(key); else walker?.keys.delete(key) }, door: toggleOpening, opening(id, amount) { const result = walker ? walker.setOpening(id, amount) : model.setOpening(id, amount); updateOpenings(); return result }, lock() { if (pointer.isLocked) pointer.unlock(); else pointer.lock() }, home, facade: facadeView, settings: applySettings }
+      commands.current = { key(key, pressed) { if (pressed) walker?.keys.add(key); else walker?.keys.delete(key) }, move(x, y) { if (walker) { walker.moveVector.x = x; walker.moveVector.y = y } }, door: toggleOpening, opening(id, amount) { const result = walker ? walker.setOpening(id, amount) : model.setOpening(id, amount); updateOpenings(); return result }, lock() { if (pointer.isLocked) pointer.unlock(); else pointer.lock() }, home, facade: facadeView, settings: applySettings }
       let last = performance.now(), accumulator = 0, lastFloor = floorId as string
       const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
       renderer.setAnimationLoop(() => {
@@ -183,7 +266,6 @@ export default function HouseScene({ floorId, mode, furnished, roof, cutWalls, s
     start().catch(reason => { if (!cancelled) { setError(reason instanceof Error ? reason.message : '3D konnte nicht gestartet werden.'); setLoading(false) } })
     return () => { cancelled = true; cleanup?.() }
   }, [floorId, mode, furnished, roof, cutWalls, selected, reset])
-  const touchButton = (key: string, name: string, icon: React.ReactNode) => <button key={key} title={name} aria-label={name} onPointerDown={event => { event.currentTarget.setPointerCapture(event.pointerId); commands.current?.key(key, true) }} onPointerUp={() => commands.current?.key(key, false)} onPointerCancel={() => commands.current?.key(key, false)}>{icon}</button>
   const update = (patch: Partial<SceneSettings>) => onSettings({ ...settings, ...patch, ...(patch.lights ? { lightingMode: 'room' as const } : {}) })
   const lightPrefix = lightHouse === 'west' ? 'west-' : ''
   const setFloorLights = (on: boolean) => update({ lights: { ...settings.lights, ...Object.fromEntries(lightingCircuits.filter(circuit => circuit.floor === lightFloor).map(circuit => [lightPrefix + circuit.id, on])) } })
@@ -203,5 +285,5 @@ export default function HouseScene({ floorId, mode, furnished, roof, cutWalls, s
       <label htmlFor="wood-profile">Holzprofil</label><select id="wood-profile" value={appearance.woodProfile} onChange={event => updateAppearance({ woodProfile: event.target.value as WoodProfile })}>{woodProfiles.map(profile => <option key={profile.id} value={profile.id}>{profile.name}</option>)}</select>
       {appearance.composition === 'plaster' && <div className="finish-row wood-tone"><span>Vordach</span><div>{woodTones.map((tone, index) => <button key={tone.name} className="color-swatch" style={{backgroundColor: tone.color}} title={tone.name} aria-label={`Holz ${tone.name}`} aria-pressed={appearance.woodTone === index} onClick={() => updateAppearance({woodTone: index})} />)}</div></div>}
     </div></details>}
-    {loading && <div className="loading">Raummodell wird aufgebaut…</div>}{error && <div className="scene-error"><strong>3D ist hier nicht verfügbar.</strong><p>{error}</p><p>Der 2D-Grundriss bleibt verfügbar.</p></div>}{mode === 'walk' && !loading && !error && <><div className="crosshair" /><div className="walk-controls"><span />{touchButton('KeyW', 'Vorwärts', <ArrowUp size={19} />)}<span />{touchButton('KeyA', 'Links', <ArrowLeft size={19} />)}{touchButton('KeyS', 'Rückwärts', <ArrowDown size={19} />)}{touchButton('KeyD', 'Rechts', <ArrowRight size={19} />)}</div><div className="walk-actions"><button className="icon-button" title="Nächste Tür öffnen/schließen (E)" aria-label="Tür öffnen oder schließen" onClick={() => commands.current?.door()}><DoorOpen size={19} /></button><button className="icon-button" title="Mausblick aktivieren; Escape zum Freigeben" aria-label="Mausblick" onClick={() => commands.current?.lock()}><MousePointer2 size={19} /></button><button className="icon-button" title="Zum Raumeinstieg zurück" aria-label="Zum Raumeinstieg" onClick={() => commands.current?.home()}><RotateCcw size={19} /></button></div><div className="walk-floor">{currentFloor}</div></>}</>
+    {loading && <div className="loading">Raummodell wird aufgebaut…</div>}{error && <div className="scene-error"><strong>3D ist hier nicht verfügbar.</strong><p>{error}</p><p>Der 2D-Grundriss bleibt verfügbar.</p></div>}{mode === 'walk' && !loading && !error && <><div className="crosshair" /><Joystick onMove={(x, y) => commands.current?.move(x, y)} /><div className="walk-actions"><button className="icon-button" title="Nächste Tür öffnen/schließen (E)" aria-label="Tür öffnen oder schließen" onClick={() => commands.current?.door()}><DoorOpen size={19} /></button><button className="icon-button" title="Mausblick aktivieren; Escape zum Freigeben" aria-label="Mausblick" onClick={() => commands.current?.lock()}><MousePointer2 size={19} /></button><button className="icon-button" title="Zum Raumeinstieg zurück" aria-label="Zum Raumeinstieg" onClick={() => commands.current?.home()}><RotateCcw size={19} /></button></div><div className="walk-floor">{currentFloor}</div></>}</>
 }

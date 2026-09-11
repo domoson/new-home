@@ -24,6 +24,7 @@ export function createWalker(model: SceneModel, camera: THREE.PerspectiveCamera,
   const controller = world.createCharacterController(.012)
   controller.enableAutostep(.205, .16, false); controller.enableSnapToGround(.3); controller.setMaxSlopeClimbAngle(Math.PI / 4); controller.setMinSlopeSlideAngle(Math.PI / 3)
   const keys = new Set<string>()
+  const moveVector = { x: 0, y: 0 }
   let falling = 0, stopped = false
   const teleport = (point: THREE.Vector3) => { body.setTranslation({ x: point.x, y: point.y + .9, z: point.z }, true); body.setNextKinematicTranslation({ x: point.x, y: point.y + .9, z: point.z }); falling = 0; world.step(); camera.position.set(point.x, point.y + 1.65, point.z) }
   world.step(); teleport(spawn)
@@ -32,9 +33,13 @@ export function createWalker(model: SceneModel, camera: THREE.PerspectiveCamera,
     syncOpenings()
     const direction = camera.getWorldDirection(new THREE.Vector3()); direction.y = 0; direction.normalize()
     const right = new THREE.Vector3().crossVectors(direction, new THREE.Vector3(0, 1, 0))
-    const forward = Number(keys.has('KeyW') || keys.has('ArrowUp')) - Number(keys.has('KeyS') || keys.has('ArrowDown'))
-    const sideways = Number(keys.has('KeyD') || keys.has('ArrowRight')) - Number(keys.has('KeyA') || keys.has('ArrowLeft'))
-    const movement = direction.multiplyScalar(forward).addScaledVector(right, sideways).normalize().multiplyScalar(1.8 / 60)
+    const keyForward = Number(keys.has('KeyW') || keys.has('ArrowUp')) - Number(keys.has('KeyS') || keys.has('ArrowDown'))
+    const keySideways = Number(keys.has('KeyD') || keys.has('ArrowRight')) - Number(keys.has('KeyA') || keys.has('ArrowLeft'))
+    let forward = keyForward + moveVector.y
+    let sideways = keySideways + moveVector.x
+    const mag = Math.hypot(forward, sideways)
+    if (mag > 1) { forward /= mag; sideways /= mag }
+    const movement = direction.multiplyScalar(forward).addScaledVector(right, sideways).multiplyScalar(2.7 / 60)
     falling = controller.computedGrounded() ? -.6 : Math.max(-5, falling - 9.81 / 60)
     movement.y = falling / 60
     controller.computeColliderMovement(capsule, movement, undefined, undefined, collider => collider.handle !== capsule.handle)
@@ -63,5 +68,5 @@ export function createWalker(model: SceneModel, camera: THREE.PerspectiveCamera,
     const { door } = nearest
     return setOpening(door.id, door.amount > 0 ? 0 : 1)
   }
-  return { keys, tick, teleport, toggleDoor, setOpening, position: () => body.translation(), dispose() { stopped = true; keys.clear(); world.free() } }
+  return { keys, moveVector, tick, teleport, toggleDoor, setOpening, position: () => body.translation(), dispose() { stopped = true; keys.clear(); moveVector.x = 0; moveVector.y = 0; world.free() } }
 }
