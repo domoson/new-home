@@ -173,7 +173,8 @@ angebaute niedrige Flachdachgarage mit suedlicher Zufahrt und Vorgarten.
 Die verzerrte Fotogrammetrie ist nicht als Fassadentextur uebernommen.
 
 Kartengestuetzte Modellmasse: Haus ca. 10,7 x 8,8 m, Traufe weiterhin 5,50 m
-ueber Gelaende; Garage ca. 3,8 x 11,1 m, Hoehe 2,60 m. Die lokale Dachneigung
+ueber Gelaende; Garage mit angepasster Breite bis direkt an die Ostgrenze,
+Hoehe 2,60 m. Die lokale Dachneigung
 38 Grad wird mit dem Grundriss transformiert. Lage, Orientierung und Grundflaeche
 folgen jetzt den abgelesenen Gebaeudekanten statt einem Grenzversatz. Fensteraufteilung,
 Balkondetails, Dachaufbauten und Vegetation sind angenaehert. Ohne vermessene
@@ -192,7 +193,7 @@ Schornsteine, Rinnen, Fallrohre, Fassadenfenster und Terrassen sind modelliert.
 
 | Flurstueck / Haus | Kartengestuetzter Hauskoerper, ca. | Traufe / lokale Dachneigung | Markante Merkmale |
 | --- | --- | --- | --- |
-| 75/4 / Nr. 12 | 12,5 x 9,2 m | 5,10 m / 34 Grad | Graubraunes Walmdach, oestliche Garage ca. 7,5 x 6,6 m, Hoehe 2,60 m, dunkellaubiger Baum im rueckwaertigen Garten |
+| 75/4 / Nr. 12 | 12,5 x 9,2 m | 5,10 m / 34 Grad | Graubraunes Walmdach, oestliche Garage bis direkt an unsere Westgrenze, Hoehe 2,60 m, dunkellaubiger Baum im rueckwaertigen Garten |
 | 74/4 / Hallerstrasse 50 | 12,3 x 9,8 m | 5,25 m / 39 Grad | Rotes Satteldach, Suedbalkon, zusammengefasster niedriger Ostanbau ca. 17,0 x 8,1 m, Hoehe 2,75 m, fuenf Solarmodule |
 | 73/4 / Hallerstrasse 52 | 11,5 x 9,8 m | 5,20 m / 36 Grad | Heller Putz, graubraunes Satteldach, westliche Zufahrt, Suedterrasse und Garten |
 
@@ -204,6 +205,31 @@ Alle genannten Masse, Dachformen, Fensteraufteilungen, Solarfeld- und
 Gartendetails sind Bildschaetzungen, keine gesicherten Bestandsangaben.
 Der geplante Doppelhausentwurf bleibt unveraendert. Die Umgebungsmodelle folgen
 dem Schalter Nachbarschaft.
+
+Die Umgebungsbaeume haben leicht unregelmaessige, gegliederte Laubkronen,
+dezente Farbvariation und verjuengte Astgabeln. Ihre Verteilung folgt jetzt
+48 abgelesenen Kronen-/Gehoelzflaechen im zuletzt bereitgestellten Draufblick
+(995 x 720 Pixel), statt automatisch gesetzten Einzelbaeumen. Drei Dachpunkte
+an Nr. 12, 50 und 8 registrieren das Bild auf die bestehende Lagebasis.
+Kronenmitten und zwei Radien bestimmen Standort und Ausdehnung; die grosse
+dunkle Krone nordwestlich, der niedrigere noerdliche Gehoelzstreifen und die
+Gruppen in den gegenueberliegenden Gaerten sind separat erfasst.
+Dies ist keine exakte Baumzaehlung: zusammenhaengende Kronen koennen mehrere
+Staemme verdecken, Schraegansicht und Schatten erschweren die Ablesung.
+Hoehen, Baumarten und Kronenmasse sind geschaetzt, nicht vermessen; natuerliche
+Kronenueberhaenge ueber Parzellengrenzen sind moeglich. Alle erfassten
+Kronenmittelpunkte liegen ausserhalb unseres Grundstuecks. Dessen vier
+Gartenbaeume und uebrige Bepflanzung bleiben unveraendert. Instanzierte
+Laubgruppen begrenzen den Detailaufwand ohne einzelne Blaetter zu simulieren.
+
+Nutzerkorrektur: Die Garage von Nr. 8 steht unmittelbar an unserem oestlichen
+Grenzzaun, die Garage von Nr. 12 unmittelbar an unserem westlichen Grenzzaun.
+Ihre grundstuecksseitigen Waende und Flachdachkanten folgen jeweils der gesamten
+Grenzlinie ohne Abstand oder Ueberstand. Hausanschluesse und Wohnhauspositionen
+bleiben erhalten; dadurch sind die Garagengrundrisse leicht trapezfoermig.
+Tore, Zufahrten und 2D-Umrisse folgen derselben Anpassung. Dies ersetzt die zuvor
+aus der Karte geschaetzten seitlichen Garagenabstaende, nicht die ungesicherten
+Annahmen zu Laenge, Hoehe und Konstruktion.
 
 ### Flurkartenumfeld und suedliche Strassenseite
 
@@ -264,7 +290,7 @@ jeweiligen aeusseren Zaunlinie gedreht; die aeussere Carportkante liegt
 jeweils 18 cm innerhalb der Grenze.
 Die aeusseren Nachbargrenzen bleiben unueberschritten; keine Bauteilueberstaende.
 
-Schlankes Pultdach mit 5 Grad Neigung, ohne Begruenung: anthrazitgraues,
+Schlankes Pultdach mit 5 Grad Neigung, standardmaessig ohne Begruenung: anthrazitgraues,
 beschichtetes Stahlprofilblech auf sichtbarem Holztragwerk, seitliche
 Abschlussbleche. Rund 52,5 cm Hoehenunterschied auf 6 m; niedrige Dachunterkante
 hinten bei Modellhoehe 2,50 m, hohe Einfahrt vorne bei 3,025 m (Gelaende -0,14 m).
@@ -274,6 +300,13 @@ Das ist ein preisbewusstes Materialkonzept, kein kalkuliertes Angebot oder
 Lebensdauerversprechen. Konkretes Profil fuer 5 Grad nach Herstellervorgaben
 auswaehlen; Korrosionsschutz, Befestigung, Kondensatschutz/Belueftung,
 Schall bei Regen und Regenwasseranschluss sind noch auszuarbeiten.
+Alternativ lassen sich beide Carports gemeinsam auf ein bepflanztes Gruendach
+umschalten: sichtbare Substratschicht, umlaufender Kiesstreifen, Randprofile,
+dreidimensionale Sedumrosetten in unterschiedlichen Toenen und einzelne Blueten.
+Der Aufbau folgt derselben Dachneigung; die Blechprofilrippen sind dabei verdeckt.
+Schematische extensive Begruenung, kein gepruefter Systemaufbau: zusaetzliche
+Nasslast, Tragwerk, wurzelfeste Abdichtung, Drainage, Schubsicherung und
+Entwaesserungsanschluss muessen fachlich geplant werden.
 Offene Einfahrt und Gartenseite, kurzes Lamellenfeld zur aeusseren
 Nachbarseite, geschlossene Holzrueckwand.
 Dahinter je eine Tonnenflaeche 2,25 x 0,90 m fuer Kompost, Restmuell und Papier:

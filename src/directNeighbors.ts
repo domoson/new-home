@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { flatGeometry } from './geometry'
-import { drivewayEnd, footprintPlacement, neighborFootprints, placementMatrix, placementPoint } from './neighborhoodLayout'
+import { boundaryAttachedPoint, drivewayEnd, footprintPlacement, neighborFootprints, placementMatrix, placementPoint, reshapePlanMesh } from './neighborhoodLayout'
 
 export const directNeighbors = [
   { number: 12, parcel: '75/4', width: 9.2, depth: 9.6, height: 5.1, pitch: 34, hip: 1.65, wall: '#e0e1dc', roof: '#77716b', annex: { x: 9.2, z: -.6, width: 5.5, depth: 6.9, height: 2.6 }, northAccess: false },
@@ -12,14 +12,22 @@ export function directNeighborPoint(neighbor: typeof directNeighbors[number], x:
   return placementPoint(neighbor.placement, x, z)
 }
 
+export function directAnnexLocalPoint(neighbor: typeof directNeighbors[number], east: number, south: number): [number, number] {
+  const annex = neighbor.annex
+  return neighbor.number === 12 ? boundaryAttachedPoint(neighbor.placement, annex.x, annex.x + annex.width, 3, east, south) : [east, south]
+}
+
+export function directAnnexPoint(neighbor: typeof directNeighbors[number], east: number, south: number) {
+  return directNeighborPoint(neighbor, ...directAnnexLocalPoint(neighbor, east, south))
+}
+
 type Helpers = {
   material: (color: string) => THREE.MeshStandardMaterial
   box: (parent: THREE.Group, x: number, y: number, z: number, width: number, height: number, depth: number, material: THREE.Material) => THREE.Mesh<THREE.BoxGeometry>
   band: (parent: THREE.Group, points: [number, number][], height: number, material: THREE.Material, name: string) => THREE.Mesh
-  tree: (parent: THREE.Group, x: number, z: number, height: number, radius: number) => void
 }
 
-export function addDirectNeighbors(neighborhood: THREE.Group, { material, box, band, tree }: Helpers) {
+export function addDirectNeighbors(neighborhood: THREE.Group, { material, box, band }: Helpers) {
   for (const spec of directNeighbors) {
     const group = new THREE.Group(); group.name = `neighbor-${spec.number}`; group.userData.parcel = spec.parcel; group.userData.estimated = true
     group.matrix.copy(placementMatrix(spec.placement)); group.matrixAutoUpdate = false; group.matrixWorldNeedsUpdate = true; neighborhood.add(group)
@@ -99,14 +107,13 @@ export function addDirectNeighbors(neighborhood: THREE.Group, { material, box, b
     const streetZ = (east: number) => drivewayEnd((east, south) => directNeighborPoint(spec, east, south), east, spec.northAccess)
     const drivewayX = annex.depth ? annex.x + .1 : -3.1, drivewayWidth = annex.depth ? Math.min(3.8, annex.width - .2) : 2.8
     const driveEnd = annex.depth ? spec.northAccess ? annex.z : annex.z + annex.depth : 4
-    band(group, [[drivewayX,driveEnd],[drivewayX+drivewayWidth,driveEnd],[drivewayX+drivewayWidth,streetZ(drivewayX+drivewayWidth)],[drivewayX,streetZ(drivewayX)]], -.105, paving, 'detailed-driveway')
+    const driveStreetZ = (east: number) => drivewayEnd((east, south) => directAnnexPoint(spec, east, south), east, spec.northAccess)
+    band(group, [[drivewayX,driveEnd],[drivewayX+drivewayWidth,driveEnd],[drivewayX+drivewayWidth,driveStreetZ(drivewayX+drivewayWidth)],[drivewayX,driveStreetZ(drivewayX)]], -.105, paving, 'detailed-driveway')
+    if (spec.number === 12) for (const child of group.children) {
+      if (child instanceof THREE.Mesh && ['detailed-annex', 'detailed-annex-roof', 'detailed-garage-door', 'detailed-driveway'].includes(child.name)) reshapePlanMesh(child, (east, south) => directAnnexLocalPoint(spec, east, south))
+    }
     const gardenEnd = spec.northAccess ? spec.depth + 3.5 : Math.min(streetZ(0), streetZ(spec.width)) - .4
     band(group, [[0,spec.depth],[spec.width,spec.depth],[spec.width,gardenEnd],[0,gardenEnd]], -.13, lawn, 'detailed-garden')
     band(group, [[.3,spec.depth],[spec.width-.3,spec.depth],[spec.width-.3,spec.depth+1.6],[.3,spec.depth+1.6]], -.1, paving, 'detailed-terrace')
-    for (const east of [1.3, spec.width - 1.3]) tree(group, east, gardenEnd - .9, 2.8, .85)
-    if (spec.number === 12) {
-      const stem = box(group, spec.width - 1.1, ground, -3.9, .25, 4.8, .25, timber); stem.name = 'detailed-copper-beech'
-      const crown = new THREE.Mesh(new THREE.IcosahedronGeometry(1, 2), material('#6d666d')); crown.position.set(spec.width - 1, 5.8, -3.8); crown.scale.set(3.1, 3.8, 3); crown.name = 'detailed-copper-beech'; crown.castShadow = true; group.add(crown)
-    }
   }
 }

@@ -1,4 +1,4 @@
-import { footprintPlacement, neighborFootprints, placementPoint } from './neighborhoodLayout'
+import { boundaryAttachedPoint, footprintPlacement, neighborFootprints, placementPoint } from './neighborhoodLayout'
 
 const placement = footprintPlacement(neighborFootprints[8], 9, 9.5)
 placement.origin = placementPoint(placement, -3.2, 0)
@@ -15,4 +15,13 @@ export const neighbor8 = {
 
 export function neighbor8Point(x: number, z: number): [number, number] {
   return placementPoint(neighbor8.placement, x, z)
+}
+
+export function neighbor8GarageLocalPoint(east: number, south: number) {
+  const garage = neighbor8.garage
+  return boundaryAttachedPoint(neighbor8.placement, garage.x + garage.width, garage.x, 1, east, south)
+}
+
+export function neighbor8GaragePoint(east: number, south: number) {
+  return neighbor8Point(...neighbor8GarageLocalPoint(east, south))
 }

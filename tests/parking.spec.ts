@@ -34,7 +34,7 @@ test('Carports: Abmessungen, Holztoene, freie Zugaenge und Pfostenkollision', as
       const north: number[] = [], south: number[] = []
       for (let index = 0; index < vertices.count; index++) (vertices.getZ(index) < 0 ? north : south).push(vertices.getY(index))
       const rise = Math.max(...south) - Math.max(...north)
-      const roofCorrect = Math.abs(rise - 6 * Math.tan(carportRoof.pitch * Math.PI / 180)) < .00001 && !structure.getObjectByName('carport-green-roof') && !!structure.getObjectByName('carport-gutter') && !!structure.getObjectByName('carport-downpipe')
+      const roofCorrect = Math.abs(rise - 6 * Math.tan(carportRoof.pitch * Math.PI / 180)) < .00001 && !structure.getObjectByName('carport-green-roof')!.visible && !!structure.getObjectByName('carport-gutter') && !!structure.getObjectByName('carport-downpipe')
       const mesh = structure.getObjectByName('carport-post')! as THREE.Mesh<THREE.BoxGeometry, THREE.MeshStandardMaterial>
       model.setCladding('plaster', side === 'east' ? 2 : 1, 'boards', side)
       const color = mesh.material.color.getHexString()

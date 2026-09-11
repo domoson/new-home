@@ -5,18 +5,18 @@ import { rectCorners, siteParking } from './parking'
 import type { SiteRect } from './parking'
 import { terraceArea, terraceMain, terraceOutline } from './terrace'
 import { contextAnnexes, contextBuildings, footprintPlacement, placementPoint } from './neighborhoodLayout'
-import { directNeighborPoint, directNeighbors } from './directNeighbors'
-import { neighbor8, neighbor8Point } from './neighbor8'
+import { directAnnexPoint, directNeighborPoint, directNeighbors } from './directNeighbors'
+import { neighbor8, neighbor8GaragePoint, neighbor8Point } from './neighbor8'
 
 export type SiteItem = { id: string; name: string; points: [number, number][]; color: string; details: string; width?: number; depth?: number; dimensionPoints?: [number, number][] }
 const rectangle = (id: string, name: string, bounds: SiteRect, color: string, point = (x: number, z: number): [number, number] => [x, z]): SiteItem => ({ id, name, points: rectCorners(bounds).map(([x, z]) => point(x, z)), color, width: bounds.width, depth: bounds.depth, details: `${metres(bounds.width)} × ${metres(bounds.depth)}` })
 export const neighborItems: SiteItem[] = [
   ...directNeighbors.flatMap(spec => [
     rectangle(`neighbor-${spec.number}`, `Nr. ${spec.number}`, { x: 0, z: 0, width: spec.width, depth: spec.depth }, '#c6cbc5', (east, south) => directNeighborPoint(spec, east, south)),
-    ...(spec.annex.depth ? [rectangle(`neighbor-annex-${spec.number}`, `Anbau Nr. ${spec.number}`, spec.annex, '#d4d8d1', (east, south) => directNeighborPoint(spec, east, south))] : []),
+    ...(spec.annex.depth ? [rectangle(`neighbor-annex-${spec.number}`, `Anbau Nr. ${spec.number}`, spec.annex, '#d4d8d1', (east, south) => directAnnexPoint(spec, east, south))] : []),
   ]),
   rectangle('neighbor-8', 'Nr. 8', neighbor8.house, '#c6cbc5', neighbor8Point),
-  rectangle('neighbor-annex-8', 'Garage Nr. 8', neighbor8.garage, '#d4d8d1', neighbor8Point),
+  rectangle('neighbor-annex-8', 'Garage Nr. 8', neighbor8.garage, '#d4d8d1', neighbor8GaragePoint),
   ...contextBuildings.map(spec => rectangle(`neighbor-${spec.id}`, `Nr. ${spec.id}`, { x: 0, z: 0, width: 1, depth: 1 }, '#c6cbc5', (east, south) => placementPoint(footprintPlacement(spec.points, 1, 1), east, south))),
   ...contextAnnexes.map((points, index) => rectangle(`neighbor-annex-context-${index}`, 'Nebengebaeude', { x: 0, z: 0, width: 1, depth: 1 }, '#d4d8d1', (east, south) => placementPoint(footprintPlacement(points, 1, 1), east, south))),
 ].map(item => {

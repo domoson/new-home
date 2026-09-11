@@ -3,6 +3,42 @@ import { PNG } from 'pngjs'
 
 declare global { interface Window { __neighborCleanup?: () => void; __neighborRotate?: () => void } }
 
+test('Garagen 8 und 12: Wand und Dach liegen durchgehend an der eigenen Grenze', async ({ page }) => {
+  await page.goto('/')
+  const result = await page.evaluate(async () => {
+    const THREE = await import('/node_modules/.vite/deps/three.js')
+    const { createSurroundings } = await import('/src/surroundings.ts')
+    const { neighborItems } = await import('/src/sitePlanModel.ts')
+    const { boundaryDistance } = await import('/src/context.ts')
+    const model = createSurroundings(); model.neighborhood.updateMatrixWorld(true)
+    const result = [
+      { number: 8, side: 1, names: ['neighbor-8-garage', 'neighbor-8-garage-roof'] },
+      { number: 12, side: 3, names: ['detailed-annex', 'detailed-annex-roof'] },
+    ].map(({ number, side, names }) => {
+      const group = model.neighborhood.getObjectByName(`neighbor-${number}`)!
+      const plan = neighborItems.find(item => item.id === `neighbor-annex-${number}`)!.points
+      return names.map(name => {
+        const mesh = group.getObjectByName(name)!, positions = mesh.geometry.getAttribute('position')
+        const points = Array.from({ length: positions.count }, (_, index) => new THREE.Vector3().fromBufferAttribute(positions, index).applyMatrix4(mesh.matrixWorld))
+        const contacts = points.filter(point => Math.abs(boundaryDistance([point.x, point.z], side)) < .00001)
+        return {
+          name, contacts: contacts.length,
+          contactLength: Math.max(...contacts.map(point => point.z)) - Math.min(...contacts.map(point => point.z)),
+          intrusion: Math.max(...points.map(point => boundaryDistance([point.x, point.z], side))),
+          planError: Math.max(...points.map(point => Math.min(...plan.map(corner => Math.hypot(corner[0] - point.x, corner[1] - point.z))))),
+        }
+      })
+    }).flat()
+    model.dispose(); return result
+  })
+  for (const mesh of result) {
+    expect(mesh.contacts, mesh.name).toBeGreaterThanOrEqual(4)
+    expect(mesh.contactLength, mesh.name).toBeGreaterThan(6)
+    expect(mesh.intrusion, mesh.name).toBeLessThan(.00001)
+    expect(mesh.planError, mesh.name).toBeLessThan(.00001)
+  }
+})
+
 test('Nachbardaechern fehlt kein Hoehenanschluss an den Hauskoerper', async ({ page }) => {
   await page.goto('/')
   const gaps = await page.evaluate(async () => {

@@ -1,5 +1,6 @@
 import { Matrix3, Matrix4, Vector3 } from 'three'
-import { siteBoundary } from './context'
+import type { Mesh } from 'three'
+import { boundaryDistance, siteBoundary } from './context'
 
 export type MapPoint = [number, number]
 export const mapSiteBoundary: MapPoint[] = [[228, 286], [332, 258], [365, 385], [224, 416]]
@@ -50,6 +51,23 @@ export function placementPoint(placement: ReturnType<typeof footprintPlacement>,
 
 export function placementMatrix(placement: ReturnType<typeof footprintPlacement>) {
   return new Matrix4().set(placement.east[0], 0, placement.south[0], placement.origin[0], 0, 1, 0, 0, placement.east[1], 0, placement.south[1], placement.origin[1], 0, 0, 0, 1)
+}
+
+export function boundaryAttachedPoint(placement: ReturnType<typeof footprintPlacement>, attachedX: number, outerX: number, side: 1 | 3, east: number, south: number): MapPoint {
+  const start = placementPoint(placement, attachedX, south), next = placementPoint(placement, attachedX + 1, south)
+  const distance = boundaryDistance(start, side)
+  const boundaryX = attachedX - distance / (boundaryDistance(next, side) - distance)
+  return [attachedX + (east - attachedX) * (boundaryX - attachedX) / (outerX - attachedX), south]
+}
+
+export function reshapePlanMesh(mesh: Mesh, point: (east: number, south: number) => MapPoint) {
+  const positions = mesh.geometry.getAttribute('position')
+  for (let index = 0; index < positions.count; index++) {
+    const [east, south] = point(mesh.position.x + positions.getX(index), mesh.position.z + positions.getZ(index))
+    positions.setX(index, east - mesh.position.x); positions.setZ(index, south - mesh.position.z)
+  }
+  positions.needsUpdate = true
+  mesh.geometry.computeVertexNormals(); mesh.geometry.computeBoundingBox(); mesh.geometry.computeBoundingSphere()
 }
 
 export const neighborhoodRoads = [
