@@ -34,7 +34,7 @@ test('Aussenanlagen: Masse, Auswahl, Massband, Zoom und SVG-Export', async ({ pa
   await page.getByRole('button', { name: 'Bemaßung', exact: true }).click()
   const downloadPromise = page.waitForEvent('download')
   await page.getByRole('button', { name: 'Plan herunterladen', exact: true }).click()
-  expect((await downloadPromise).suggestedFilename()).toBe('Roeth10-Aussenanlagen.svg')
+  expect((await downloadPromise).suggestedFilename()).toBe('Hausentwurf-Aussenanlagen.svg')
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   await page.getByRole('button', { name: 'EG', exact: true }).click()
   await expect(page.getByRole('img', { name: 'Grundriss Erdgeschoss' })).toBeVisible()

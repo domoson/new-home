@@ -22,7 +22,7 @@ export const neighborItems: SiteItem[] = [
 ].map(item => {
   const width = distance({ x: item.points[0][0], z: item.points[0][1] }, { x: item.points[1][0], z: item.points[1][1] })
   const depth = distance({ x: item.points[1][0], z: item.points[1][1] }, { x: item.points[2][0], z: item.points[2][1] })
-  return { ...item, width, depth, details: `ca. ${metres(width)} x ${metres(depth)} · Flurkarten-Naeherung, nicht vermessen` }
+  return { ...item, width, depth, details: `ca. ${metres(width)} x ${metres(depth)} · schematische Umgebung, nicht vermessen` }
 })
 
 export const siteItems: SiteItem[] = [

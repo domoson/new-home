@@ -7,7 +7,7 @@ test('Hauptentwurf, Maße und 3D für alle Geschosse', async ({ page }, testInfo
   page.on('console', message => { if (message.type() === 'warn' && message.text().startsWith('THREE.')) errors.push(message.text()) })
   page.on('response', response => { if (response.status() >= 400) errors.push(`${response.status()} ${response.url()}`) })
   await page.goto('/')
-  await expect(page.getByRole('heading', { name: 'An der Röth 10' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Doppelhausentwurf Ost' })).toBeVisible()
   await expect(page.locator('.floor-plan')).toContainText('7,00 m')
   for (const floor of ['KG', 'EG', 'OG', 'DG']) {
     await page.getByRole('button', { name: floor, exact: true }).click()
@@ -56,7 +56,7 @@ test('Hauptentwurf, Maße und 3D für alle Geschosse', async ({ page }, testInfo
   await expect(page.locator('.floor-plan')).toHaveAttribute('viewBox', originalView!)
   const download = page.waitForEvent('download')
   await page.getByRole('button', { name: 'Plan herunterladen' }).click()
-  expect((await download).suggestedFilename()).toBe('Roeth10-EG.svg')
+  expect((await download).suggestedFilename()).toBe('Hausentwurf-EG.svg')
   await page.reload()
   await expect(page.locator('#variant')).toHaveCount(0)
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)

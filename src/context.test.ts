@@ -34,7 +34,7 @@ it('verwendet die gewuenschten Farbdefaults fuer beide Haushaelften', () => {
   }
 })
 
-it('orientiert die Sonne in Buckenhof korrekt mit MEZ und MESZ', () => {
+it('orientiert die Sonne korrekt mit MEZ und MESZ', () => {
   const morning = sunPosition(8, 'summer'), noon = sunPosition(13.25, 'summer'), evening = sunPosition(19, 'summer')
   expect(-Math.sin(morning.azimuth)).toBeGreaterThan(.7)
   expect(Math.cos(noon.azimuth)).toBeGreaterThan(.99)

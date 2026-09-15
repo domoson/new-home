@@ -4,7 +4,7 @@ import { contextBuildings, contextRoofRise, drivewayEnd, footprintPlacement, map
 import { directNeighborPoint, directNeighbors } from './directNeighbors'
 import { neighbor8Point } from './neighbor8'
 
-describe('Flurkarte als angenaeherte Lagebasis', () => {
+describe('Umfeld als angenaeherte Lagebasis', () => {
   it('passt die vier Grundstuecksecken ein, ohne die Bestandsmasse zu aendern', () => {
     mapSiteBoundary.forEach((point, index) => {
       const result = mapPoint(point)
