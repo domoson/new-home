@@ -6,6 +6,7 @@ import type { FloorId } from './model'
 import FloorPlan from './FloorPlan'
 import SectionView from './SectionView'
 import SitePlan from './SitePlan'
+import SetbackDetails from './SetbackDetails'
 import { siteItems } from './sitePlanModel'
 import type { SiteItem } from './sitePlanModel'
 import { initialSettings, siteArea } from './context'
@@ -67,6 +68,7 @@ export default function App() {
         <section className="room-detail" aria-live="polite"><div className="eyebrow">RAUMDETAIL</div><h3>{activeRoom.name}</h3><p>{activeRoom.note}</p><dl><div><dt>Lichte Grundfläche</dt><dd>{format(roomArea(activeRoom, floorId).floor)} m²</dd></div>{floorId === 'DG' && <div><dt>Wohnfläche, überschlägig</dt><dd>{format(roomArea(activeRoom, floorId).living)} m²</dd></div>}{activeRoom.parts.length === 1 && <div><dt>Lichte Abmessungen</dt><dd>{format(activeRoom.parts[0].width)} × {format(activeRoom.parts[0].depth)} m</dd></div>}</dl><button className="text-button" onClick={() => { setMode('walk'); setReset(value => value + 1) }}><Footprints size={17} /> Raum betreten <ArrowUpRight size={16} /></button></section>
         <div className="sidebar-foot"><span className="material-dot" /> Eiche natur · Matte Oberflächen</div>
         </>}
+        {exterior && (siteItem.id === 'house-east' || siteItem.id === 'house-west') && <SetbackDetails side={siteItem.id === 'house-east' ? 'east' : 'west'} />}
       </aside>
       <main className="drawing-area">
         <div className="toolbar"><nav className="floor-tabs" aria-label="Geschoss">{floorIds.map(id => <button key={id} aria-pressed={!exterior && floorId === id} onClick={() => changeFloor(id)}>{id}</button>)}<button aria-label="Außenanlagen" title="Außenanlagen" aria-pressed={exterior} onClick={() => { setExterior(true); setMode('plan'); setSection(false); setZoom(1) }}><Trees size={18} /></button></nav><div className="mode-tabs" aria-label="Ansicht"><button aria-pressed={mode === 'plan'} onClick={() => setMode('plan')}><Layers2 size={16} />2D</button><button aria-pressed={mode === 'orbit'} onClick={() => { setMode('orbit'); if (exterior) { setRoof(true); setSettings(value => ({ ...value, transparentGround: false })) } }}><Box size={16} />3D</button><button aria-label="Rundgang" aria-pressed={mode === 'walk'} onClick={() => setMode('walk')}><Footprints size={16} /><span>Rundgang</span></button></div></div>

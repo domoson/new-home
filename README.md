@@ -563,6 +563,43 @@ Moebelfronten, Geraete, Anschluesse und Lueftung bleiben eine Entwurfsannahme.
 
 ## Gelaende, Sonne und Fassaden
 
+### Abstandsflächen im Außenanlagenplan
+
+Bei Auswahl von Haus Ost oder Haus West erscheint dessen Abstandsflächenprofil.
+Die gemeinsame Wand ist gestrichelt, die Flächen sind türkis; rote Schraffur
+zeigt Anteile außerhalb der jeweiligen **geplanten Grundstückshälfte**, einschließlich
+der angenommenen Teilung bei x=0. Andere Objektauswahl blendet die Flächen aus.
+Bemaßung schaltet nur die Tiefenmaße; der SVG-Export enthält Flächen und Annahmen.
+Profilpunkte sind auch Fangpunkte des Maßbands.
+
+`src/setbacks.ts` berechnet aus den aktuellen Hausmaßen, DG-Fußbodenhöhe,
+Kniestock, Wand- und Dachstärke, Neigung, Firstreserve, Gelände und Nachbarversatz:
+- Traufen: max(3 m, 0,4 × (Wandhöhe ab Gelände + Dachhöhe/3)) bei bis zu 70°;
+  darüber volle Dachhöhe. Der Firstabschluss ist im Dachhöhenansatz enthalten.
+- Giebel: max(3 m, 0,4 × örtliche Wandhöhe bis zur Dachhaut). Das Giebeldreieck
+  zählt voll, nicht pauschal zu einem Drittel. Die Firstreserve wird vorsorglich
+  entlang des gesamten Giebelprofils addiert. Profilknicke bei der 3-m-Untergrenze
+  werden exakt berechnet, nicht durch grobe Stützstellen angenähert.
+- Gemeinsame Wand nur im tatsächlichen Kontaktbereich beider gleich großen,
+  versetzten Haushälften ausgenommen, **unter Annahme zulässiger Grenzbebauung**.
+  Freie Versatzstücke bleiben vorsorglich dargestellt; auch dort kann die rechtliche
+  Behandlung anders ausfallen und muss geklärt werden.
+
+Aktuell rund 3,221 m an den Traufen und 3,00 bis 4,173 m am äußeren Giebel.
+Die Flächen folgen den Wandnormalen, nicht der schrägen Grundstücksgrenze;
+an Gebäudeecken werden keine kreisförmigen Abstandspuffer ergänzt.
+Änderungen der zentralen Modellparameter aktualisieren die Berechnung nach Neuladen;
+keine fest eingetragenen heutigen Grenzabstandswerte. Keine Höhen-/Maßbearbeitung im UI.
+
+Grundregel nach [Art. 6 Abs. 1–6 BayBO](https://www.gesetze-bayern.de/Content/Document/BayBO-6),
+Fassung ab 01.05.2026, geprüft am 15.09.2026. Nicht die Sonderregel für Gemeinden
+mit mehr als 250.000 Einwohnern. Örtliche Satzungen/Bebauungsplan bleiben ungeprüft.
+Ebene Geländeannahme, kein vermessenes Urgelände oder amtlicher Teilungsplan.
+Keine Prüfung zulässiger Überdeckungen, privilegierter Garagen, Nachbargebäude,
+Vorbauten, Dachaufbauten oder rechtlich gesicherter Flächen auf Nachbargrundstücken.
+Rot ist eine geometrische Warnung, keine Feststellung der Unzulässigkeit;
+türkis ist umgekehrt keine Freigabe. Kein Genehmigungs- oder Abstandsflächennachweis.
+
 Das gemeinsame Grundstueck und sein Umfeld sind schematisch rekonstruiert.
 Grenzverlaeufe, Nordrichtung und Hausachsen bleiben als Entwurfsannahmen erhalten;
 eine amtliche Georeferenzierung oder Vermessung liegt nicht vor.
