@@ -1,8 +1,9 @@
 import * as THREE from 'three'
 import { partyRoom } from './partyRoomData'
+import { elevations } from './model'
 
 export function createPartyRoom(materials: THREE.Material[]) {
-  const group = new THREE.Group(); group.name = 'kids-party-room'; group.position.y = -2.7
+  const group = new THREE.Group(); group.name = 'kids-party-room'; group.position.y = elevations.KG
   const finish = (color: string, emission = 0) => {
     const material = new THREE.MeshStandardMaterial({ color, roughness: .45, emissive: color, emissiveIntensity: emission })
     materials.push(material); return material

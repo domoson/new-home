@@ -6,9 +6,9 @@ const overlap = (first: Rect, second: Rect) => Math.max(0, Math.min(first.x + fi
 
 test('7 x 10 m envelope preserves walls, stair width and roof overhangs', () => {
   expect(house.width * house.depth).toBe(70)
-  expect(house.width - house.east).toBeCloseTo(.365)
+  expect(house.width - house.east).toBeCloseTo(.38)
   expect(house.west).toBe(.4)
-  expect(house.east - house.west).toBeCloseTo(6.235)
+  expect(house.east - house.west).toBeCloseTo(6.22)
   for (const id of floorIds) expect(area(floorSlabs(id)) + (id === 'KG' ? 0 : area(stairOpeningParts))).toBeCloseTo(70)
   expect([stair.width, stair.depth, stair.runWidth]).toEqual([1.88, 3.18, 1])
   expect(stair.end - stair.z).toBeCloseTo(stair.depth)
@@ -43,11 +43,11 @@ test('compact children, a north bathroom and open reading share a distributor', 
   }
   const southwest = children.find(room => room.id === 'child-south')!
   expect(southwest.parts).toHaveLength(2)
-  expect(southwest.parts[0].width).toBeCloseTo(4.195)
+  expect(southwest.parts[0].width).toBeCloseTo(4.18)
   const bath = floor.rooms.find(room => room.id === 'bath')!
   expect(bath.parts[0].z).toBe(house.north)
   expect(bath.parts[0].width / bath.parts[0].depth).toBeGreaterThan(1.4)
-  expect(area(bath.parts)).toBeCloseTo(9.303)
+  expect(area(bath.parts)).toBeCloseTo(9.24)
   expect(area(floor.rooms.find(room => room.id === 'multifunction')!.parts)).toBeCloseTo(3.6472)
   expect(area(floor.rooms.find(room => room.id === 'hall')!.parts)).toBeCloseTo(4.6508)
   expect(floor.rooms.find(room => room.id === 'hall')!.parts).toHaveLength(2)

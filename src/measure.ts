@@ -1,4 +1,4 @@
-import { lightWells, rect, roofHeight, roofWindows, roomArea, stairFor, stairSolids, wallSolids } from './model'
+import { lightWells, rect, roofHeight, roofWindows, roomArea, stairFor, stairSolids, storeyRise, wallSolids } from './model'
 import type { Floor, Furniture, Rect } from './model'
 import { terraceArea, terraceFurniture, terraceParts } from './terrace'
 
@@ -26,7 +26,7 @@ export function planObjects(floor: Floor, furnished: boolean): Measurable[] {
   if (floor.id === 'KG') objects.push(...lightWells.map(well => ({ ...well, label: 'Lichtschacht / Abdeckung', details: '100 × 50 cm Außenmaß · Ausführung ungeprüft' })))
   for (const room of floor.rooms) for (const part of room.parts) objects.push({ ...part, label: room.name + (room.parts.length > 1 ? ' · Teilfläche' : ''), details: `${roomArea(room, floor.id).floor.toLocaleString('de-DE', { maximumFractionDigits: 2 })} m² gesamt · ` + (floor.id === 'DG' ? `Lichte Höhe ${metres(Math.min(roofHeight(part.z), roofHeight(part.z + part.depth)))} bis ${metres(roofHeight(Math.max(part.z, Math.min(5, part.z + part.depth))))}` : `Lichte Höhe ${metres(floor.height)}`) })
   objects.push({ ...stairFor(), label: 'Treppenkern', details: 'Ein durchgehender Lauf, zwei Viertelwendelungen · Antritt Nord, Austritt Süd' })
-  objects.push(...stairSolids(floor.id === 'KG' ? 2.7 : 2.95).map(solid => ({ ...solid, label: solid.id.startsWith('landing') ? 'Treppenpodest' : 'Treppenstufe', details: `Oberkante +${metres(solid.bottom + solid.height)} ab Antritt · Steigung ${metres((floor.id === 'KG' ? 2.7 : 2.95) / 16)}` })))
+  objects.push(...stairSolids(storeyRise(floor.id)).map(solid => ({ ...solid, label: solid.id.startsWith('landing') ? 'Treppenpodest' : 'Treppenstufe', details: `Oberkante +${metres(solid.bottom + solid.height)} ab Antritt · Steigung ${metres(storeyRise(floor.id) / 16)}` })))
   for (const wall of floor.walls) {
     const exterior = { north: 'Nord', south: 'Süd', east: 'Ost', west: 'West' }[wall.id]
     for (const part of wallSolids(wall, floor.id === 'DG' ? roofHeight(5) : floor.height).filter(solid => solid.bottom === 0)) objects.push({ ...part, label: (exterior ? `Außenwand ${exterior}` : wall.id === 'installation' ? 'Installationsschacht' : 'Innenwand') + (wall.openings.length ? ' · Teilstück' : ''), details: `Stärke ${metres(wall.axis === 'x' ? wall.depth : wall.width)} · Gesamtlänge ${metres(wall.axis === 'x' ? wall.width : wall.depth)} · ${floor.id === 'DG' ? `Höhe ${metres(Math.min(roofHeight(part.z), roofHeight(part.z + part.depth)))} bis ${metres(roofHeight(Math.max(part.z, Math.min(5, part.z + part.depth))))}` : `Höhe ${metres(floor.height)}`}` })

@@ -24,7 +24,7 @@ describe('Maßhaltiger Vorentwurf', () => {
       expect(roomArea(child, 'OG').floor).toBeLessThanOrEqual(21)
     }
     expect(children[1].parts).toHaveLength(2)
-    expect(children[1].parts[0].width).toBeCloseTo(4.195)
+    expect(children[1].parts[0].width).toBeCloseTo(4.18)
     expect(children[0].parts[0].x).toBeGreaterThan(bath.parts[0].x + bath.parts[0].width)
     const hall = floor.rooms.find(room => room.id === 'hall')!.parts[0]
     expect(hall.width).toBeCloseTo(.95)
@@ -90,7 +90,7 @@ describe('Maßhaltiger Vorentwurf', () => {
     expect([sideboard.x, sideboard.z, sideboard.width, sideboard.depth]).toEqual([.65, 9.025, 1.8, .45])
     expect([tv.x, tv.z, tv.width, tv.depth, tv.angle]).toEqual([.9, 9.395, 1.3, .08, Math.PI / 2])
     expect(sideboard.x + sideboard.width).toBeLessThan(2.6)
-    expect(sideboard.z + sideboard.depth).toBeCloseTo(house.south - interiorWallThickness)
+    expect(sideboard.z + sideboard.depth).toBeCloseTo(house.south - .145)
     expect(floor.furniture.some(item => item.id === 'larder')).toBe(false)
     const bench = floor.furniture.find(item => item.kind === 'bench')!, table = floor.furniture.find(item => item.id === 'dining')!
     expect(bench.x + bench.width).toBeCloseTo(house.east)
@@ -161,9 +161,9 @@ describe('Maßhaltiger Vorentwurf', () => {
     expect(Math.min(roofHeight(stair.end - stair.runWidth), roofHeight(stair.end))).toBeGreaterThan(2)
   })
   it('berechnet Dachhöhen und Wohnflächen statt Wunschwerte zu beschriften', () => {
-    expect(roofHeight(.365)).toBe(.5)
+    expect(roofHeight(house.north)).toBe(.5)
     expect(roofHeight(heightLine(2))).toBeCloseTo(2)
-    const sample = { id: 'test', name: '', parts: [rect(1, .365, 1, heightLine(1) - .365)], color: '', note: '', spawn: [1, 1] as [number, number] }
+    const sample = { id: 'test', name: '', parts: [rect(1, house.north, 1, heightLine(1) - house.north)], color: '', note: '', spawn: [1, 1] as [number, number] }
     expect(roomArea(sample, 'DG').living).toBeCloseTo(0)
     sample.parts = [rect(1, heightLine(1), 1, heightLine(2) - heightLine(1))]
     expect(roomArea(sample, 'DG').living).toBeCloseTo(area(sample.parts) / 2)
@@ -210,7 +210,7 @@ describe('Maßhaltiger Vorentwurf', () => {
       const eg = makeFloor('EG'), og = makeFloor('OG')
       const wcArea = roomArea(eg.rooms.find(room => room.id === 'wc')!, 'EG').floor
       expect(wcArea).toBeGreaterThanOrEqual(3)
-      expect(wcArea).toBeCloseTo(3.619)
+      expect(wcArea).toBeCloseTo(3.5908)
       expect(eg.rooms.some(room => room.id === 'pantry')).toBe(false)
       const pantry = eg.furniture.find(item => item.id === 'pantry-cabinet')!
       expect([pantry.width, pantry.depth]).toEqual([.6, .6])

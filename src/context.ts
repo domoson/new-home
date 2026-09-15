@@ -33,7 +33,7 @@ export const woodProfiles = [{ id: 'boards', name: 'Vertikale Bretter' }, { id: 
 export type WoodProfile = typeof woodProfiles[number]['id']
 export type HouseAppearance = { facade: string; roof: string; frame: string; composition: FacadeComposition; woodTone: number; woodProfile: WoodProfile }
 export type SceneSettings = HouseAppearance & { hour: number; season: 'summer' | 'spring' | 'winter'; west: HouseAppearance; surroundings: boolean; landscaping: boolean; transparentGround: boolean; lights: Record<string, boolean>; lightingMode: 'room' | 'global'; carportRoof: 'metal' | 'green' }
-export const initialAppearance: HouseAppearance = { facade: finishes.facade[3].color, roof: finishes.roof[0].color, frame: finishes.frame[2].color, composition: 'upper', woodTone: 3, woodProfile: 'boards' }
+export const initialAppearance: HouseAppearance = { facade: finishes.facade[3].color, roof: finishes.roof[0].color, frame: finishes.frame[2].color, composition: 'plaster', woodTone: 3, woodProfile: 'boards' }
 export const initialSettings: SceneSettings = { ...initialAppearance, west: { ...initialAppearance, composition: 'plaster' }, hour: 14, season: 'summer', surroundings: true, landscaping: true, transparentGround: false, lights: {}, lightingMode: 'global', carportRoof: 'metal' }
 export function sunPosition(hour: number, season: SceneSettings['season']) {
   const [month, day, offset] = { summer: [5, 21, 2], spring: [2, 20, 1], winter: [11, 21, 1] }[season]

@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { area, elevations, floorIds, makeFloor, roofHeight, stair, stairOpeningParts } from './model'
+import { area, elevations, floorIds, makeFloor, roofHeight, stair, stairOpeningParts, storeyRise } from './model'
 import type { FloorId } from './model'
 
 export type LightingCircuit = { id: string; label: string; floor: FloorId; defaultOn: boolean }
@@ -24,7 +24,7 @@ export function createRoomLighting(floors: FloorId[], materials: THREE.Material[
       const trim = new THREE.MeshStandardMaterial({ color: '#deded9', roughness: .65 })
       materials.push(diffuser, trim)
       const lamps = positions.map(([east, south], index) => {
-        const rise = floorId === 'KG' ? 2.7 : 2.95
+        const rise = storeyRise(floorId)
         const ceiling = isStair ? (floorId === 'DG' ? 1.7 : rise / 2 + 1.2) : floorId === 'DG' ? roofHeight(south) : floor.height
         const mount = new THREE.Group(); mount.name = `${id}-${isStair ? 'wall' : 'ceiling'}-light-${index}`; mount.userData.lightCircuit = id
         mount.position.set(east, floor.elevation + ceiling - .05, south)

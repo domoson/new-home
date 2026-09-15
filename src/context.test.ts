@@ -29,6 +29,7 @@ it('verwendet die gewuenschten Farbdefaults fuer beide Haushaelften', () => {
   for (const appearance of [initialSettings, initialSettings.west]) {
     expect(appearance.frame).toBe(finishes.frame[2].color)
     expect(appearance.facade).toBe(finishes.facade[3].color)
+    expect(appearance.composition).toBe('plaster')
     expect(appearance.woodTone).toBe(3)
   }
 })

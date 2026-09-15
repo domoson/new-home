@@ -2,7 +2,7 @@ import { useState } from 'react'
 import type { PointerEvent } from 'react'
 import { Ruler, Trash2, X } from 'lucide-react'
 import type { Floor, Furniture } from './model'
-import { house, format, heightLine, lightWells, roofWindows, roomArea, stairFor, stairOpeningParts, stairSolids } from './model'
+import { house, format, heightLine, lightWells, roofWindows, roomArea, stairFor, stairOpeningParts, stairSolids, storeyRise } from './model'
 import { stairWalkingLine } from './winderStair'
 import { contains, distance, metres, planObjects, snapPoint } from './measure'
 import type { Measurable, PlanPoint } from './measure'
@@ -57,7 +57,7 @@ export default function FloorPlan({ floor, selected, onSelect, dimensions, furni
   if (floor.id === 'OG') { labels.bath = [2.3, 1.7]; labels['child-north'] = [4.65, 5.65]; labels['child-south'] = [4.3, 8]; labels.multifunction = [1.3, 6.75] }
   if (floor.id === 'DG') labels.office = [4.8, 3.35]
   const core = stairFor()
-  const walkingLine = stairWalkingLine(2.95)
+  const walkingLine = stairWalkingLine(storeyRise(floor.id))
   if (floor.id === 'DG') walkingLine.reverse()
   const arrowEnd = walkingLine.at(-1)!, arrowBefore = walkingLine.at(-2)!
   const arrowAngle = Math.atan2(arrowEnd[2] - arrowBefore[2], arrowEnd[0] - arrowBefore[0]) * 180 / Math.PI
@@ -72,11 +72,11 @@ export default function FloorPlan({ floor, selected, onSelect, dimensions, furni
     {floor.id === 'EG' && <g><polygon data-terrace="east" points={terraceOutline.map(point => point.join(',')).join(' ')} fill="url(#terrace-plan)" /><rect x={terraceMain.x} y="13" width={terraceMain.width} height=".28" fill="#c6d7bc" /><text x="5.75" y="12.65" textAnchor="middle" fontSize=".2" fill="#526452">Terrasse · {format(terraceArea)} m²</text><text x="5.75" y="13.7" textAnchor="middle" fontSize=".16" fill="#7d8b78">SÜDGARTEN</text>{furnished && terraceFurniture.map(item => <Furnishing key={item.id} item={item} />)}</g>}
     {floor.id === 'KG' && <g fill="#e2e7e3" stroke="#8b9b90" strokeWidth=".025">{lightWells.map(({x, z, width, depth}) => <g key={`${x}-${z}`}><rect x={x} y={z} width={width} height={depth} />{Array.from({ length: 7 }, (_, index) => <line key={index} x1={x} x2={x + width} y1={z + (index + 1) * depth / 8} y2={z + (index + 1) * depth / 8} />)}</g>)}</g>}
     <rect x="0" y="0" width={house.width} height="10" fill="#fff" />
-    {floor.id === 'DG' && [.365, 10 - heightLine(1.2)].map(south => <g key={south} data-closed-eaves="true" pointerEvents="none"><rect x=".4" y={south} width={house.east - house.west} height={heightLine(1.2) - .365} fill="url(#closed-eaves)" /><text x={house.width / 2} y={south + .55} textAnchor="middle" fontSize=".15" fill="#667169">Unter 1,20 m · geschlossen</text></g>)}
+    {floor.id === 'DG' && [house.north, 10 - heightLine(1.2)].map(south => <g key={south} data-closed-eaves="true" pointerEvents="none"><rect x=".4" y={south} width={house.east - house.west} height={heightLine(1.2) - house.north} fill="url(#closed-eaves)" /><text x={house.width / 2} y={south + .55} textAnchor="middle" fontSize=".15" fill="#667169">Unter 1,20 m · geschlossen</text></g>)}
     {floor.rooms.map(room => <g key={room.id} onClick={() => onSelect(room.id)} style={{ cursor: 'pointer' }}>{room.parts.map((part, index) => <rect key={index} x={part.x} y={part.z} width={part.width} height={part.depth} fill={room.color} opacity={selected === room.id ? 1 : .65} />)}</g>)}
     <g data-stair="double-quarter-winder">
       {stairOpeningParts.map((part, index) => <rect key={index} x={part.x} y={part.z} width={part.width} height={part.depth} fill="#f4f0e8" />)}
-      {stairSolids(floor.id === 'KG' ? 2.7 : 2.95).map(solid => <polygon key={solid.id} data-step={solid.id} points={solid.footprint!.map(point => point.join(',')).join(' ')} fill="#e6d1af" stroke="#aa9473" strokeWidth=".016" />)}
+      {stairSolids(storeyRise(floor.id)).map(solid => <polygon key={solid.id} data-step={solid.id} points={solid.footprint!.map(point => point.join(',')).join(' ')} fill="#e6d1af" stroke="#aa9473" strokeWidth=".016" />)}
       <polyline points={walkingLine.map(([east, , south]) => `${east},${south}`).join(' ')} fill="none" stroke="#746e61" strokeWidth=".025" />
       <path d="M-.18 -.1 L0 0 L-.18 .1" transform={`translate(${arrowEnd[0]} ${arrowEnd[2]}) rotate(${arrowAngle})`} fill="none" stroke="#746e61" strokeWidth=".025" />
       {floor.id === 'DG' && <rect x={core.x + core.width} y={core.z} width=".065" height={core.runWidth} fill="#777d73" />}

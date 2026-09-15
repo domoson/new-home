@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js'
-import { house, elevations, floorIds, floorSlabs, lightWells, makeFloor, rect, roofHeight, roofPanels, roofWindows, stairFor, stairGuards, stairHandrails, stairSolids, wallSolids } from './model'
+import { construction, house, elevations, floorIds, floorSlabs, lightWells, makeFloor, rect, ridgeElevations, roofHeight, roofInnerElevation, roofOuterElevation, roofPanels, roofVerticalThickness, roofWindows, slabThickness, stairFor, stairGuards, stairHandrails, stairSolids, storeyRise, wallSolids } from './model'
 import { terraceFurniture, terraceParts, westTerraceFurniture } from './terrace'
 import { createPartyRoom } from './partyRoom'
 import { createRoomLighting } from './lighting'
@@ -205,7 +205,7 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
     for (const slab of floorSlabs(id)) {
       const texture = oak.clone(); texture.repeat.set(slab.width / 2, slab.depth / 2); texture.needsUpdate = true; textures.push(texture)
       const floorMaterial = id === 'KG' ? stone : mat('#ffffff', .8, texture)
-      const mesh = addBox(slab, base - .3, .3, [Math.abs(slab.x + slab.width - house.width) < .000001 ? facade : plaster, slab.x === 0 ? facade : plaster, floorMaterial, plaster, Math.abs(slab.z + slab.depth - 10) < .000001 ? facade : plaster, slab.z === 0 ? facade : plaster]); mesh.name = `${id}-slab`
+      const mesh = addBox(slab, base - slabThickness(id), slabThickness(id), [Math.abs(slab.x + slab.width - house.width) < .000001 ? facade : plaster, slab.x === 0 ? facade : plaster, floorMaterial, plaster, Math.abs(slab.z + slab.depth - 10) < .000001 ? facade : plaster, slab.z === 0 ? facade : plaster]); mesh.name = `${id}-slab`
     }
     for (const room of floor.rooms.filter(room => ['wc', 'bath', 'hall', 'pantry'].includes(room.id))) for (const part of room.parts) {
       if (room.id === 'hall' && id !== 'EG') {
@@ -278,7 +278,7 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
     }
     if (furnished) for (const item of floor.furniture) addFurniture(item, base)
     if (id !== 'DG') {
-      const rise = id === 'KG' ? 2.7 : 2.95
+      const rise = storeyRise(id)
       for (const solid of stairSolids(rise)) addStairSolid(solid, base, timber)
       for (const solid of stairGuards(rise)) addStairSolid(solid, base, plaster)
       
@@ -288,12 +288,15 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
   }
   if (!walk && !showRoof && floorId !== 'KG') {
     const lowerId = floorIds[floorIds.indexOf(floorId) - 1]
-    for (const solid of stairSolids(lowerId === 'KG' ? 2.7 : 2.95)) addStairSolid(solid, elevations[lowerId], timber, false)
+    for (const solid of stairSolids(storeyRise(lowerId))) addStairSolid(solid, elevations[lowerId], timber, false)
   }
   if (walk || showRoof) {
-    const thickness = .25 / Math.cos(35 * Math.PI / 180)
-    const roofAt = (south: number) => 5.9 + .5 + Math.min(south - .365, 9.635 - south) * Math.tan(35 * Math.PI / 180)
-    for (const part of roofPanels()) { const bottom: [number, number] = [roofAt(part.z), roofAt(part.z + part.depth)]; wedge(part, bottom, [bottom[0] + thickness, bottom[1] + thickness], [plaster, roofMaterial, roofMaterial, roofMaterial, roofMaterial, roofMaterial]) }
+    const thickness = roofVerticalThickness
+    const roofAt = roofInnerElevation
+    for (const part of roofPanels()) { const bottom: [number, number] = [roofAt(part.z), roofAt(part.z + part.depth)]; const panel = wedge(part, bottom, [bottom[0] + thickness, bottom[1] + thickness], [plaster, roofMaterial, roofMaterial, roofMaterial, roofMaterial, roofMaterial]); panel.name = 'main-roof-panel' }
+    const ridge = new THREE.Mesh(new THREE.CylinderGeometry(construction.ridgeCapAllowance, construction.ridgeCapAllowance, house.width + .35, 20), roofMaterial)
+    ridge.rotation.z = Math.PI / 2; ridge.position.set((house.width + .15) / 2, ridgeElevations.roofSurface, house.depth / 2)
+    ridge.name = 'main-ridge-cap'; ridge.castShadow = true; ridge.receiveShadow = true; group.add(ridge)
     const tileCourses = new THREE.Mesh(roofTileGeometry(roofPanels(), roofAt, thickness), roofCourseMaterial)
     tileCourses.name = 'roof-tile-courses'; tileCourses.castShadow = true; tileCourses.receiveShadow = true; group.add(tileCourses)
     const roofEdge = mat('#d6dbdc', .34)
@@ -301,9 +304,9 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
     roofEdge.side = THREE.DoubleSide
     for (const [side, south] of [['north', -.25], ['south', 10.25]] as const) {
       const gutter = new THREE.Mesh(new THREE.CylinderGeometry(.07, .07, house.width + .35, 16, 1, true, Math.PI, Math.PI), roofEdge)
-      gutter.rotation.z = Math.PI / 2; gutter.position.set((house.width + .25) / 2, roofAt(south), south); group.add(gutter)
+      gutter.rotation.z = Math.PI / 2; gutter.position.set((house.width + .25) / 2, roofOuterElevation(south) - .07, south); group.add(gutter)
       gutter.name = `main-gutter-${side}`
-      const pipeX = house.west + .04, wallSouth = side === 'north' ? 0 : 10, bendRadius = .1, tubeRadius = .04, gutterY = roofAt(south)
+      const pipeX = house.west + .04, wallSouth = side === 'north' ? 0 : 10, bendRadius = .1, tubeRadius = .04, gutterY = roofOuterElevation(south) - .07
       const wallZ = side === 'north' ? wallSouth - .04 : wallSouth + .04
       const pipeTop = gutterY - bendRadius
       const pipe = new THREE.Mesh(new THREE.CylinderGeometry(tubeRadius, tubeRadius, pipeTop + .14, 12), roofEdge)
@@ -341,10 +344,10 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
     if (includeSite) {
     const shape = new THREE.Shape(siteBoundary.map(([x, z]) => new THREE.Vector2(x, z)))
     for (const hole of [rect(0, 0, house.width, 10), rect(partner.x, partner.z, partner.width, partner.depth), ...wells, ...wells.map(well => rect(-well.x - well.width, well.z + partner.z, well.width, well.depth))]) shape.holes.push(new THREE.Path([new THREE.Vector2(hole.x, hole.z), new THREE.Vector2(hole.x + hole.width, hole.z), new THREE.Vector2(hole.x + hole.width, hole.z + hole.depth), new THREE.Vector2(hole.x, hole.z + hole.depth)]))
-    const geometry = new THREE.ShapeGeometry(shape); geometry.rotateX(Math.PI / 2); geometry.translate(0, -.14, 0)
+    const geometry = new THREE.ShapeGeometry(shape); geometry.rotateX(Math.PI / 2); geometry.translate(0, construction.terrain, 0)
     const ground = new THREE.Mesh(geometry, groundMaterial); ground.name = 'site-ground'; ground.receiveShadow = true; group.add(ground)
     triangles.push({ vertices: new Float32Array(geometry.getAttribute('position').array), indices: new Uint32Array(geometry.getIndex()!.array) })
-    for (let index = 0; index < siteBoundary.length; index++) { const [x, z] = siteBoundary[index], [nextX, nextZ] = siteBoundary[(index + 1) % siteBoundary.length]; beam(new THREE.Vector3(x, -.12, z), new THREE.Vector3(nextX, -.12, nextZ), .035, stone) }
+    for (let index = 0; index < siteBoundary.length; index++) { const [x, z] = siteBoundary[index], [nextX, nextZ] = siteBoundary[(index + 1) % siteBoundary.length]; beam(new THREE.Vector3(x, construction.terrain + .02, z), new THREE.Vector3(nextX, construction.terrain + .02, nextZ), .035, stone) }
     }
     for (const well of wells) {
       addBox(well, -1.4, .12, stone)
@@ -353,7 +356,7 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
       for (let along = .08; along < well.depth; along += .12) addBox(rect(well.x, well.z + along, well.width, .012), -.14, .015, dark, false)
     }
     const soil = mat('#969b93'); soil.transparent = true; soil.opacity = .18; soil.depthWrite = false
-    for (const edge of [rect(-.08, 0, .08, 10), rect(0, -.08, house.width, .08), rect(house.width, 0, .08, 10), rect(0, 10, house.width, .08)]) addBox(edge, -3, 2.86, soil, false)
+    for (const edge of [rect(-.08, 0, .08, 10), rect(0, -.08, house.width, .08), rect(house.width, 0, .08, 10), rect(0, 10, house.width, .08)]) addBox(edge, elevations.KG - slabThickness('KG'), construction.terrain - elevations.KG + slabThickness('KG'), soil, false)
     groundMaterial.transparent = floorId === 'KG'; groundMaterial.opacity = floorId === 'KG' ? .25 : 1; groundMaterial.depthWrite = floorId !== 'KG'
   }
   const targetMaterial = new THREE.MeshBasicMaterial({ colorWrite: false, depthWrite: false }); materials.push(targetMaterial)

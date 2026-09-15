@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { house } from './model'
+import { elevations, house, slabThickness } from './model'
 import { facadeCompositions, woodProfiles, woodTones } from './context'
 import type { FacadeComposition, WoodProfile } from './context'
 
@@ -12,11 +12,11 @@ export function createFacadeMaterial(texture: THREE.Texture, alwaysWood = false,
     shader.vertexShader = `uniform mat4 claddingCoordinates; varying vec3 claddingPosition; varying vec3 claddingNormal;\n${shader.vertexShader}`.replace('#include <begin_vertex>', '#include <begin_vertex>\ncladdingPosition = (claddingCoordinates * modelMatrix * vec4(transformed, 1.0)).xyz; claddingNormal = normalize(mat3(modelMatrix) * objectNormal);')
     shader.fragmentShader = `varying vec3 claddingPosition; varying vec3 claddingNormal; uniform sampler2D claddingTexture; uniform int claddingMode; uniform vec3 claddingColor; uniform int claddingProfile; uniform bool alwaysWood;\n${shader.fragmentShader}`.replace('#include <color_fragment>', `#include <color_fragment>
       bool aboveGround = claddingPosition.y >= 0.0;
-      bool exterior = claddingPosition.x >= ${((house.width + house.east) / 2 - .0001).toFixed(4)} || claddingPosition.x <= 0.2001 || claddingPosition.z <= 0.1826 || claddingPosition.z >= 9.8174;
+      bool exterior = claddingPosition.x >= ${((house.width + house.east) / 2 - .0001).toFixed(4)} || claddingPosition.x <= ${(house.west / 2 + .0001).toFixed(4)} || claddingPosition.z <= ${(house.north / 2 + .0001).toFixed(4)} || claddingPosition.z >= ${((house.depth + house.south) / 2 - .0001).toFixed(4)};
       bool eastFace = claddingPosition.x >= ${house.east.toFixed(4)};
       bool entry = eastFace && claddingPosition.y <= 2.65 && claddingPosition.z >= 0.35 && claddingPosition.z <= 2.65;
-      bool og = claddingPosition.y >= 2.65 && claddingPosition.y < 5.6;
-      bool timber = alwaysWood || (aboveGround && (claddingMode == 1 || (claddingMode == 2 && claddingPosition.y >= 2.65) || (claddingMode == 3 && eastFace && claddingPosition.y >= 5.9) || (claddingMode == 4 && entry) || (claddingMode == 5 && og) || (claddingMode == 6 && (og || entry)) || (claddingMode == 7 && ((eastFace && claddingPosition.z > 2.7 && claddingPosition.z < 4.9) || (!eastFace && claddingPosition.x > 4.2 && claddingPosition.x < 6.4)))));
+      bool og = claddingPosition.y >= ${(elevations.OG - slabThickness('OG')).toFixed(4)} && claddingPosition.y < ${(elevations.DG - slabThickness('DG')).toFixed(4)};
+      bool timber = alwaysWood || (aboveGround && (claddingMode == 1 || (claddingMode == 2 && claddingPosition.y >= ${(elevations.OG - slabThickness('OG')).toFixed(4)}) || (claddingMode == 3 && eastFace && claddingPosition.y >= ${elevations.DG.toFixed(4)}) || (claddingMode == 4 && entry) || (claddingMode == 5 && og) || (claddingMode == 6 && (og || entry)) || (claddingMode == 7 && ((eastFace && claddingPosition.z > 2.7 && claddingPosition.z < 4.9) || (!eastFace && claddingPosition.x > 4.2 && claddingPosition.x < 6.4)))));
       if (!exterior && !alwaysWood) diffuseColor.rgb = vec3(1.0);
       if (timber && (exterior || alwaysWood)) {
         float horizontal = claddingPosition.x >= ${house.east.toFixed(4)} || claddingPosition.x <= 0.4 ? claddingPosition.z : claddingPosition.x;

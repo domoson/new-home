@@ -97,12 +97,60 @@ Nicht ueber `file://` oeffnen. WebGL2 ist fuer 3D erforderlich, 2D funktioniert 
 
 ## Entwurf
 
+### Verbindlichkeit der Hoehen
+
+Die Hoehen sind zentral in `src/model.ts` hinterlegt und werden von Schnitt,
+3D, Treppen, Massanzeigen und Beleuchtung gemeinsam verwendet. Planungsannahmen
+fuer Holzfertigbau, keine garantierten Hersteller-Standardmasse oder KfW-40-Nachweise:
+
+| Bezug ab FFB EG | Modellmass |
+| --- | --- |
+| FFB KG / EG / OG / DG | -2,74 / 0,00 / +3,00 / +6,00 m |
+| Lichte Hoehe KG / EG und OG | 2,40 / 2,65 m |
+| Kellerdecke / beide Holzdecken gesamt | 34 / 35 cm |
+| Freie Aussenwaende / Haustrennwand-Platzbedarf | 38 / 40 cm |
+| Dach normal / vertikal bei 35 Grad | 35 / 42,727 cm |
+| Innenknie ueber FFB DG / absolute UK innen | 0,50 / +6,50 m |
+| Aussenkante Wand / UK Dachpaket | +6,234 m |
+| Aussenkante Wand / OK Dachflaeche | +6,661 m |
+| First innen (UK Verkleidung) | +9,735 m |
+| First Dachflaeche / OK Firstabschluss | +10,162 / +10,232 m |
+| OK Gelaende / Urgelaende, eben angenommen | -0,20 m |
+| OK Firstabschluss ueber angenommenem Gelaende | 10,432 m |
+
+Die rund +6,66 m an der Aussenwand beziehen sich auf die OBERSEITE der
+Dachflaeche, nicht auf die Unterseite des gesamten Dachpakets. Von innen nach
+aussen faellt die Dachunterseite ueber 38 cm Wandstaerke um rund 26,6 cm ab.
+Firstabschluss: 7 cm zusaetzlicher, schematisch modellierter Zuschlag, kein
+Produktmass. Die 35-cm-Pakete muessen alle genannten Schichten einschliesslich
+Schallschutz, Installation, Bodenbelag bzw. Dachdeckung aufnehmen. Hersteller
+kann groessere Dicken benoetigen; vor Festlegung bestaetigen lassen. Wandaufbau
+mit Putz/Traegerdaemmung, gedaemmtem Holzstaender, Installation und Beplankung
+ist nur ein Konzept. Energiebilanz, Feuchte-, Brand- und Schallschutz sind offen.
+Keller-Aussenhuelle schematisch 38 cm gesamt, nicht als Holzbau festgelegt;
+Beton, Perimeterdaemmung, Abdichtung und 30 cm Boden-/Fundamentpaket unbemessen.
+Aussenmasse und Hauspositionen bleiben unveraendert; lichte Flaechen werden kleiner.
+
+**3 m Grenzabstand sind keine baurechtliche Freigabe.**
+[Art. 6 BayBO](https://www.gesetze-bayern.de/Content/Document/BayBO-6), abgerufen
+am 15.09.2026 (Fassung gueltig ab 01.05.2026), bemisst H ab massgeblicher
+Gelaendeoberflaeche; bei 35 Grad kommt an der Traufe ein Drittel der Dachhoehe
+hinzu. Grundregel 0,4 H, mindestens 3 m; oertliche Satzungen koennen abweichen.
+Reines Rechenbeispiel mit obigen Annahmen und Firstzuschlag:
+H = 6,661 + 0,20 + (10,232 - 6,661) / 3 = 8,052 m,
+0,4 H = rund 3,22 m. Schon dies liegt ueber 3 m. Kein grundstuecksbezogener
+Abstandsflaechennachweis; insbesondere Giebelseiten separat berechnen.
+Vor Hausbestellung: Hersteller-Schnitt mit maximalen Gesamtaufbauten und
+OK First, vermessenes massgebliches Gelaende, Buckenhofer Satzungen/Bebauungsplan,
+Baugrenzen, Giebelflaechen und Doppelhausanschluss fachlich zusammen pruefen.
+Die Grundstuecksabstaende werden nicht automatisch mit zunehmender Hoehe vergroessert.
+
 ### EG-Suedfenster Osthaus
 
 Die Schiebeanlage sitzt am Ostrand: 2,40 x 2,35 m, davon je 1,20 m Schiebefluegel
-und Festfeld. Sie reicht von x = 4,235 bis 6,635 m. In der Ostwand schliesst sich
-eine 0,70 x 2,35 m grosse Festverglasung bei z = 8,935 bis 9,635 m an.
-Der massive 36,5-cm-Eckpfosten bleibt bestehen; keine stuetzenlose Glasecke.
+und Festfeld. Sie reicht von x = 4,220 bis 6,620 m. In der Ostwand schliesst sich
+eine 0,70 x 2,35 m grosse Festverglasung bei z = 8,920 bis 9,620 m an.
+Der 38-cm-Eckpfosten bleibt bestehen; keine stuetzenlose Glasecke.
 Das westliche Sued-Festfeld ist auf 1,05 x 2,35 m verkleinert und beginnt bei
 x = 2,60 m. Alle drei Glasbereiche sind bodentief mit gleicher Oberkante.
 Die Terrassensitzgruppe im Osten ist um 65 cm nach Sueden versetzt, damit vor
@@ -462,11 +510,11 @@ Moebelfronten, Geraete, Anschluesse und Lueftung bleiben eine Entwurfsannahme.
 
 - Aussenhuelle: 7,00 m Ost-West x 10,00 m Nord-Sued. 70 m2 je Ebene sind NICHT
   die Wohnflaeche oder die Gesamt-BGF des Hauses.
-- Aussenwaende 36,5 cm, westlicher Trennwand-Platzbedarf 40 cm, Innenwaende 16 cm.
+- Aussenwaende 38 cm, westlicher Trennwand-Platzbedarf 40 cm, Innenwaende 16 cm.
   Wandstaerke allein garantiert keinen Schallschutz; Aufbau, Anschluesse und
   tragende Innenwaende sind noch nicht festgelegt oder bemessen.
-- EG/OG: 2,65 m lichte Hoehe, 30 cm Decken-/Fussbodenpaket, 2,95 m Geschosshoehe.
-  KG: 2,40 m lichte Hoehe und 2,70 m Geschosshoehe.
+- EG/OG: 2,65 m lichte Hoehe, 35 cm Decken-/Fussbodenpaket, 3,00 m Geschosshoehe.
+  KG: 2,40 m lichte Hoehe und 2,74 m Geschosshoehe, Kellerdecke gesamt 34 cm.
 - Haupttreppe: ein durchgehender Lauf mit zwei Viertelwendelungen, ohne Podest.
   16 Steigungen je Ebene: zwei Nordstufen, vier Wendelstufen, drei mittlere
   gerade Stufen, vier weitere Wendelstufen, zwei Suedstufen und der Geschossaustritt.
@@ -497,7 +545,7 @@ Moebelfronten, Geraete, Anschluesse und Lueftung bleiben eine Entwurfsannahme.
   sowie hydraulische Bemessung sind nicht modelliert und fachlich zu planen.
 - Satteldach: 35 Grad, First Ost-West. 50 cm Kniestock wird hier als LICHTE Hoehe
   ueber Fertigfussboden am inneren Dachansatz interpretiert. Das ist eine Annahme,
-  nicht die nachgewiesene baurechtliche Kniestockdefinition. Dachpaket 25 cm normal
+  nicht die nachgewiesene baurechtliche Kniestockdefinition. Dachpaket 35 cm normal
   zur Dachflaeche. Zwei Dachfenster je Haelfte, beide 114 x 140 cm:
   Nord bei x=2,93 / z=1,55 m, Sued bei x=2,93 / z=6,60 m.
   Fenstermitten bei x=3,50 m in der Mitte der DHH. Das Treppenfenster ist entfernt,
@@ -540,7 +588,9 @@ gegen die Nord-, Ost- und Westgrenze getestet. Die 3-m-Vorgabe stammt vom Nutzer
 kein vermessener Lageplan oder Nachweis aller Vorschriften des Bebauungsplans.
 Dachueberstaende, Vordach, Grenzwanddetails und rechtliche Abstandsdefinitionen
 sind von diesem geometrischen Hauskoerpernachweis nicht abgedeckt.
-Gelaende liegt vorlaeufig 14 cm unter EG-Fertigboden. Drei kleine Kellerfenster
+Gelaende liegt vorlaeufig 20 cm unter EG-Fertigboden. Wege, Terrassen und
+Lichtschachtroste behalten gesonderte Anschlusshoehen; Nachbargelaende ist
+nicht vermessen. Drei kleine Kellerfenster
 mit Lichtschacht, Rost und sichtbarer Tiefe ersetzen die frueheren Vollformatfenster.
 Abdeckungen/Lichtschacht-Aussenmasse jetzt 100 x 50 cm, Innenmasse kleiner.
 Abdichtung, Entwaesserung, Ueberflutungsschutz und realer Gelaendeverlauf sind offen.

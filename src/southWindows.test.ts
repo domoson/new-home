@@ -27,7 +27,7 @@ test('east ground floor groups full-height glazing at the southeast corner', () 
   expect(bench.z + bench.depth).toBeLessThan(corner.start - .025)
   const cornerPost = wallSolids(east, floor.height).find(solid => solid.z >= house.south - .001 && solid.bottom === 0)!
   expect(cornerPost).toBeDefined()
-  expect(cornerPost.depth).toBeCloseTo(.365)
+  expect(cornerPost.depth).toBeCloseTo(.38)
 })
 
 test('west house retains its original glazing and other floors stay identical', () => {
