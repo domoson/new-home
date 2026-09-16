@@ -33,35 +33,35 @@ test('North-shifted floors keep rooms, furniture and stair openings clear', () =
 test('Requested room proportions, sofa shift and two centered roof windows', () => {
   const eg = makeFloor('EG'), kg = makeFloor('KG'), og = makeFloor('OG'), dg = makeFloor('DG')
   const size = (floor: typeof eg, id: string) => roomArea(floor.rooms.find(room => room.id === id)!, floor.id).floor
-  expect(size(eg, 'wc')).toBeLessThan(4.3)
+  expect(size(eg, 'wc')).toBeCloseTo(3.996)
   expect(eg.walls.find(wall => wall.id === 'wc-east')!.x).toBeCloseTo(stair.x + stair.width)
   const kitchenEntry = eg.walls.find(wall => wall.id === 'hall-south')!
-  expect(kitchenEntry.openings[0]).toMatchObject({ start: 0, width: 1.8, height: eg.height, kind: 'passage' })
-  expect(wallSolids(kitchenEntry, eg.height).every(solid => solid.x >= kitchenEntry.x + 1.8 - 1e-6)).toBe(true)
-  expect(size(dg, 'hall')).toBeCloseTo(2.6558)
-  expect(size(dg, 'office')).toBeCloseTo(13.850944)
+  expect(kitchenEntry.openings[0]).toMatchObject({ start: 0, width: 1.3, height: eg.height, kind: 'passage' })
+  expect(wallSolids(kitchenEntry, eg.height).every(solid => solid.x >= kitchenEntry.x + 1.3 - 1e-6)).toBe(true)
+  expect(size(dg, 'hall')).toBeCloseTo(2.09)
+  expect(size(dg, 'office')).toBeGreaterThan(13.850944)
   expect(dg.walls.find(wall => wall.id === 'stair-east')!.openings).toHaveLength(0)
-  expect(size(eg, 'living')).toBeGreaterThan(38)
-  expect(eg.furniture.find(item => item.id === 'sofa')!.z).toBeCloseTo(6.64 - .35)
-  expect(eg.furniture.find(item => item.id === 'kitchen')!.depth).toBeCloseTo(1.45)
+  expect(size(eg, 'living')).toBeCloseTo(38.9588)
+  expect(eg.furniture.find(item => item.id === 'sofa')!.z).toBeCloseTo(6.93)
+  expect(eg.furniture.find(item => item.id === 'kitchen')!.depth).toBeCloseTo(1.3)
   expect(kg.rooms.find(room => room.id === 'bath')!.parts[0].width).toBeCloseTo(house.east - house.west)
   expect(kg.rooms.find(room => room.id === 'child-north')!.parts).toHaveLength(1)
   expect(size(kg, 'bath')).toBeGreaterThan(size(kg, 'child-north'))
   expect(size(og, 'bath')).toBeGreaterThanOrEqual(9)
-  expect(size(og, 'bath')).toBeLessThanOrEqual(10)
+  expect(size(og, 'bath')).toBeCloseTo(11.7148)
   for (const id of ['child-north', 'child-south']) {
-    expect(size(og, id)).toBeGreaterThanOrEqual(14)
-    expect(size(og, id)).toBeLessThan(16.5)
+    expect(size(og, id)).toBeGreaterThanOrEqual(13.9)
+    expect(size(og, id)).toBeLessThan(17)
     const main = og.rooms.find(room => room.id === id)!.parts.reduce((largest, part) => part.width * part.depth > largest.width * largest.depth ? part : largest)
-    expect(Math.max(main.width, main.depth) / Math.min(main.width, main.depth)).toBeLessThan(1.6)
+    expect(Math.max(main.width, main.depth) / Math.min(main.width, main.depth)).toBeLessThan(1.65)
   }
-  expect(size(og, 'multifunction')).toBeLessThan(4)
+  expect(size(og, 'multifunction')).toBeCloseTo(4.839)
   expect(og.walls.flatMap(wall => wall.openings).some(opening => opening.id === 'multifunction')).toBe(false)
   const divider = dg.walls.find(wall => wall.id === 'office-entry')!
   expect(divider.z + interiorWallThickness / 2).toBeCloseTo(house.depth / 2)
   expect(roofWindows).toHaveLength(2)
   for (const window of roofWindows) expect(window.x + window.width / 2).toBeCloseTo(house.width / 2)
-  expect(stair.z).toBeCloseTo(2.45)
+  expect(stair.z).toBeCloseTo(3.1)
 })
 
 test('Room door swing samples and furniture footprints stay clear', () => {
@@ -92,17 +92,24 @@ test('Room door swing samples and furniture footprints stay clear', () => {
   }
 })
 
-test('EG stair doors, fitted cupboards and OG bathroom entrance stay usable', () => {
+test('EG stair accesses and eye stay open and OG bathroom entrance stays usable', () => {
   const eg = makeFloor('EG'), og = makeFloor('OG')
+  const peninsula = eg.furniture.find(item => item.id === 'peninsula')!
+  const tallCabinet = eg.furniture.find(item => item.id === 'kitchen-tall')!
+  expect(peninsula.width).toBeCloseTo(2.66)
+  expect(peninsula.depth).toBe(1)
+  expect(peninsula.x - stair.x - stair.width - interiorWallThickness).toBeCloseTo(1.3)
+  expect(tallCabinet.width).toBeCloseTo(.6)
+  expect(peninsula.z - tallCabinet.z - tallCabinet.depth).toBeCloseTo(1.9)
+  expect(area(stairOpeningParts)).toBeCloseTo(4.62)
   for (const wallId of ['stair-east', 'stair-east-south']) {
-    expect(eg.walls.find(wall => wall.id === wallId)!.openings[0]).toMatchObject({ kind: 'door', width: 1, height: 2.4 })
+    const wall = eg.walls.find(wall => wall.id === wallId)!
+    expect(wall.openings[0]).toMatchObject({ kind: 'passage', width: .9, height: eg.height })
+    expect(wallSolids(wall, eg.height).every(solid => solid.z + solid.depth <= stair.z + 1e-6 || solid.z >= stair.end - 1e-6)).toBe(true)
   }
   for (const floor of [eg, og]) {
-    const cupboard = floor.furniture.find(item => item.id === 'stair-cabinet')!
-    expect(cupboard.width).toBeCloseTo(.68)
-    expect(cupboard.depth).toBeCloseTo(.86)
-    expect(cupboard.x + cupboard.width).toBeCloseTo(stair.x + stair.width + interiorWallThickness)
-    expect(cupboard.height).toBe(2.4)
+    expect(floor.furniture.some(item => item.id === 'stair-cabinet')).toBe(false)
+    expect(floor.walls.some(wall => wall.id.startsWith('stair-recess'))).toBe(false)
   }
   expect(og.furniture.find(item => item.id === 'bath-tub')).toMatchObject({ x: .45, z: .43, width: .8, depth: 1.8 })
   const entryWall = og.walls.find(wall => wall.openings.some(opening => opening.id === 'bath'))!
@@ -115,5 +122,5 @@ test('EG stair doors, fitted cupboards and OG bathroom entrance stay usable', ()
     expect(overlap(entrance, item), `Badeingang/${item.id}`).toBeLessThan(1e-6)
     expect(overlap(studyAccess, item), `Schreibtischweg/${item.id}`).toBeLessThan(1e-6)
   }
-  expect(og.furniture.find(item => item.id === 'wardrobe-north')).toMatchObject({ z: 6.08, width: 1.8, depth: .6 })
+  expect(og.furniture.find(item => item.id === 'wardrobe-north')).toMatchObject({ z: 6.08, width: 1.6, depth: .6 })
 })

@@ -8,12 +8,13 @@ import { contains, distance, metres, planObjects, snapPoint } from './measure'
 import type { Measurable, PlanPoint } from './measure'
 import { terraceArea, terraceFurniture, terraceMain, terraceOutline } from './terrace'
 import { partyRoom } from './partyRoomData'
+import { kitchenModules } from './kitchenStorage'
 
 function Furnishing({ item }: { item: Furniture }) {
   const { x, z, width, depth, kind } = item
   if (kind === 'bed' && item.angle === Math.PI / 2) return <g transform={`translate(${x + width} ${z}) rotate(90)`}><Furnishing item={{ ...item, x: 0, z: 0, width: depth, depth: width, angle: 0 }} /></g>
   if (kind === 'sofa' && item.angle === Math.PI / 2) return <g transform={`translate(${x + width} ${z}) rotate(90)`}><Furnishing item={{ ...item, x: 0, z: 0, width: depth, depth: width, angle: 0 }} /></g>
-  return <g transform={`translate(${x} ${z})`} stroke="#777d73" strokeWidth=".018" fill={item.color ?? (kind === 'cabinet' || kind === 'counter' ? '#d3bb94' : kind === 'plant' ? '#93a88b' : '#faf9f5')}>
+  return <g data-furniture={item.id} transform={`translate(${x} ${z})`} stroke="#777d73" strokeWidth=".018" fill={item.color ?? (kind === 'cabinet' || kind === 'counter' ? '#d3bb94' : kind === 'plant' ? '#93a88b' : '#faf9f5')}>
     <rect width={width} height={depth} rx={['sofa', 'bed', 'bath', 'wc', 'chair'].includes(kind) ? .08 : .015} />
     {kind === 'bed' && <><path d={`M .04 .5 H ${width - .04}`} /><rect x=".09" y=".1" width={width > 1.3 ? width / 2 - .16 : width - .18} height=".3" rx=".04" />{width > 1.3 && <rect x={width / 2 + .04} y=".1" width={width / 2 - .16} height=".3" rx=".04" />}<rect x=".05" y=".6" width={width - .1} height={depth - .68} fill="#d4dcd2" rx=".03" /></>}
     {kind === 'sofa' && <><rect x=".09" y=".05" width={width - .18} height=".18" fill="#d0d7c9" /><path d={`M ${width / 3} .25 V ${depth - .08} M ${width * 2 / 3} .25 V ${depth - .08}`} /><rect x=".08" y=".32" width=".35" height=".35" rx=".05" fill="#b9c8b0" /></>}
@@ -24,7 +25,8 @@ function Furnishing({ item }: { item: Furniture }) {
     {kind === 'counter' && item.id === 'kitchen' && depth > 2.3 && <g fill="#495854"><rect x=".05" y="1.75" width=".5" height=".55" rx=".03" /><circle cx=".2" cy="1.9" r=".08" stroke="#a8b4b1" /><circle cx=".4" cy="2.1" r=".09" stroke="#a8b4b1" /></g>}
     {kind === 'hob' && <g fill="#384441" stroke="#afbeb6"><rect width={width} height={depth} />{[.18, width - .18].flatMap(east => [.14, depth - .14].map(south => <circle key={`${east}-${south}`} cx={east} cy={south} r=".095" />))}</g>}
     {kind === 'espresso' && <g fill="#63726e"><rect x=".025" y=".025" width={width - .05} height={depth * .55} /><path d={`M${width / 2} ${depth * .5} V${depth}`} strokeWidth=".035" /></g>}
-    {kind === 'cabinet' && <path d={item.id === 'stair-cabinet' ? `M0 ${depth / 2} H${width} M${width - .03} 0 V${depth}` : `M${width / 2} 0 V${depth}`} stroke="#b09a79" />}
+    {kind === 'cabinet' && <path d={item.id === 'wardrobe' && item.angle === Math.PI ? `M0 .025 H${width} M${width / 2} 0 V${depth}` : item.angle === Math.PI ? `M0 ${depth / 2} H${width} M${width - .03} 0 V${depth}` : `M${width / 2} 0 V${depth}`} stroke="#b09a79" />}
+    {kitchenModules(item).map(module => <g key={module.id} data-kitchen-module={module.id} fill="none" stroke="#a68e6c" strokeWidth=".01"><rect x={module.x - x} y={module.z - z} width={module.width} height={module.depth} strokeDasharray=".04 .025" />{module.use === 'dishwasher' && <path d={`M${module.x - x + .08} ${module.z - z + .1} h.4 v.4 h-.4 Z m.07 .12 h.26 m-.26 .13 h.26`} />}</g>)}
     {kind === 'bench' && <rect x={width - .08} y="0" width=".08" height={depth} fill="#9eae98" />}
     {kind === 'bookcase' && <path d={width > depth ? `M${width / 3} 0 V${depth} M${width * 2 / 3} 0 V${depth}` : `M0 ${depth / 3} H${width} M0 ${depth * 2 / 3} H${width}`} />}
     {kind === 'plant' && <><circle cx={width / 2} cy={depth / 2} r={width * .46} /><path d={`M0 0 L${width} ${depth} M0 ${depth} L${width} 0`} /></>}
@@ -57,6 +59,8 @@ export default function FloorPlan({ floor, selected, onSelect, dimensions, furni
   if (floor.id === 'OG') { labels.bath = [2.3, 1.7]; labels['child-north'] = [4.65, 5.65]; labels['child-south'] = [4.3, 8]; labels.multifunction = [1.3, 6.75] }
   if (floor.id === 'DG') labels.office = [4.8, 3.35]
   const core = stairFor()
+  if (floor.id === 'EG') { labels.wc = [1.4, 1.35]; labels.hall = [5.1, 1.3]; labels.pantry = [2.15, 2.45] }
+  else labels.hall = [core.x + core.width + .16 + core.arrivalDepth / 2, floor.id === 'DG' ? 4.6 : 4.8]
   const walkingLine = stairWalkingLine(storeyRise(floor.id))
   if (floor.id === 'DG') walkingLine.reverse()
   const arrowEnd = walkingLine.at(-1)!, arrowBefore = walkingLine.at(-2)!
@@ -74,13 +78,14 @@ export default function FloorPlan({ floor, selected, onSelect, dimensions, furni
     <rect x="0" y="0" width={house.width} height="10" fill="#fff" />
     {floor.id === 'DG' && [house.north, 10 - heightLine(1.2)].map(south => <g key={south} data-closed-eaves="true" pointerEvents="none"><rect x=".4" y={south} width={house.east - house.west} height={heightLine(1.2) - house.north} fill="url(#closed-eaves)" /><text x={house.width / 2} y={south + .55} textAnchor="middle" fontSize=".15" fill="#667169">Unter 1,20 m · geschlossen</text></g>)}
     {floor.rooms.map(room => <g key={room.id} onClick={() => onSelect(room.id)} style={{ cursor: 'pointer' }}>{room.parts.map((part, index) => <rect key={index} x={part.x} y={part.z} width={part.width} height={part.depth} fill={room.color} opacity={selected === room.id ? 1 : .65} />)}</g>)}
-    <g data-stair="double-quarter-winder">
+    <g data-stair="half-turn-winder">
       {stairOpeningParts.map((part, index) => <rect key={index} x={part.x} y={part.z} width={part.width} height={part.depth} fill="#f4f0e8" />)}
       {stairSolids(storeyRise(floor.id)).map(solid => <polygon key={solid.id} data-step={solid.id} points={solid.footprint!.map(point => point.join(',')).join(' ')} fill="#e6d1af" stroke="#aa9473" strokeWidth=".016" />)}
       <polyline points={walkingLine.map(([east, , south]) => `${east},${south}`).join(' ')} fill="none" stroke="#746e61" strokeWidth=".025" />
       <path d="M-.18 -.1 L0 0 L-.18 .1" transform={`translate(${arrowEnd[0]} ${arrowEnd[2]}) rotate(${arrowAngle})`} fill="none" stroke="#746e61" strokeWidth=".025" />
       {floor.id === 'DG' && <rect x={core.x + core.width} y={core.z} width=".065" height={core.runWidth} fill="#777d73" />}
-      <text x={core.x + .72} y={core.z + core.depth / 2} textAnchor="middle" fontSize=".105" fill="#655f51">2 × ¼</text>
+      {floor.id !== 'KG' && <rect data-stair-eye-guard="true" x={core.x + core.width} y={core.z + core.runWidth} width=".04" height={core.depth - 2 * core.runWidth} fill="#777d73" />}
+      <text x={core.x + .72} y={core.z + core.depth / 2} textAnchor="middle" fontSize=".105" fill="#655f51">½</text>
       <text x={core.x + .6} y={core.z + .15} textAnchor="middle" fontSize=".13" fill="#655f51">{floor.id === 'DG' ? '↓ OG' : '↑ ' + (floor.id === 'KG' ? 'EG' : floor.id === 'EG' ? 'OG' : 'DG')}</text>
     </g>
     {floor.walls.map(wall => <g key={wall.id}><rect x={wall.x} y={wall.z} width={wall.width} height={wall.depth} fill={['west', 'east', 'north', 'south'].includes(wall.id) ? '#424a43' : '#647064'} />{wall.openings.map(opening => {

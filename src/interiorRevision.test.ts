@@ -5,7 +5,7 @@ test('Haustuer schwenkt innen und Kind Sued hat einen freien Eingang', () => {
   expect(makeFloor('EG').walls.flatMap(wall => wall.openings).find(opening => opening.id === 'entrance')?.swing).toBe('reverse')
   const furniture = makeFloor('OG').furniture
   expect(furniture.filter(item => item.id.startsWith('wardrobe-south'))).toHaveLength(1)
-  const access = rect(3.3, 5.5, .9, 1.5)
+  const access = rect(stair.x + stair.width + .16, 5.5, stair.arrivalDepth, 1.8)
   for (const item of furniture) {
     const overlap = Math.max(0, Math.min(access.x + access.width, item.x + item.width) - Math.max(access.x, item.x)) * Math.max(0, Math.min(access.z + access.depth, item.z + item.depth) - Math.max(access.z, item.z))
     expect(overlap, item.id).toBe(0)
@@ -15,7 +15,7 @@ test('Haustuer schwenkt innen und Kind Sued hat einen freien Eingang', () => {
 test('DG-Zugang am Treppenaustritt und Dachoeffnungen auf beiden Dachseiten', () => {
   const floor = makeFloor('DG'), entry = floor.walls.find(wall => wall.id === 'parents-entry-south')!
   expect(entry.z).toBeCloseTo(stair.end)
-  expect(area(floor.rooms.find(room => room.id === 'hall')!.parts)).toBeCloseTo(2.6558)
+  expect(area(floor.rooms.find(room => room.id === 'hall')!.parts)).toBeCloseTo(2.09)
   expect(roofWindows.some(window => window.id === 'DG-stair-skylight')).toBe(false)
   expect(roofWindows).toHaveLength(2)
   expect(roofWindows.filter(window => window.z > 5)).toHaveLength(1)

@@ -1,6 +1,7 @@
 import { lightWells, rect, roofHeight, roofWindows, roomArea, stairFor, stairSolids, storeyRise, wallSolids } from './model'
 import type { Floor, Furniture, Rect } from './model'
 import { terraceArea, terraceFurniture, terraceParts } from './terrace'
+import { kitchenModules } from './kitchenStorage'
 
 export type PlanPoint = { x: number; z: number }
 export type Measurable = Rect & { label: string; details: string; footprint?: [number, number][] }
@@ -15,7 +16,7 @@ export const contains = (bounds: Rect & { footprint?: [number, number][] }, poin
   })
   return inside
 }
-export const furnitureName = (item: Furniture) => ({ 'kitchen-tall': 'Hochschrankwand / Backofen', fridge: 'Kühlschrank', peninsula: 'Kochhalbinsel', kitchen: 'Arbeitszeile', bookshelf: 'Bücherregal', sideboard: 'Sideboard', 'sofa-chaise': 'Chaiselongue', 'parents-bed': 'Elternbett', 'guest-bed': 'Gästebett', 'kitchen-sink': 'Spüle' }[item.id] ?? { bed: 'Bett', sofa: 'Sofa', chaise: 'Chaiselongue', bookcase: 'Regal', table: 'Tisch', chair: 'Stuhl', bench: 'Essbank', cabinet: 'Schrank', counter: 'Arbeitsplatte', sink: 'Waschbecken', wc: 'WC', shower: 'Dusche', bath: 'Badewanne', desk: 'Schreibtisch', tv: 'Fernseher', plant: 'Pflanze', machine: 'Haustechnik / Gerät', hob: 'Induktionskochfeld', espresso: 'Siebträgermaschine' }[item.kind])
+export const furnitureName = (item: Furniture) => ({ 'kitchen-tall': 'Hochschrank / Backofen', fridge: 'Kühlschrank', peninsula: 'Kochhalbinsel', kitchen: 'Spülenzeile', 'coffee-counter': 'Kaffee- und Arbeitszeile', wardrobe: 'Garderobe', bookshelf: 'Bücherregal', sideboard: 'Sideboard', 'sofa-chaise': 'Chaiselongue', 'parents-bed': 'Elternbett', 'guest-bed': 'Gästebett', 'kitchen-sink': 'Spüle' }[item.id] ?? { bed: 'Bett', sofa: 'Sofa', chaise: 'Chaiselongue', bookcase: 'Regal', table: 'Tisch', chair: 'Stuhl', bench: 'Essbank', cabinet: 'Schrank', counter: 'Arbeitsplatte', sink: 'Waschbecken', wc: 'WC', shower: 'Dusche', bath: 'Badewanne', desk: 'Schreibtisch', tv: 'Fernseher', plant: 'Pflanze', machine: 'Haustechnik / Gerät', hob: 'Induktionskochfeld', espresso: 'Siebträgermaschine' }[item.kind])
 export const furnitureMeasure = (item: Furniture): Measurable => ({ ...item, label: furnitureName(item), details: `Höhe ${metres(item.height)}${item.bottom ? ` · Aufstand ${metres(item.bottom)}` : ''}` })
 export function planObjects(floor: Floor, furnished: boolean): Measurable[] {
   const objects: Measurable[] = [{ ...rect(-.22, 0, .22, 10), label: 'Nachbaranschluss (schematisch)', details: 'Keine vermessene Nachbarwand' }]
@@ -32,7 +33,12 @@ export function planObjects(floor: Floor, furnished: boolean): Measurable[] {
     for (const part of wallSolids(wall, floor.id === 'DG' ? roofHeight(5) : floor.height).filter(solid => solid.bottom === 0)) objects.push({ ...part, label: (exterior ? `Außenwand ${exterior}` : wall.id === 'installation' ? 'Installationsschacht' : 'Innenwand') + (wall.openings.length ? ' · Teilstück' : ''), details: `Stärke ${metres(wall.axis === 'x' ? wall.depth : wall.width)} · Gesamtlänge ${metres(wall.axis === 'x' ? wall.width : wall.depth)} · ${floor.id === 'DG' ? `Höhe ${metres(Math.min(roofHeight(part.z), roofHeight(part.z + part.depth)))} bis ${metres(roofHeight(Math.max(part.z, Math.min(5, part.z + part.depth))))}` : `Höhe ${metres(floor.height)}`}` })
     for (const opening of wall.openings) objects.push({ ...rect(wall.x + (wall.axis === 'x' ? opening.start : 0), wall.z + (wall.axis === 'z' ? opening.start : 0), wall.axis === 'x' ? opening.width : wall.width, wall.axis === 'z' ? opening.width : wall.depth), label: opening.id === 'terrace' ? 'Hebeschiebetür' : opening.kind === 'window' ? opening.id.includes('fixed') ? 'Festverglasung' : 'Fenster' : opening.kind === 'passage' ? 'Durchgang' : 'Tür', details: `Breite ${metres(opening.width)} · Höhe ${metres(opening.height)} · Brüstung ${metres(opening.sill)}` })
   }
-  if (furnished) objects.push(...floor.furniture.map(furnitureMeasure))
+  if (furnished) {
+    for (const item of floor.furniture) {
+      objects.push(furnitureMeasure(item))
+      objects.push(...kitchenModules(item).map(module => ({ ...module, label: { dishwasher: 'Geschirrspüler', sink: 'Spülenunterschrank', drawers: 'Auszugsschrank', cupboard: 'Geschirrschrank' }[module.use], details: `Nennmaß ${metres(module.width)} × ${metres(module.depth)} · Einbau ungeprüft` })))
+    }
+  }
   if (floor.id === 'DG') objects.push(...roofWindows.map(window => ({ ...window, label: window.name, details: `Dachflächenmaß ${metres(window.width)} × ${metres(window.depth / Math.cos(35 * Math.PI / 180))} · Grundrissprojektion` })))
   return objects
 }
