@@ -93,8 +93,8 @@ describe('Maßhaltiger Vorentwurf', () => {
     expect(sideboard.z + sideboard.depth).toBeCloseTo(house.south - .145)
     expect(floor.furniture.some(item => item.id === 'larder')).toBe(false)
     const bench = floor.furniture.find(item => item.kind === 'bench')!, table = floor.furniture.find(item => item.id === 'dining')!
-    expect(bench.x + bench.width).toBeCloseTo(house.east)
-    expect(floor.furniture.filter(item => item.id.startsWith('dining-chair')).every(item => item.x < table.x)).toBe(true)
+    expect(bench.z).toBeGreaterThan(table.z + table.depth)
+    expect(floor.furniture.filter(item => item.id.startsWith('dining-chair')).every(item => item.z < table.z)).toBe(true)
     const opening = floor.walls.flatMap(wall => wall.openings).find(opening => opening.id === 'entrance-fixed')!
     expect([opening.width, opening.height, opening.sill]).toEqual([.35, 2.1, 0])
   })
@@ -213,8 +213,9 @@ describe('Maßhaltiger Vorentwurf', () => {
       expect(wcArea).toBeGreaterThanOrEqual(3)
       expect(wcArea).toBeCloseTo(3.996)
       expect(area(eg.rooms.find(room => room.id === 'pantry')!.parts)).toBeCloseTo(1.188)
-      expect(eg.furniture.some(item => item.id === 'pantry-cabinet')).toBe(false)
-      expect(eg.furniture.find(item => item.id === 'coffee-counter')).toMatchObject({ width: 1.2, depth: .6 })
+      expect(eg.furniture.find(item => item.id === 'pantry-cabinet')).toMatchObject({ width: .6, depth: .6 })
+      expect(eg.furniture.some(item => item.id === 'coffee-counter')).toBe(false)
+      expect(eg.furniture.find(item => item.id === 'kitchen')).toMatchObject({ width: .6, depth: 3.15 })
       const wc = eg.rooms.find(room => room.id === 'wc')!
       const shower = eg.furniture.find(item => item.id === 'guest-shower')!
       expect([shower.width, shower.depth]).toEqual([.9, .9])

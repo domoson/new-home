@@ -10,7 +10,7 @@ export function daylightLevels(altitude: number, mode: 'room' | 'global' = 'room
   return { interior: mode === 'global' ? 0 : daylight, ambient: mode === 'global' ? .48 + daylight * .82 : .035 + daylight * .085, exterior: mode === 'global' ? 0 : daylight * .65, sky: mode === 'global' ? 0 : daylight * .55, sun: altitude > 0 ? 3 * Math.min(1, Math.sin(altitude) * 3) : 0, background: new THREE.Color('#131b25').lerp(new THREE.Color('#dce7eb'), daylight) }
 }
 
-export function createRoomLighting(floors: FloorId[], materials: THREE.Material[]) {
+export function createRoomLighting(floors: FloorId[], materials: THREE.Material[], furnished = true) {
   const group = new THREE.Group(); group.name = 'room-lighting'
   const circuits = floors.flatMap(floorId => {
     const floor = makeFloor(floorId)
@@ -42,6 +42,17 @@ export function createRoomLighting(floors: FloorId[], materials: THREE.Material[
         light.visible = false; group.add(light, light.target)
         return { mount, light }
       })
+      if (furnished && floorId === 'EG' && room.id === 'living') {
+        const cabinet = floor.furniture.find(item => item.id === 'kitchen-upper')!
+        const mount = new THREE.Group(); mount.name = 'kitchen-task-light'; mount.userData.lightCircuit = id
+        mount.position.set(cabinet.x + cabinet.width / 2, cabinet.bottom! + .008, cabinet.z + cabinet.depth - .035)
+        mount.add(new THREE.Mesh(new THREE.BoxGeometry(cabinet.width - .08, .012, .02), diffuser)); group.add(mount)
+        const light = new THREE.SpotLight('#ffe3bc', 35, 2.5, 1.1, .8, 2)
+        light.name = 'EG-kitchen-task-source'; light.position.copy(mount.position); light.position.y -= .025
+        light.castShadow = true; light.shadow.mapSize.set(256, 256); light.shadow.camera.near = .05; light.shadow.camera.far = 2.5; light.shadow.bias = -.00015
+        light.target.position.set(mount.position.x, .92, 3.05)
+        light.visible = false; group.add(light, light.target); lamps.push({ mount, light })
+      }
       return { id, floor: floorId, diffuser, lamps }
     })
   })

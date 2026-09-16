@@ -1,5 +1,6 @@
 import { winderCore, winderSteps } from './winderStair'
 import type { StairPoint } from './winderStair'
+import { kitchenFurniture } from './kitchenLayout'
 
 export type FloorId = 'KG' | 'EG' | 'OG' | 'DG'
 export type Rect = { x: number; z: number; width: number; depth: number }
@@ -85,18 +86,18 @@ function buildMainFloor(floor: Floor) {
   const hall = room('hall', 'Flur', hallParts, colors.hall, '95 cm lichter Verteiler neben der U-Wendeltreppe, 80 cm nördlich der Hausmitte. Offenes Treppenauge ohne Zwischenwände oder Einbauschrank; An- und Austritt nach Osten. Ausführung ungeprüft.', [hallWest + stair.arrivalDepth / 2, stair.end - .5])
   if (floor.id === 'EG') {
     const kitchenNorth = 1.95, entranceEnd = kitchenNorth - interiorWallThickness
-    const stepEast = house.east - 1.2, stepWest = stepEast - interiorWallThickness, shiftedNorth = kitchenNorth + .6
+    const stepEast = house.east - 1.8, shiftedNorth = kitchenNorth + .6
     const showerEast = house.west + .9, pantryWest = showerEast + interiorWallThickness
     floor.walls.push(wall('wc-niche-back', 'z', showerEast, entranceEnd, stairWallStart - entranceEnd), wall('wc-niche-south', 'x', showerEast, entranceEnd, hallWest - showerEast), wall('wc-east', 'z', stairEast, house.north, entranceEnd - house.north, interiorWallThickness, [{ ...door('wc', .27), hinge: 'end', swing: 'reverse' }]), wall('hall-south', 'x', hallWest, entranceEnd, house.east - hallWest, interiorWallThickness, [{ ...door('living', 0, 1.3, floor.height), kind: 'passage' }]))
-    floor.walls.find(wall => wall.id === 'hall-south')!.width = stepWest - hallWest
-    floor.walls.push(wall('kitchen-step', 'z', stepWest, entranceEnd, .6 + interiorWallThickness), wall('entry-wardrobe-back', 'x', stepEast, entranceEnd + .6, 1.2))
+    floor.walls.find(wall => wall.id === 'hall-south')!.z = entranceEnd + .6
     const eastWall = floor.walls.find(wall => wall.id === 'east')!
     eastWall.openings.find(opening => opening.id === 'entrance')!.start = .75
     eastWall.openings.find(opening => opening.id === 'entrance-fixed')!.start = .39
-    eastWall.openings.find(opening => opening.id === 'kitchen-window')!.start -= .5
+    Object.assign(eastWall.openings.find(opening => opening.id === 'kitchen-window')!, { start: 4.2, width: 1.05, sill: 1.45, height: .9, hinge: 'end' })
+    eastWall.openings.push(windowOpening('kitchen-fixed', 3.55, .6, 1.45, .9))
     floor.rooms = [room('wc', 'Dusch-WC', [rect(.4, house.north, stairEast - .4, stairWallStart - house.north)], colors.wet, 'Dusch-WC in der Flucht der Treppenwand, mit 90 x 90 cm Dusche, WC und Waschtisch. Sanitärführung ungeprüft.', [1.5, 1.65]), room('hall', 'Diele', [rect(hallWest, house.north, house.east - hallWest, stairWallStart - house.north), rect(hallWest, stairWallStart, 1.8, interiorWallThickness)], colors.hall, '1,80 m Garderobe, Sitzbank und türhohes Seitenlicht. Zur Küche 1,80 m breit und bis zur Decke offen.', [5.5, 1.55]), room('living', 'Wohnen / Kochen / Essen', [rect(hallWest, stair.z, house.east - hallWest, southRoomStart - stair.z), rect(.4, southRoomStart, house.east - .4, house.south - southRoomStart)], colors.living, 'Offener Familienbereich mit Bestandssofa, Ostwandbank und 180-cm-Esstisch. Der östliche Treppenaustritt bleibt frei; Halbinsel 240 x 100 cm und Vorratshochschrank.', [3.25, 6.35])]
     floor.furniture = [furniture('guest-shower', 'shower', .45, 2.05, .9, .9, .06), furniture('guest-wc', 'wc', 1.5, .43, .65, .7, .43), furniture('guest-sink', 'sink', .45, .43, .55, .5, .85), furniture('wardrobe', 'cabinet', 2.8, .39, 1.8, .6, 2.4), furniture('bench', 'cabinet', 4.6, .39, .8, .6, .45), furniture('coffee', 'table', 1.6, 7.9, .9, .5, .35), furniture('sideboard', 'cabinet', .65, 9.025, 1.8, .45, .6), furniture('tv', 'tv', .9, 9.395, 1.3, .08, 1.65, Math.PI / 2), { ...furniture('bookshelf', 'bookcase', .43, southRoomStart, 2.12, .4, 2.12), color: '#fafafa' }, furniture('plant', 'plant', 6.1, 9.1, .45, .45, 1.2)]
-    floor.furniture.push(furniture('fridge', 'cabinet', house.east - .6, 2.325, .6, .6, 2.55), furniture('kitchen-tall', 'cabinet', house.east - 2.4, 2.325, 1.2, .6, 2.55), furniture('pantry-cabinet', 'cabinet', house.east - 1.2, 2.325, .6, .6, 2.55), furniture('kitchen', 'counter', house.east - .6, 3, .6, 1.55, .92), furniture('peninsula', 'counter', house.east - 2.4, 4.55, 2.4, 1, .92), furniture('kitchen-sink', 'sink', house.east - .565, 3.25, .52, .6, .95), { ...furniture('induction', 'hob', 4.6, 4.77, .8, .52, .025), bottom: .92 }, { ...furniture('espresso', 'espresso', 5.8, 5.1, .38, .4, .4), bottom: .92 })
+    floor.furniture.push(...kitchenFurniture(floor.height))
     floor.furniture.push(furniture('sofa', 'sofa', .48, 6.64, 2.5, .8, .8), furniture('sofa-chaise', 'chaise', .48, 7.44, .8, .9, .48), furniture('dining', 'table', 5.1, 7, .9, 1.8, .75), furniture('dining-bench', 'bench', house.east - .5, house.south - 2.735, .5, 2, .85))
     for (const south of [7, 7.65, 8.3]) floor.furniture.push(furniture(`dining-chair-${south}`, 'chair', 4.48, south, .43, .43, .8, -Math.PI / 2))
     const shower = floor.furniture.find(item => item.id === 'guest-shower')!
@@ -110,34 +111,24 @@ function buildMainFloor(floor: Floor) {
     cloakroom.note = 'Dusch-WC mit nördlichem Eingang aus der Diele. Dusche exakt 90 x 90 cm im Südwesten an Haustrennwand und Treppe, WC und Waschbecken im Norden. Tür öffnet nach innen. Sanitärführung ungeprüft.'
     cloakroom.spawn = [1.35, 1.4]
     const wardrobe = floor.furniture.find(item => item.id === 'wardrobe')!
-    wardrobe.x = stepEast + .02; wardrobe.z = entranceEnd + .02; wardrobe.width = 1.16; wardrobe.depth = .56; wardrobe.angle = Math.PI
+    wardrobe.x = stepEast + .02; wardrobe.z = entranceEnd + .02; wardrobe.width = 1.76; wardrobe.depth = .56; wardrobe.angle = Math.PI
     floor.furniture.push(furniture('pantry-shelf', 'bookcase', pantryWest + .025, kitchenNorth + .025, .25, stairWallStart - kitchenNorth - .05, 2.1))
     for (const item of floor.furniture.filter(item => ['sofa', 'sofa-chaise', 'coffee'].includes(item.id))) item.z += .29
     const bookshelf = floor.furniture.find(item => item.id === 'bookshelf')!
     bookshelf.x = .48; bookshelf.z = southRoomStart + .02; bookshelf.width = 2.12; bookshelf.depth = .4
-    floor.furniture = floor.furniture.filter(item => item.id !== 'pantry-cabinet')
-    const fridge = floor.furniture.find(item => item.id === 'fridge')!
-    fridge.x = 3.98; fridge.z = kitchenNorth
-    const counter = floor.furniture.find(item => item.id === 'kitchen')!
-    counter.z = shiftedNorth + .6; counter.depth = 1.3
-    floor.furniture.find(item => item.id === 'kitchen-sink')!.z = 3.8
-    const peninsula = floor.furniture.find(item => item.id === 'peninsula')!
-    peninsula.x = 3.96; peninsula.z = 4.45; peninsula.width = house.east - peninsula.x
-    const induction = floor.furniture.find(item => item.id === 'induction')!
-    induction.x = 5.1; induction.z = peninsula.z + .22
-    const espresso = floor.furniture.find(item => item.id === 'espresso')!
-    espresso.x = stepEast + .08; espresso.z = shiftedNorth + .1
-    floor.furniture.splice(floor.furniture.indexOf(espresso), 0, furniture('coffee-counter', 'counter', stepEast, shiftedNorth, 1.2, .6, .92))
-    const tallCabinet = floor.furniture.find(item => item.id === 'kitchen-tall')!
-    tallCabinet.x = fridge.x + .6; tallCabinet.z = kitchenNorth; tallCabinet.width = .6
+    const dining = floor.furniture.find(item => item.id === 'dining')!
+    dining.x = 4.4; dining.z = 7.95; dining.width = 1.8; dining.depth = .9
+    const diningBench = floor.furniture.find(item => item.id === 'dining-bench')!
+    diningBench.x = 4.3; diningBench.z = 7.3; diningBench.width = 2; diningBench.depth = .5; diningBench.angle = -Math.PI / 2
+    floor.furniture.find(item => item.id === 'plant')!.z = 6.55
+    floor.furniture.filter(item => item.id.startsWith('dining-chair-')).forEach((item, index) => { item.x = index === 2 ? 3.75 : 5.1 + index * .65; item.z = index === 2 ? 8.2 : 9.02; item.angle = index === 2 ? -Math.PI / 2 : Math.PI })
     const entrance = floor.rooms.find(room => room.id === 'hall')!
-    entrance.parts = [rect(hallWest, house.north, house.east - hallWest, entranceEnd - house.north), rect(hallWest, entranceEnd, 1.3, interiorWallThickness), rect(stepEast, entranceEnd, 1.2, .6)]
+    entrance.parts = [rect(hallWest, house.north, house.east - hallWest, entranceEnd + .6 - house.north), rect(hallWest, entranceEnd + .6, 1.3, interiorWallThickness)]
     entrance.spawn = [5.5, 1.35]
-    entrance.note = '120 x 60 cm Garderobennische direkt am Eingang, mit 116 x 56 cm Schrank und Front zur Diele. Alte Nordwand-Garderobe entfernt, Sitzbank bleibt. Küche über den 130 cm breiten deckenhohen Durchgang erreichbar. Tür- und Schrankausführung ungeprüft.'
+    entrance.note = '180 x 60 cm Garderobennische direkt am Eingang, mit 176 x 56 cm Schrank und Front zur Diele. Sitzbank bleibt. Der 130 cm breite Durchgang führt westlich der Küche direkt zum Wohnbereich; Küchenzugang von Westen. Tür- und Schrankausführung ungeprüft.'
     const living = floor.rooms.find(room => room.id === 'living')!
     living.parts[0] = rect(hallWest, shiftedNorth, house.east - hallWest, southRoomStart - shiftedNorth)
-    living.parts.push(rect(hallWest, kitchenNorth, stepWest - hallWest, shiftedNorth - kitchenNorth))
-    living.note = 'Gestufte Küche: zwei 60-cm-Hochschränke auf der Nordlinie, 120-cm-Kaffeezeile 60 cm südlicher. Halbinsel 266 x 100 cm um 40 cm nach Süden versetzt, mit beidseitigem Stauraum und 114 cm Vorbereitungsfläche links vom Kochfeld. Arbeitsgang mindestens 130 cm; Eckbereiche und Geräteplanung ungeprüft.'
+    living.note = 'Offene U-Küche mit deckenhohem Einbaukühlschrank und erhöhtem Backofen. Nordostecke mit Geräteplatte und Hängeschränken, Ostzeile mit freiem Cookit-Platz, Spüle und Geschirrspüler. Kochhalbinsel 266 x 100 cm zum Wohnbereich, ohne Hocker; 100 x 60 cm freie Vorbereitung. 4,98 m² Bruttoarbeitsplatte, westlich 130 cm Durchgang und 95 cm zur Essbank. Fenster angepasst; Geräteeinbau, Lüftung und Anschlüsse ungeprüft.'
     floor.rooms.push(room('pantry', 'Vorratsnische', [rect(pantryWest, kitchenNorth, hallWest - pantryWest, stairWallStart - kitchenNorth)], colors.utility, 'Offene Vorratsnische rechts neben der Dusche, etwa 120 x 99 cm. 25 cm tiefes Regal an der Westwand, Zugang von der Küche. Keine abgeschlossene oder belüftete Speisekammer; Ausführung ungeprüft.', [2.2, 2.45]))
     return
   }

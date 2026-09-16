@@ -8,7 +8,7 @@ test('EG has a snug southwest shower, northern WC entry and a kitchen-side pantr
   const pantry = floor.rooms.find(room => room.id === 'pantry')!
   expect(wc.parts).toHaveLength(2)
   expect(area(wc.parts)).toBeCloseTo(3.996)
-  expect(area(hall.parts)).toBeCloseTo(6.5116)
+  expect(area(hall.parts)).toBeCloseTo(8.1676)
   expect(area(pantry.parts)).toBeCloseTo(1.188)
   expect(pantry.parts[0].width).toBeCloseTo(1.2)
   expect(pantry.parts[0].depth).toBeCloseTo(.99)
@@ -24,12 +24,10 @@ test('EG has a snug southwest shower, northern WC entry and a kitchen-side pantr
   for (const id of ['KG', 'OG', 'DG'] as const) expect(makeFloor(id).walls.some(wall => wall.id.startsWith('wc-niche'))).toBe(false)
 })
 
-test('Western kitchen line, WC and entrance retain the north-shifted alignment', () => {
+test('WC divider and entrance retain the north-shifted alignment', () => {
   const floor = makeFloor('EG')
-  const original: Record<string, number> = { fridge: 2.45, 'kitchen-tall': 2.45 }
-  for (const [id, south] of Object.entries(original)) expect(floor.furniture.find(item => item.id === id)!.z, id).toBeCloseTo(south - .5)
   const divider = floor.walls.find(wall => wall.id === 'hall-south')!
-  expect(divider.z).toBeCloseTo(2.29 - .5)
+  expect(divider.z).toBeCloseTo(2.39)
   const east = floor.walls.find(wall => wall.id === 'east')!, entrance = east.openings.find(opening => opening.id === 'entrance')!
   expect(entrance.start).toBeCloseTo(1.1 - .35)
   expect(entrance.start + entrance.width).toBeLessThan(divider.z)

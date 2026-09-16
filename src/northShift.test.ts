@@ -41,9 +41,9 @@ test('Requested room proportions, sofa shift and two centered roof windows', () 
   expect(size(dg, 'hall')).toBeCloseTo(2.09)
   expect(size(dg, 'office')).toBeGreaterThan(13.850944)
   expect(dg.walls.find(wall => wall.id === 'stair-east')!.openings).toHaveLength(0)
-  expect(size(eg, 'living')).toBeCloseTo(38.9588)
+  expect(size(eg, 'living')).toBeCloseTo(37.3988)
   expect(eg.furniture.find(item => item.id === 'sofa')!.z).toBeCloseTo(6.93)
-  expect(eg.furniture.find(item => item.id === 'kitchen')!.depth).toBeCloseTo(1.3)
+  expect(eg.furniture.find(item => item.id === 'kitchen')!.depth).toBeCloseTo(3.15)
   expect(kg.rooms.find(room => room.id === 'bath')!.parts[0].width).toBeCloseTo(house.east - house.west)
   expect(kg.rooms.find(room => room.id === 'child-north')!.parts).toHaveLength(1)
   expect(size(kg, 'bath')).toBeGreaterThan(size(kg, 'child-north'))
@@ -96,11 +96,11 @@ test('EG stair accesses and eye stay open and OG bathroom entrance stays usable'
   const eg = makeFloor('EG'), og = makeFloor('OG')
   const peninsula = eg.furniture.find(item => item.id === 'peninsula')!
   const tallCabinet = eg.furniture.find(item => item.id === 'kitchen-tall')!
-  expect(peninsula.width).toBeCloseTo(2.66)
-  expect(peninsula.depth).toBe(1)
+  expect(peninsula.width).toBeCloseTo(.86)
+  expect(peninsula.depth).toBe(2.2)
   expect(peninsula.x - stair.x - stair.width - interiorWallThickness).toBeCloseTo(1.3)
   expect(tallCabinet.width).toBeCloseTo(.6)
-  expect(peninsula.z - tallCabinet.z - tallCabinet.depth).toBeCloseTo(1.9)
+  expect(peninsula.z - tallCabinet.z - tallCabinet.depth).toBeCloseTo(1)
   expect(area(stairOpeningParts)).toBeCloseTo(4.62)
   for (const wallId of ['stair-east', 'stair-east-south']) {
     const wall = eg.walls.find(wall => wall.id === wallId)!

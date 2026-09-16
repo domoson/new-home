@@ -8,13 +8,15 @@ import { contains, distance, metres, planObjects, snapPoint } from './measure'
 import type { Measurable, PlanPoint } from './measure'
 import { terraceArea, terraceFurniture, terraceMain, terraceOutline } from './terrace'
 import { partyRoom } from './partyRoomData'
-import { kitchenModules } from './kitchenStorage'
+import { kitchenModules, moduleFront } from './kitchenStorage'
 
 function Furnishing({ item }: { item: Furniture }) {
   const { x, z, width, depth, kind } = item
+  if (item.id === 'kitchen-upper') return <g data-furniture={item.id} transform={`translate(${x} ${z})`} fill="none" stroke="#527d74" strokeWidth=".018" strokeDasharray=".05 .025"><rect width={width} height={depth} />{[1, 2].map(panel => <path key={panel} d={`M${panel * width / 3} 0 V${depth}`} />)}</g>
+  if (kind === 'espresso' && item.angle === Math.PI / 2) return <g transform={`translate(${x + width} ${z}) rotate(90)`}><Furnishing item={{ ...item, x: 0, z: 0, width: depth, depth: width, angle: 0 }} /></g>
   if (kind === 'bed' && item.angle === Math.PI / 2) return <g transform={`translate(${x + width} ${z}) rotate(90)`}><Furnishing item={{ ...item, x: 0, z: 0, width: depth, depth: width, angle: 0 }} /></g>
   if (kind === 'sofa' && item.angle === Math.PI / 2) return <g transform={`translate(${x + width} ${z}) rotate(90)`}><Furnishing item={{ ...item, x: 0, z: 0, width: depth, depth: width, angle: 0 }} /></g>
-  return <g data-furniture={item.id} transform={`translate(${x} ${z})`} stroke="#777d73" strokeWidth=".018" fill={item.color ?? (kind === 'cabinet' || kind === 'counter' ? '#d3bb94' : kind === 'plant' ? '#93a88b' : '#faf9f5')}>
+  return <g data-furniture={item.id} transform={`translate(${x} ${z})`} stroke="#777d73" strokeWidth=".018" fill={item.color ?? (kitchenModules(item).length ? '#ebede7' : ['fridge', 'kitchen-tall'].includes(item.id) ? '#cfdcd5' : kind === 'cabinet' || kind === 'counter' ? '#d3bb94' : kind === 'plant' ? '#93a88b' : '#faf9f5')}>
     <rect width={width} height={depth} rx={['sofa', 'bed', 'bath', 'wc', 'chair'].includes(kind) ? .08 : .015} />
     {kind === 'bed' && <><path d={`M .04 .5 H ${width - .04}`} /><rect x=".09" y=".1" width={width > 1.3 ? width / 2 - .16 : width - .18} height=".3" rx=".04" />{width > 1.3 && <rect x={width / 2 + .04} y=".1" width={width / 2 - .16} height=".3" rx=".04" />}<rect x=".05" y=".6" width={width - .1} height={depth - .68} fill="#d4dcd2" rx=".03" /></>}
     {kind === 'sofa' && <><rect x=".09" y=".05" width={width - .18} height=".18" fill="#d0d7c9" /><path d={`M ${width / 3} .25 V ${depth - .08} M ${width * 2 / 3} .25 V ${depth - .08}`} /><rect x=".08" y=".32" width=".35" height=".35" rx=".05" fill="#b9c8b0" /></>}
@@ -22,15 +24,15 @@ function Furnishing({ item }: { item: Furniture }) {
     {kind === 'wc' && <ellipse cx={width / 2} cy={depth * .6} rx={width * .32} ry={depth * .27} fill="#f1f3ef" />}
     {kind === 'shower' && <><path d={`M0 0 L${width} ${depth} M${width} 0 L0 ${depth}`} stroke="#b9cccc" /><circle cx={width / 2} cy={depth / 2} r=".04" fill="#777d73" /></>}
     {kind === 'desk' && <rect x={width * .3} y={depth * .25} width={width * .45} height={depth * .45} fill="#687b7b" />}
-    {kind === 'counter' && item.id === 'kitchen' && depth > 2.3 && <g fill="#495854"><rect x=".05" y="1.75" width=".5" height=".55" rx=".03" /><circle cx=".2" cy="1.9" r=".08" stroke="#a8b4b1" /><circle cx=".4" cy="2.1" r=".09" stroke="#a8b4b1" /></g>}
-    {kind === 'hob' && <g fill="#384441" stroke="#afbeb6"><rect width={width} height={depth} />{[.18, width - .18].flatMap(east => [.14, depth - .14].map(south => <circle key={`${east}-${south}`} cx={east} cy={south} r=".095" />))}</g>}
+    {kind === 'hob' && <g fill="#384441" stroke="#afbeb6"><rect width={width} height={depth} />{[width > depth ? .18 : .14, width - (width > depth ? .18 : .14)].flatMap(east => [width > depth ? .14 : .18, depth - (width > depth ? .14 : .18)].map(south => <circle key={`${east}-${south}`} cx={east} cy={south} r=".095" />))}</g>}
     {kind === 'espresso' && <g fill="#63726e"><rect x=".025" y=".025" width={width - .05} height={depth * .55} /><path d={`M${width / 2} ${depth * .5} V${depth}`} strokeWidth=".035" /></g>}
     {kind === 'cabinet' && <path d={item.id === 'wardrobe' && item.angle === Math.PI ? `M0 .025 H${width} M${width / 2} 0 V${depth}` : item.angle === Math.PI ? `M0 ${depth / 2} H${width} M${width - .03} 0 V${depth}` : `M${width / 2} 0 V${depth}`} stroke="#b09a79" />}
-    {kitchenModules(item).map(module => <g key={module.id} data-kitchen-module={module.id} fill="none" stroke="#a68e6c" strokeWidth=".01"><rect x={module.x - x} y={module.z - z} width={module.width} height={module.depth} strokeDasharray=".04 .025" />{module.use === 'dishwasher' && <path d={`M${module.x - x + .08} ${module.z - z + .1} h.4 v.4 h-.4 Z m.07 .12 h.26 m-.26 .13 h.26`} />}</g>)}
-    {kind === 'bench' && <rect x={width - .08} y="0" width=".08" height={depth} fill="#9eae98" />}
+    {kitchenModules(item).map(module => { const front = moduleFront(module); return <g key={module.id} data-kitchen-module={module.id} data-front={module.front} fill="none" stroke="#a68e6c" strokeWidth=".01"><rect x={module.x - x} y={module.z - z} width={module.width} height={module.depth} strokeDasharray=".04 .025" /><rect x={front.x - x} y={front.z - z} width={front.width} height={front.depth} fill="#a68e6c" />{module.use === 'dishwasher' && <path d={`M${module.x - x + .08} ${module.z - z + .1} h.4 v.4 h-.4 Z m.07 .12 h.26 m-.26 .13 h.26`} />}</g> })}
+    {kind === 'bench' && (Math.abs(item.angle ?? 0) === Math.PI / 2 ? <rect data-bench-back={item.angle! < 0 ? 'north' : 'south'} x="0" y={item.angle! < 0 ? 0 : depth - .08} width={width} height=".08" fill="#9eae98" /> : <rect x={width - .08} y="0" width=".08" height={depth} fill="#9eae98" />)}
+    {['fridge', 'kitchen-tall', 'pantry-cabinet'].includes(item.id) && !item.angle && <path data-tall-front="south" d={`M.02 ${depth - .025} H${width - .02}`} strokeWidth=".035" />}
     {kind === 'bookcase' && <path d={width > depth ? `M${width / 3} 0 V${depth} M${width * 2 / 3} 0 V${depth}` : `M0 ${depth / 3} H${width} M0 ${depth * 2 / 3} H${width}`} />}
     {kind === 'plant' && <><circle cx={width / 2} cy={depth / 2} r={width * .46} /><path d={`M0 0 L${width} ${depth} M0 ${depth} L${width} 0`} /></>}
-    {kind === 'machine' && <circle cx={width / 2} cy={depth / 2} r={Math.min(width, depth) * .3} fill="#c5d1d1" />}
+    {item.id === 'toaster' ? <g stroke="#384441" strokeWidth=".025"><path d={`M.045 .075 H${width - .045} M.045 .145 H${width - .045}`} /></g> : item.id === 'sodastream' ? <g fill="#93b8b8"><rect x=".04" y=".025" width={width - .08} height=".06" /><circle cx={width / 2} cy=".17" r=".045" /></g> : item.id === 'cookit' ? <g fill="#bfcaca"><circle cx=".29" cy={depth / 2} r=".145" /><circle cx=".29" cy={depth / 2} r=".06" fill="#53675f" /><rect x=".025" y=".16" width=".06" height=".18" fill="#53675f" /></g> : kind === 'machine' && <circle cx={width / 2} cy={depth / 2} r={Math.min(width, depth) * .3} fill="#c5d1d1" />}
   </g>
 }
 export default function FloorPlan({ floor, selected, onSelect, dimensions, furnished, zoom }: { floor: Floor; selected: string; onSelect: (id: string) => void; dimensions: boolean; furnished: boolean; zoom: number }) {
@@ -59,7 +61,7 @@ export default function FloorPlan({ floor, selected, onSelect, dimensions, furni
   if (floor.id === 'OG') { labels.bath = [2.3, 1.7]; labels['child-north'] = [4.65, 5.65]; labels['child-south'] = [4.3, 8]; labels.multifunction = [1.3, 6.75] }
   if (floor.id === 'DG') labels.office = [4.8, 3.35]
   const core = stairFor()
-  if (floor.id === 'EG') { labels.wc = [1.4, 1.35]; labels.hall = [5.1, 1.3]; labels.pantry = [2.15, 2.45] }
+  if (floor.id === 'EG') { labels.wc = [1.4, 1.35]; labels.hall = [5.1, 1.3]; labels.pantry = [2.15, 2.45]; labels.living = [3.55, 6.85] }
   else labels.hall = [core.x + core.width + .16 + core.arrivalDepth / 2, floor.id === 'DG' ? 4.6 : 4.8]
   const walkingLine = stairWalkingLine(storeyRise(floor.id))
   if (floor.id === 'DG') walkingLine.reverse()

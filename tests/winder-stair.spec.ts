@@ -41,9 +41,9 @@ test('Nordversetzte U-Wendeltreppe und Zimmerzugaenge sind beidseitig begehbar',
       [elevations.EG, [[3.3, 1.1], [2.1, 1.1], [1.35, 1.3], [.85, 1.45], [.85, 2.5]]],
       [elevations.EG, [[3.3, lower], [3.3, 2.45], [2.2, 2.45]]],
       [elevations.EG, [[3.3, 1.25], [5.7, 1.25], [7.9, 1.25]]],
-      [elevations.EG, [[5.7, 1.25], [5.9, 1.45], [4.3, 1.2], [3.3, 1.2], [3.3, 3.4], [4.3, 3.4], [4.3, 2.95], [4.3, 3.65], [5.65, 3.65], [5.65, 4.05]]],
-      [elevations.EG, [[3.3, 3.4], [3.3, 5.95], [5.6, 5.95], [5.6, 6.35]]],
-      [elevations.EG, [[3.3, lower], [3.3, 3.35], [5, 3.35], [3.3, 3.35], [3.3, 6.2], [3.8, 6.2], [3.8, 9.3], [4.82, 9.3], [4.82, 10.5]]],
+      [elevations.EG, [[5.7, 1.25], [5.9, 1.45], [5.15, 1.45], [4.3, 1.2], [3.3, 1.2], [3.3, 3.7], [4.3, 3.7], [4.9, 3.7], [5.5, 3.7], [5.5, 4.1], [5.65, 4.75], [5.2, 4.9], [4.5, 4.9], [3.3, 4.9], [3.3, 6.85]]],
+      [elevations.EG, [[3.3, 3.4], [3.3, 6.85], [5.5, 6.85], [3.8, 6.85], [3.99, 7.6], [3.35, 7.6], [3.35, 8.5]]],
+      [elevations.EG, [[3.3, lower], [3.3, 6.85], [3.35, 7.6], [3.35, 9.1], [4.55, 9.1], [4.55, 9.8], [4.82, 10.5]]],
       [elevations.OG, [[hallEast, upper], [hallEast, 3.6], [4.15, 3.6], [4.15, 1.85], [2.85, 1.85]]],
       [elevations.OG, [[hallEast, upper], [hallEast, 4.75], [4.4, 4.75], [5.1, 4.75], [5.1, 2.5]]],
       [elevations.OG, [[hallEast, upper], [hallEast, 7.45], [4.4, 7.45], [4.4, 8]]],
@@ -59,7 +59,8 @@ test('Nordversetzte U-Wendeltreppe und Zimmerzugaenge sind beidseitig begehbar',
       const offset = sign === 1 ? 0 : 1.2
       walker.teleport(new THREE.Vector3(sign * points[0][0], base, points[0][1] + offset))
       for (const [localEast, localSouth] of points.slice(1)) {
-      const east = sign * (base === elevations.EG && localEast === 4.82 && sign === -1 ? 4 : localEast), south = localSouth + offset
+      const westTerraceApproach = base === elevations.EG && sign === -1 && localSouth >= 9.1 && (localEast === 4.82 || localEast === 4.55)
+      const east = sign * (westTerraceApproach ? 4 : localEast), south = localSouth + offset
       let frames = 0
       while (Math.hypot(walker.position().x - east, walker.position().z - south) > .045 && frames++ < 240) {
         camera.lookAt(east, camera.position.y, south); walker.keys.add('KeyW'); walker.tick(); walker.keys.clear()
@@ -117,26 +118,45 @@ test('Alle Grundrisse zeigen Wendelstufen und den nördlichen Antritt', async ({
   expect(errors).toEqual([])
 })
 
-test('Gestufte Küche zeigt dieselben Schrankmodule in 2D und beiden 3D-Haushälften', async ({ page }) => {
+test('U-Kueche zeigt erreichbare Fronten in beiden Haushälften', async ({ page }) => {
   await page.goto('/')
   await page.getByRole('button', { name: 'EG', exact: true }).click()
-  await expect(page.locator('[data-kitchen-module]')).toHaveCount(9)
+  await expect(page.locator('[data-kitchen-module]')).toHaveCount(8)
+  await expect(page.locator('[data-kitchen-module][data-front="north"]')).toHaveCount(2)
   await expect(page.locator('[data-kitchen-module="dishwasher"]')).toHaveCount(1)
   await expect(page.locator('[data-furniture="pantry-cabinet"]')).toHaveCount(0)
+  await expect(page.locator('[data-furniture="kitchen-upper"]')).toHaveCount(1)
+  await expect(page.locator('[data-tall-front="south"]')).toHaveCount(2)
+  await expect(page.locator('[data-bench-back="north"]')).toHaveCount(1)
   const result = await page.evaluate(async () => {
     const THREE = await import('/node_modules/.vite/deps/three.js')
     const { buildScene } = await import('/src/scene.ts')
     const { makeFloor } = await import('/src/model.ts')
+    const { moduleFront } = await import('/src/kitchenStorage.ts')
     const model = buildScene('EG', true, true, true)
     model.group.updateMatrixWorld(true)
     const counts = { modules: 0, dishwasher: 0, wardrobe: 0, ovens: 0 }
-    const ovenBounds: number[][] = [], wardrobeBounds: number[][] = []
+    const ovenBounds: number[][] = [], wardrobeBounds: number[][] = [], moduleBounds: number[][] = [], benchBounds: number[][] = [], tallBounds: number[][] = []
     model.group.traverse(object => {
-      if (object.userData.kitchenModule) { counts.modules++; if (object.userData.kitchenModule.use === 'dishwasher') counts.dishwasher++ }
+      if (object.name.startsWith('kitchen-front-') || object.name === 'dining-bench-back') {
+        const bounds = new THREE.Box3().setFromObject(object)
+        const values = [bounds.max.x - bounds.min.x, bounds.max.z - bounds.min.z, bounds.min.z - (bounds.max.x < 0 ? 1.2 : 0)]
+        if (object.name === 'dining-bench-back') benchBounds.push(values)
+        else tallBounds.push(values)
+      }
+      if (object.userData.kitchenModule) {
+        counts.modules++
+        const module = object.userData.kitchenModule
+        if (module.use === 'dishwasher') counts.dishwasher++
+        const bounds = new THREE.Box3().setFromObject(object), westHouse = bounds.max.x < 0
+        const minX = westHouse ? -bounds.max.x : bounds.min.x, maxX = westHouse ? -bounds.min.x : bounds.max.x
+        const expected = moduleFront(module)
+        moduleBounds.push([maxX - minX - expected.width, bounds.max.z - bounds.min.z - expected.depth, minX - expected.x, bounds.min.z - (westHouse ? 1.2 : 0) - expected.z])
+      }
       if (object.name === 'kitchen-oven') {
         counts.ovens++
         const bounds = new THREE.Box3().setFromObject(object)
-        ovenBounds.push([Math.min(Math.abs(bounds.min.x), Math.abs(bounds.max.x)), Math.max(Math.abs(bounds.min.x), Math.abs(bounds.max.x))])
+        ovenBounds.push([Math.min(Math.abs(bounds.min.x), Math.abs(bounds.max.x)), Math.max(Math.abs(bounds.min.x), Math.abs(bounds.max.x)), bounds.min.z - (bounds.max.x < 0 ? 1.2 : 0), bounds.max.z - (bounds.max.x < 0 ? 1.2 : 0)])
       }
       if (object.name === 'entry-wardrobe-front') {
         counts.wardrobe++
@@ -146,13 +166,28 @@ test('Gestufte Küche zeigt dieselben Schrankmodule in 2D und beiden 3D-Haushäl
     })
     const cabinet = makeFloor('EG').furniture.find(item => item.id === 'kitchen-tall')!
     model.dispose()
-    return { counts, ovenBounds, wardrobeBounds, cabinet }
+    return { counts, ovenBounds, wardrobeBounds, cabinet, moduleBounds, benchBounds, tallBounds }
   })
-  expect(result.counts).toEqual({ modules: 18, dishwasher: 2, wardrobe: 4, ovens: 2 })
-  for (const [west, east] of result.ovenBounds) {
+  expect(result.counts).toEqual({ modules: 16, dishwasher: 2, wardrobe: 4, ovens: 2 })
+  for (const [west, east, north, south] of result.ovenBounds) {
     expect(west).toBeGreaterThan(result.cabinet.x)
     expect(east).toBeLessThan(result.cabinet.x + result.cabinet.width)
+    expect(north).toBeCloseTo(result.cabinet.z + result.cabinet.depth - .022)
+    expect(south - north).toBeCloseTo(.02)
   }
+  expect(result.tallBounds).toHaveLength(4)
+  for (const [width, depth, north] of result.tallBounds) {
+    expect(width).toBeCloseTo(.592)
+    expect(depth).toBeCloseTo(.02)
+    expect(north).toBeCloseTo(3.174)
+  }
+  expect(result.benchBounds).toHaveLength(2)
+  for (const [width, depth, north] of result.benchBounds) {
+    expect(width).toBeCloseTo(2)
+    expect(depth).toBeCloseTo(.07)
+    expect(north).toBeCloseTo(7.3)
+  }
+  for (const errors of result.moduleBounds) for (const error of errors) expect(error).toBeCloseTo(0)
   for (const [north, south] of result.wardrobeBounds) {
     expect(north).toBeCloseTo(1.81)
     expect(south).toBeLessThan(1.85)

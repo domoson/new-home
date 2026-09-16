@@ -423,19 +423,20 @@ Rechts neben der Dusche liegt eine offene Vorratsnische: x=1,46..2,66,
 z=1,95..2,94 m, 120 x 99 cm bzw. 1,188 m2. Regal 25 cm tief an der Westwand,
 92,5 cm freie Flaeche bis zur oestlichen Oeffnung. Zugang von der Kueche;
 keine abgeschlossene oder separat belueftete Speisekammer. Der bisherige separate
-Vorratshochschrank entfaellt zugunsten der Kaffeezeile. Garderobe jetzt
-116 x 56 x 240 cm in der 120 x 60 cm Eingangsnische, Front nach Norden zur Diele.
+Vorratshochschrank bleibt entfallen. Garderobe jetzt
+176 x 56 x 240 cm in der 180 x 60 cm Eingangsnische, Front nach Norden zur Diele.
 Die alte Nordwandgarderobe entfaellt, die Sitzbank bleibt. Raum-, Moebel- und Schwenkflaechen geometrisch sowie Zugaenge
 in der Simulation geprueft, kein Barrierefreiheits- oder Sanitaernachweis.
-Westliche Kuechenwand bleibt bei z=1,79 m, Hochschraenke ab z=1,95 m.
-Oestliche 120 cm der Wand jetzt 60 cm suedlicher bei z=2,39 m,
-Kuechenseite z=2,55 m. Ruecksprungwand 16 cm bei x=5,26..5,42 m.
+Westliche Dielenwand bleibt bei z=1,79 m.
+Oestliche 180 cm der Wand jetzt 60 cm suedlicher bei z=2,39 m,
+Kuechenseite z=2,55 m. Ruecksprungwand 16 cm bei x=4,66..4,82 m.
 Haustuer weiterhin um 35 statt etwa 20 cm
 nach Norden auf z=0,75..1,75 m, damit sie nicht mit der Kuechenwand kollidiert.
 Seitenlicht jetzt z=0,39..0,74 m, Vordach ab z=0. Anschluesse, schmale Pfeiler
 und Tragwerk ungeprueft. Nur EG geaendert; Treppe und obere Geschosse unveraendert.
-Wohnen/Kochen/Essen hat 38,9588 m2; Diele einschliesslich Schwelle 6,5116 m2.
-Diele +0,72 m2; Wohnen -0,816 m2 einschliesslich 0,096 m2 Ruecksprungwand.
+Wohnen/Kochen/Essen hat 38,4068 m2; Diele einschliesslich Schwelle 6,8716 m2.
+Gegenueber der verworfenen 120-cm-Nische: Diele +0,36 m2, Wohnen -0,552 m2,
+davon 0,192 m2 fuer die neue kurze Hochschrank-Rueckwand.
 Der vollbreite Wohnbereich beginnt bei z=5,46 m. Das Regal folgt der Treppenwand;
 Sofa und Couchtisch sind suedlich versetzt, Sideboard und TV unveraendert.
 Der Keller hat drei Nutzraeume: Technik ueber die ganze Nordbreite (15,9 m2),
@@ -510,31 +511,36 @@ Tuerhohes Seitenlicht am Eingang: 35 x 210 cm Festverglasung.
 L-Vordach in Holz mit 120 cm Ausladung, 220 cm Laenge und Unterkante 235 cm;
 16 cm Dachstaerke und 12 cm noerdliche Seitenwange. Konstruktion ungeprueft.
 
-Kueche: 266 x 100 cm Halbinsel bei z=4,45 m, 40 cm suedlicher als zuvor.
-80-cm-Induktionsfeld mit angedeuteter Muldenlueftung; links davon 114 cm
-freie Vorbereitungsbreite statt bisher 64 cm. Kuechenseitig 100- und
-90-cm-Auszugsmodule, 60 cm tief; rueckseitig vier 60 x 35 cm Schraenke.
-Blindbereiche an der Ostzeile und Blenden werden nicht als Stauraum gezaehlt.
-Kuehlschrank und Backofenschrank jeweils 60 x 60 x 255 cm auf der alten
-Nordlinie, x=3,98..5,18 m; 8 cm Montage-/Blendenraum bis zur Ruecksprungwand.
-Kaffeezeile 120 x 60 cm, x=5,42..6,62,z=2,55 m; Siebtraeger darauf.
-Westlicher Unterschrank 56 cm breit als schematisches Einbaumass; die
-oestliche 60-cm-Ecke ist blind und zaehlt nicht als weiterer Schrank.
-Ostzeile 130 cm lang ab z=3,15 m: Geschirrspueler und Spuelenschrank
-je 60 cm, insgesamt 10 cm Einbauzugaben. Fensterposition unveraendert.
-Arbeitsgang mindestens 130 cm vor der Kaffeezeile, 190 cm vor den
-Hochschraenken; westlich der Halbinsel weiterhin 130 cm Durchgang.
-Zum Esstisch 155 cm; bei angenommenen 60 cm Sitzbedarf an der Nordkante
-bleiben 95 cm. Bestehende Bank und drei Weststuehle bleiben unveraendert.
-Arbeitsplatten gesamt 4,16 statt 3,53 m2: +0,63 m2 ohne doppelte Eckflaechen.
-Geraeteflaechen unveraendert; nutzbarer Zuschnitt und Innenstauraum sind
-herstellerabhaengig. Weniger Hochschrankbreite, daher kein garantierter
-Nettostauraumgewinn gegenueber der vorherigen Kueche.
+Kueche: zwei parallele Nord-Sued-Zeilen, nach Sueden offen.
+Mittlere Zeile: Kuehlschrank und Backofenschrank je 60 x 60 x 255 cm,
+x=4,12..4,72, z=2,55..3,75 m; Fronten nach Osten zum Arbeitsgang.
+Dahinter nur 120 cm lange, deckenhohe Rueckwand bei x=3,96..4,12 m.
+Suedlich davon niedrige Kochhalbinsel 180 x 86 cm ab x=3,96,z=3,75 m,
+ohne hohe Rueckwand. Zwei 90-cm-Auszugsmodule, 60 cm tief, Front nach Osten;
+zwei rueckseitige Faecher 90 cm breit und nur 20 cm tief, Front nach Westen.
+80-cm-Kochfeld laengs zur Zeile bei x=4,22,z=3,83 m, 92 cm freie Arbeitslaenge
+am Suedende. Nur 8 cm zum Hochschrank: erforderliche Herstellerabstaende,
+Waermeschutz, Ausschnitt und Platzbedarf der Muldenlueftung ungeprueft.
+Ostzeile 300 x 60 cm bei x=6,02,z=2,55 m: 60 cm Kaffeeplatz,
+60 cm Geschirrspueler, 80 cm Spuelenschrank, 90 cm Auszug/Arbeitsplatz
+und 10 cm Einbauzugabe. Siebtraeger nach Westen zum Arbeitsgang gedreht.
+Fensterposition und Spuele unveraendert; Wasser/Elektro ungeplant.
+Arbeitsgang 120 cm, vor Hochschraenken 130 cm. Westlicher Durchgang
+zwischen Treppe und Mittelzeile weiterhin 130 cm. Kuechenzugang nur von
+Sueden: direkte Verbindung Eingang-Wohnen bleibt frei, zum Kuehlschrank
+entsteht ein laengerer Weg. Keine verbindende Querzeile am Suedende.
+Zum Esstisch 145 cm; bei angenommenen zusaetzlichen 60 cm Sitzbedarf
+an der Nordkante bleiben 85 cm. Bank und drei Weststuehle bleiben erhalten.
+Arbeitsplatten gesamt 3,348 m2 statt 4,16 m2 der verworfenen Quer-Kueche.
+Kein Flaechen- oder Nettostauraumgewinn behauptet; bessere Wegeaufteilung
+und breitere Garderobe sind die Prioritaet. Innenmasse herstellerabhaengig.
 `kitchenStorage.ts` teilt nutzbare Module fuer Plan, Messwerkzeug und 3D.
 Tests pruefen Modulgrenzen, 60-cm-Oeffnungsflaechen ohne feste Hindernisse,
 Geraeteauswahl und beidseitige Rapier-Laufwege. Schrankfronten/Geschirrspueler
-sind nicht animiert oder separat kollidierend; gleichzeitige Oeffnungen
-und stehende Personen sind damit nicht vollstaendig simuliert.
+sind nicht animiert oder separat kollidierend. Ein 60-cm-Auszug laesst
+im 120-cm-Arbeitsgang nur 60 cm Restbreite. Gegenueberliegende geoeffnete
+Auszuege und stehende Personen koennen den Gang blockieren;
+gleichzeitige Bedienung ist nicht als konfliktfrei nachgewiesen.
 Moebelfronten, Eckblenden, Geraeteeinbau, Wasser/Elektro und Lueftung bleiben
 Entwurfsannahmen und muessen mit dem Kuechenhersteller geprueft werden.
 
