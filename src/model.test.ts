@@ -37,8 +37,8 @@ describe('Maßhaltiger Vorentwurf', () => {
     }
     expect(bath.parts).toHaveLength(1)
     expect(floor.walls.find(wall => wall.openings.some(opening => opening.id === 'bath'))!.id).toBe('bath-south')
-    const sharedWindow = floor.walls.find(wall => wall.id === 'east')!.openings.find(opening => opening.id === 'east-south')!
-    const windowStrip = rect(house.east - .01, sharedWindow.start, .01, sharedWindow.width)
+    const sharedWindow = floor.walls.find(wall => wall.id === 'south')!.openings.find(opening => opening.id === 'south-east')!
+    const windowStrip = rect(house.west + sharedWindow.start, house.south - .01, sharedWindow.width, .01)
     expect(children[1].parts.reduce((sum, part) => sum + overlapArea(part, windowStrip), 0)).toBeCloseTo(area([windowStrip]))
     expect(floor.rooms.some(room => room.id === 'store')).toBe(false)
   })

@@ -58,7 +58,7 @@ export default function FloorPlan({ floor, selected, onSelect, dimensions, furni
   const labels: Record<string, [number, number]> = floor.id === 'EG' ? { living: [3.8, 6.4], hall: [5.1, 1.65], wc: [1.65, 1.8] } : { bath: [2.1, 1.6], 'child-north': [4.6, 4.5], 'child-south': [3.3, 7.7], hall: [2.915, 4.8], multifunction: [1.75, 8.1], bedroom: [3.2, 7.4], office: [3.7, 3.4] }
   const viewWidth = 10.2 / zoom, viewHeight = (floor.id === 'EG' ? 15 : 12.6) / zoom
   if (floor.id === 'KG') { labels.bath = [4.5, 1.45]; labels['child-south'] = [3.3, 7.8] }
-  if (floor.id === 'OG') { labels.bath = [1.9, 1.6]; labels['child-north'] = [4.9, 2.5]; labels['child-south'] = [3.5, 7.5]; labels.multifunction = [4.6, 5.15] }
+  if (floor.id === 'OG') { labels.bath = [1.9, 1.8]; labels['child-north'] = [4.9, 2.5]; labels['child-south'] = [3.5, 8.6]; labels.multifunction = [4.9, 6.97] }
   if (floor.id === 'DG') labels.office = [4.8, 3.35]
   const core = stairFor()
   if (floor.id === 'EG') { labels.wc = [1.4, 1.35]; labels.hall = [5.1, 1.3]; labels.pantry = [2.15, 2.45]; labels.living = [3.55, 6.85] }

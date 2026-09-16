@@ -42,22 +42,45 @@ test('compact children, a north bathroom and open reading share a distributor', 
     expect(area(child.parts)).toBeGreaterThan(11.0)
   }
   const southwest = children.find(room => room.id === 'child-south')!
-  expect(southwest.parts).toHaveLength(1)
+  expect(southwest.parts).toHaveLength(2)
   expect(southwest.parts[0].width).toBeCloseTo(house.east - house.west)
+  expect(Math.abs(area(children[0].parts) - area(children[1].parts))).toBeLessThan(2)
+  for (const child of children) expect(area(child.parts)).toBeGreaterThan(15)
   const bath = floor.rooms.find(room => room.id === 'bath')!
   expect(bath.parts[0].z).toBe(house.north)
   expect(bath.parts[0].width / bath.parts[0].depth).toBeGreaterThan(1.1)
-  expect(area(bath.parts)).toBeCloseTo(7.68)
+  expect(area(bath.parts)).toBeCloseTo(8.4736)
   const reading = floor.rooms.find(room => room.id === 'multifunction')!
-  expect(area(reading.parts)).toBeCloseTo(3.3756)
+  expect(area(reading.parts)).toBeCloseTo(3.492)
   expect(reading.parts[0].width / reading.parts[0].depth).toBeGreaterThan(2.4)
   expect(floor.walls.find(wall => wall.id === 'east')!.openings.some(opening => opening.id === 'east-reading')).toBe(true)
   expect(floor.walls.find(wall => wall.id === 'bath-south')!.openings.some(opening => opening.id === 'bath')).toBe(true)
-  expect(area(floor.rooms.find(room => room.id === 'hall')!.parts)).toBeCloseTo(2.31)
+  expect(area(floor.rooms.find(room => room.id === 'hall')!.parts)).toBeCloseTo(4.578)
   expect(floor.rooms.find(room => room.id === 'hall')!.parts).toHaveLength(1)
   const parents = roomArea(makeFloor('DG').rooms.find(room => room.id === 'bedroom')!, 'DG')
   expect(parents.floor).toBeGreaterThan(18)
   expect(parents.living).toBeGreaterThan(15.5)
+})
+
+test('OG has no unassigned gaps and each window belongs entirely to one room with a two-window limit', () => {
+  const floor = makeFloor('OG')
+  const contains = (part: Rect, east: number, south: number) => east >= part.x - 1e-8 && east <= part.x + part.width + 1e-8 && south >= part.z - 1e-8 && south <= part.z + part.depth + 1e-8
+  const eyeGuardStrip = { x: stair.x + stair.width, z: stair.z + stair.runWidth, width: .16, depth: stair.depth - 2 * stair.runWidth }
+  const surfaces = [...floor.rooms.flatMap(room => room.parts), ...floor.walls, ...stairOpeningParts, eyeGuardStrip]
+  for (let east = house.west + .013; east < house.east; east += .05) for (let south = house.north + .017; south < house.south; south += .05) {
+    expect(surfaces.some(part => contains(part, east, south)), `gap ${east},${south}`).toBe(true)
+  }
+  const counts = new Map<string, number>()
+  for (const wall of floor.walls) for (const opening of wall.openings.filter(opening => opening.kind === 'window')) {
+    const owners = floor.rooms.filter(room => [0, .5, 1].every(fraction => {
+      const east = wall.axis === 'x' ? wall.x + opening.start + opening.width * fraction : house.east - .01
+      const south = wall.axis === 'z' ? wall.z + opening.start + opening.width * fraction : wall.id === 'north' ? house.north + .01 : house.south - .01
+      return room.parts.some(part => contains(part, east, south))
+    }))
+    expect(owners, opening.id).toHaveLength(1)
+    counts.set(owners[0].id, (counts.get(owners[0].id) ?? 0) + 1)
+  }
+  expect(Object.fromEntries(counts)).toEqual({ bath: 1, 'child-north': 2, multifunction: 1, 'child-south': 2 })
 })
 
 test('former recess is an open stair eye without walls, cupboards or upper floor infill', () => {
