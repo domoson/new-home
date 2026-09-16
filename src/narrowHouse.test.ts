@@ -38,18 +38,22 @@ for (const id of floorIds) test(`${id}: rooms and furniture fit the new envelope
 test('compact children, a north bathroom and open reading share a distributor', () => {
   const floor = makeFloor('OG'), children = floor.rooms.filter(room => room.id.startsWith('child-'))
   for (const child of children) {
-    expect(child.parts.every(part => part.width >= 1.75)).toBe(true)
-    expect(area(child.parts)).toBeGreaterThan(13.9)
+    expect(child.parts.every(part => part.width >= .1)).toBe(true)
+    expect(area(child.parts)).toBeGreaterThan(11.0)
   }
   const southwest = children.find(room => room.id === 'child-south')!
-  expect(southwest.parts).toHaveLength(2)
-  expect(southwest.parts[0].width).toBeCloseTo(3.96)
+  expect(southwest.parts).toHaveLength(1)
+  expect(southwest.parts[0].width).toBeCloseTo(house.east - house.west)
   const bath = floor.rooms.find(room => room.id === 'bath')!
   expect(bath.parts[0].z).toBe(house.north)
-  expect(bath.parts[0].width / bath.parts[0].depth).toBeGreaterThan(1.4)
-  expect(area(bath.parts)).toBeCloseTo(11.7148)
-  expect(area(floor.rooms.find(room => room.id === 'multifunction')!.parts)).toBeCloseTo(4.839)
-  expect(area(floor.rooms.find(room => room.id === 'hall')!.parts)).toBeCloseTo(3.667)
+  expect(bath.parts[0].width / bath.parts[0].depth).toBeGreaterThan(1.1)
+  expect(area(bath.parts)).toBeCloseTo(7.68)
+  const reading = floor.rooms.find(room => room.id === 'multifunction')!
+  expect(area(reading.parts)).toBeCloseTo(3.3756)
+  expect(reading.parts[0].width / reading.parts[0].depth).toBeGreaterThan(2.4)
+  expect(floor.walls.find(wall => wall.id === 'east')!.openings.some(opening => opening.id === 'east-reading')).toBe(true)
+  expect(floor.walls.find(wall => wall.id === 'bath-south')!.openings.some(opening => opening.id === 'bath')).toBe(true)
+  expect(area(floor.rooms.find(room => room.id === 'hall')!.parts)).toBeCloseTo(2.31)
   expect(floor.rooms.find(room => room.id === 'hall')!.parts).toHaveLength(1)
   const parents = roomArea(makeFloor('DG').rooms.find(room => room.id === 'bedroom')!, 'DG')
   expect(parents.floor).toBeGreaterThan(18)

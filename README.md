@@ -380,7 +380,7 @@ Genehmigungs- oder Stellplatzsatzungsnachweis.
 | Ebene | Verteilung | Lichte Modellflaechen, gerundet |
 | --- | --- | --- |
 | EG | Rechteckiges Dusch-WC, Diele inkl. offener Schwelle, offener Wohn-/Koch-/Essbereich | 3,1 / 8,8 / 39,4 m2 |
-| OG | Familienbad Nord, Kind Nordost, Kind Sued, offene Leseecke, Flur inkl. Schranknische | 9,5 / 16,4 / 15,3 / 3,5 / 4,5 m2 |
+| OG | Rechteckiges Familienbad Nord, Kind Nordost, Kind Sued, Lesenische als Quertrenner, 1,05-m-Flur | 7,7 / 12,3 / 22,3 / 3,4 / 2,3 m2 |
 | DG | Eltern/Ankleide, Gaeste/Arbeit, Flur inkl. Nische | Bodenflaechen 19,5 / 14,4 / 2,5 m2; hoehengewichtet 16,4 / 11,6 / 2,5 m2 |
 | KG | Technik, Waschen/Lager, Kinderpartyraum, Flur inkl. Nische | Nutzflaechen 11,9 / 10,0 / 24,9 / 3,3 m2 |
 
@@ -453,24 +453,24 @@ Kein separater Abstellraum.
 Der Installationsschacht ist in allen vier Geschossen vollstaendig aus der
 Planung entfernt, einschliesslich seiner Flaechenabzuege. Leitungsfuehrung und
 erforderliche Installationsflaechen sind spaeter neu zu planen.
-Das OG-Bad hat 11,7148 m2: Hauptbereich 4,20 x 2,56 m und eine oestliche
-Eingangsnische von 0,83 x 1,16 m, mit 90-cm-Tuer vom Flur nach innen.
-Wanne 180 x 80 cm laengs an der Westwand, Dusche 100 x 100 cm,
-WC und 110-cm-Waschplatz an der Nordseite. Die alte suedliche Badtuer entfaellt.
+Das OG-Bad ist auf 7,68 m2 als klares Rechteck von 3,00 x 2,56 m
+reduziert. Die 90-cm-Tuer liegt in der Suedwand und oeffnet nach Norden
+direkt vom Flur ins Bad. Wanne 180 x 80 cm, Dusche 100 x 100 cm,
+WC und Waschplatz bleiben als Konzeptmoebel eingezeichnet.
 Fallleitungen, Versorgung und Installationsflaechen bleiben ungeplant.
-Kind Nordost hat 14,9118 m2: Hauptflaeche 2,85 x 2,70 m, dazu eine
-1,86 m breite noerdliche Arbeitsnische. Kind Sued hat 13,9906 m2:
-Hauptflaeche 3,96 x 2,50 m plus suedwestliche Schreibtischnische.
+Kind Nordost hat 12,26 m2: eine breite noerdliche Zone von 3,06 x 2,56 m
+und eine kompaktere Zone am Flur. Kind Sued hat 22,31 m2 als grosszuegige
+Suedzone ueber die gesamte lichte Breite.
 Beide haben 90-x-200-cm-Bett und 140-x-60-cm-Schreibtisch;
 Schraenke 160 x 60 cm im Norden und 180 x 60 cm im Sueden,
 eigene Fenster und eigenen 90-cm-Flurzugang. Kein Durchgangszimmer.
 Der Nordost-Kleiderschrank steht nun an der Suedwand; der Weg in die
 noerdliche Arbeitsnische bleibt frei.
-Die offene Leseecke (4,839 m2) liegt westlich am gemeinsamen Verteiler;
-150 cm breite offene Verbindung, keine Tuer und kein eigenes Aussenfenster.
-Sie vermittelt zwischen den Zimmerzugaengen, ist aber kein mittiger Querflur.
-Indirekte Belichtung nicht nachgewiesen, kein eigenstaendiger Aufenthaltsraum.
-Der Verteiler hat 3,667 m2. Keine Einbauschraenke oder Zwischenwaende im
+Die Lesenische (3,38 m2) liegt als 2,91 x 1,16 m langer Quertrenner
+zwischen den Kinderzimmern. Sie ist direkt vom 1,05-m-Flur erreichbar,
+hat ein eigenes Ostfenster und verbindet sich ueber die Suedtuere mit dem
+Kind Sued. Sie ist kein eigenstaendiger Aufenthaltsraum.
+Der Verteiler hat 2,31 m2. Keine Einbauschraenke oder Zwischenwaende im
 Treppenauge; dessen offene Flaeche ist nicht Teil der Raumflaechen.
 Beide EG-Treppenzugaenge sind 90 cm breit und deckenhoch offen,
 ohne Tueren, Tuerkollisionen oder Sturz im Modell.

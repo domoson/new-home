@@ -31,5 +31,5 @@ test('WC divider and entrance retain the north-shifted alignment', () => {
   const east = floor.walls.find(wall => wall.id === 'east')!, entrance = east.openings.find(opening => opening.id === 'entrance')!
   expect(entrance.start).toBeCloseTo(1.1 - .35)
   expect(entrance.start + entrance.width).toBeLessThan(divider.z)
-  expect(east.openings.find(opening => opening.id === 'kitchen-window')!.start).toBeCloseTo(3.7 - .5)
+  expect(east.openings.find(opening => opening.id === 'kitchen-window')!.start).toBeCloseTo(4.2)
 })

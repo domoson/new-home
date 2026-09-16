@@ -55,9 +55,9 @@ const colors = { living: '#ece4d2', wet: '#d7e6e6', hall: '#eceeeb', child: '#dd
 
 function shell(id: FloorId): Wall[] {
   if (id === 'KG') return [wall('west', 'z', 0, 0, 10, house.west), wall('east', 'z', house.east, 0, 10, construction.exteriorWall, [windowOpening('well-laundry', 3.0, 1, 1.5, .65), windowOpening('well-hobby', 7.1, 1, 1.5, .65)]), wall('north', 'x', house.west, 0, house.east - house.west, construction.exteriorWall, [windowOpening('well-plant', 1.1, 1, 1.5, .65)]), wall('south', 'x', house.west, house.south, house.east - house.west, construction.exteriorWall)]
-  const north = id === 'DG' ? [] : id === 'EG' ? [windowOpening('wc-window', .65, .9, 1.4, .7)] : [windowOpening('north-west', 1.2, 1.6), windowOpening('north-east', 4.75, 1.6)]
-  const east = id === 'EG' ? [windowOpening('entrance-fixed', .6, .35, 0, 2.1), { ...door('entrance', 1.1, 1), swing: 'reverse' as const }, windowOpening('kitchen-window', 3.7, 1.7, 1.15, 1.1)] : id === 'DG' ? [windowOpening('gable-office', 4.2, 1.6, .9, 1.3)] : [windowOpening('east-north', 1.3, 1.5), windowOpening('east-south', 6.9, 1.6)]
-  const south = id === 'DG' ? [] : id === 'EG' ? [windowOpening('garden-fixed', .7, 2, .1, 2.25), door('terrace', 3.2, 1.5, 2.35), windowOpening('terrace-fixed', 4.7, 1.5, 0, 2.35)] : [windowOpening('south-east', 4.4, 1.6), windowOpening('south-west', 1.1, 1.6, 1.2, 1.05)]
+  const north = id === 'DG' ? [] : id === 'EG' ? [windowOpening('wc-window', .65, .9, 1.4, .7)] : [windowOpening('north-west', 1.2, 1.2, 1.2, 1.05), windowOpening('north-east', 4.75, 1.4)]
+  const east = id === 'EG' ? [windowOpening('entrance-fixed', .6, .35, 0, 2.1), { ...door('entrance', 1.1, 1), swing: 'reverse' as const }, windowOpening('kitchen-window', 3.7, 1.7, 1.15, 1.1)] : id === 'DG' ? [windowOpening('gable-office', 4.2, 1.6, .9, 1.3)] : [windowOpening('east-north', 1.4, 1.2), windowOpening('east-reading', 4.7, 1.2), windowOpening('east-south', 6.9, 1.2)]
+  const south = id === 'DG' ? [] : id === 'EG' ? [windowOpening('garden-fixed', .7, 2, .1, 2.25), door('terrace', 3.2, 1.5, 2.35), windowOpening('terrace-fixed', 4.7, 1.5, 0, 2.35)] : [windowOpening('south-east', 4.4, 1.6), windowOpening('south-west', 1.1, 1.4, .9, 1.35)]
   return [wall('west', 'z', 0, 0, 10, house.west), wall('east', 'z', house.east, 0, 10, construction.exteriorWall, east), wall('north', 'x', house.west, 0, house.east - house.west, construction.exteriorWall, north.map(open => ({ ...open, start: open.start - house.west }))), wall('south', 'x', house.west, house.south, house.east - house.west, construction.exteriorWall, south.map(open => ({ ...open, start: open.start - house.west })))]
 }
 
@@ -150,27 +150,46 @@ function buildMainFloor(floor: Floor) {
     return
   }
   if (floor.id === 'OG') {
-    const roomDivider = 4.6, eastRoomStart = roomDivider + interiorWallThickness, bathEnd = stair.z + 1, hallEnd = 6.96, southStart = hallEnd + interiorWallThickness, readingEnd = 7.65
-    hall.parts[0].depth = hallEnd - stair.z
-    floor.walls.push(wall('north-divider', 'z', roomDivider, house.north, bathEnd - house.north), wall('bath-south', 'x', stairEast, stairWallStart, childRoomWest - stairEast), wall('bath-east-return', 'x', eastDividerWest, bathEnd, eastRoomStart - eastDividerWest), wall('east-divider', 'z', eastDividerWest, stair.z, hallEnd - stair.z, interiorWallThickness, [{ ...door('bath', .05), hinge: 'end' }, door('child-north', 1.2)]), wall('children-divider', 'x', childRoomWest, hallEnd, house.east - childRoomWest), wall('store-north', 'x', stairEast, hallEnd, childRoomWest - stairEast, interiorWallThickness, [door('child-south', .17)]), wall('reading-east', 'z', stairEast, southStart, readingEnd - southStart), wall('reading-south', 'x', house.west, readingEnd, hallWest - house.west))
-    const northWindow = floor.walls.find(wall => wall.id === 'north')!.openings.find(opening => opening.id === 'north-west')!
-    northWindow.sill = 1.2; northWindow.height = 1.05
-    const southWindow = floor.walls.find(wall => wall.id === 'south')!.openings.find(opening => opening.id === 'south-west')!
-    southWindow.sill = .9; southWindow.height = 1.35
-    floor.walls.find(wall => wall.id === 'south')!.openings.find(opening => opening.id === 'south-east')!.start = 4.4 - house.west
+    const bathEnd = stairWallStart, hallWidth = 1.05
+    const hallWestOG = stairEast + interiorWallThickness
+    const eastDividerWestOG = hallWestOG + hallWidth
+    const bathEast = eastDividerWestOG
+    const childNorthEnd = 6.1, readingEnd = 7.46, southStart = readingEnd + interiorWallThickness
+    hall.parts[0] = rect(hallWestOG, stair.z, hallWidth, readingEnd - stair.z)
+    hall.note = '1,05 m lichter Verteiler neben der U-Wendeltreppe, mit direktem Zugang zu Bad, Kind Nordost, Kind Süd und offenem Übergang zur Lesenische. Offenes Treppenauge mit Geländer.'
+    floor.walls.push(
+      wall('north-divider', 'z', bathEast, house.north, stair.z - house.north),
+      wall('bath-south', 'x', stairEast, bathEnd, bathEast - stairEast, interiorWallThickness, [{ ...door('bath', .26), hinge: 'end' }]),
+      wall('east-divider', 'z', eastDividerWestOG, stair.z, childNorthEnd - stair.z, interiorWallThickness, [door('child-north', .2)]),
+      wall('reading-north', 'x', eastDividerWestOG, childNorthEnd, house.east - eastDividerWestOG),
+      wall('hall-west-south', 'z', stairEast, stair.end, readingEnd - stair.end),
+      wall('store-north', 'x', stairEast, readingEnd, house.east - stairEast, interiorWallThickness, [door('child-south', .26)]),
+    )
+    floor.walls.find(wall => wall.id === 'east')!.openings = [windowOpening('east-north', 2.3, 1.4), windowOpening('east-reading', 6.32, 1.08)]
+    floor.walls.find(wall => wall.id === 'south')!.openings = [windowOpening('south-west', 1.1 - house.west, 1.4), windowOpening('south-east', 4.4 - house.west, 1.6)]
     floor.rooms = [
-      room('bath', 'Familienbad', [rect(house.west, house.north, roomDivider - house.west, stairWallStart - house.north), rect(childRoomWest, stairWallStart, roomDivider - childRoomWest, bathEnd - stairWallStart)], colors.wet, 'Nordbad mit Wanne längs an der Westwand, Dusche, WC und Waschplatz im Norden. Verbreiterte östliche Eingangsnische. Leitungsführung ungeprüft.', [2.85, 1.8]),
-      room('child-north', 'Kind Nordost', [rect(eastRoomStart, house.north, house.east - eastRoomStart, bathEnd + interiorWallThickness - house.north), rect(childRoomWest, bathEnd + interiorWallThickness, house.east - childRoomWest, hallEnd - bathEnd - interiorWallThickness)], colors.child, 'Verbreiterte Hauptfläche und nördliche Arbeitsnische. Schrank an der Südwand, freier Weg vom Eingang zum Schreibtisch.', [4.8, 5.7]),
-      room('child-south', 'Kind Süd', [rect(hallWest, southStart, house.east - hallWest, house.south - southStart), rect(house.west, readingEnd + interiorWallThickness, hallWest - house.west, house.south - readingEnd - interiorWallThickness)], colors.child, 'Breitere Hauptfläche und südwestliche Schreibtischnische. Eigener Flurzugang, Ost- und Südfenster.', [4.4, 8]),
-      room('multifunction', 'Offene Leseecke', [rect(house.west, southRoomStart, stairEast - house.west, readingEnd - southRoomStart), rect(stairEast, southRoomStart, interiorWallThickness, hallEnd - southRoomStart)], colors.work, 'Kleine offene Lese- und Abstellnische am gemeinsamen Verteiler zwischen den Zimmerzugängen, ohne eigene Tür. Indirektes Tageslicht, kein eigenständiger Aufenthaltsraum.', [1.5, 6.6]),
+      room('bath', 'Familienbad', [rect(house.west, house.north, bathEast - house.west, bathEnd - house.north)], colors.wet, 'Rechteckiges Familienbad an der Westwand mit 180 × 80 cm Wanne, 100 × 100 cm Dusche, WC und 100-cm-Waschtisch. Direkter nördlicher Eingang vom Flur. Leitungsführung ungeprüft.', [1.8, 1.6]),
+      room('child-north', 'Kind Nordost', [rect(bathEast + interiorWallThickness, house.north, house.east - bathEast - interiorWallThickness, childNorthEnd - house.north)], colors.child, 'Durchgehend 2,75 m breites Rechteck ohne schmale Nordnische. Nord- und Ostfenster, eigener Flurzugang.', [4.9, 2.5]),
+      room('multifunction', 'Lesenische', [rect(eastDividerWestOG, childNorthEnd + interiorWallThickness, house.east - eastDividerWestOG, readingEnd - childNorthEnd - interiorWallThickness)], colors.work, 'Offene Lesezone zwischen den Kinderzimmern, 2,91 x 1,20 m. Eigenes Ostfenster, Sitzbank am Fenster und flaches Bücherregal an der Nordwand. Kein Durchgang durch ein Kinderzimmer; Schallschutz ungeprüft.', [5.1, 6.95]),
+      room('child-south', 'Kind Süd', [rect(house.west, southStart, house.east - house.west, house.south - southStart), rect(house.west, southRoomStart, stairEast - house.west, southStart - southRoomStart)], colors.child, 'Südlicher Wohn- und Arbeitsbereich mit westlicher Schlafnische unterhalb der Treppe. Zwei Südfenster und eigener Zugang direkt vom Flur.', [3.4, 8.2]),
       hall,
     ]
-    floor.furniture = [furniture('bath-tub', 'bath', .45, .43, .8, 1.8, .6), furniture('bath-shower', 'shower', 1.45, .43, 1, 1, .04), furniture('bath-wc', 'wc', 2.65, .43, .65, .7, .43), furniture('bath-sink', 'sink', 3.4, .43, 1.1, .5, .88), furniture('bed-north', 'bed', 5.65, 4.4, .9, 2, .52), furniture('desk-north', 'desk', 4.95, .42, 1.4, .6, .75), furniture('desk-chair-north', 'chair', 5.4, 1.6, .48, .48, .82), furniture('wardrobe-north', 'cabinet', 3.65, 6.08, 1.8, .6, 2.25), furniture('bed-south', 'bed', 5.65, 7.3, .9, 2, .52), furniture('desk-south', 'desk', .65, 9, 1.4, .6, .75), furniture('desk-chair-south', 'chair', 1.1, 8.5, .48, .48, .82), furniture('wardrobe-south', 'cabinet', .48, 7.85, 1.8, .6, 2.25), furniture('shared-bench', 'bench', 1.78, 6.75, .45, .85, .85), furniture('shared-shelf', 'bookcase', .48, 5.82, .3, 1.2, .9)]
-    floor.furniture.find(item => item.id === 'wardrobe-north')!.x = childRoomWest + .05
-    floor.furniture.find(item => item.id === 'wardrobe-north')!.width = 1.6
-    const readingBench = floor.furniture.find(item => item.id === 'shared-bench')!
-    readingBench.x = stairEast - .9; readingBench.z = 7.16; readingBench.width = .85; readingBench.depth = .45
-    floor.furniture.find(item => item.id === 'shared-shelf')!.z = southRoomStart + .03
+    floor.furniture = [
+      furniture('bath-tub', 'bath', .45, .43, .8, 1.8, .6),
+      furniture('bath-shower', 'shower', 1.35, .43, 1, 1, .04),
+      furniture('bath-wc', 'wc', 2.55, .43, .65, .7, .43),
+      furniture('bath-sink', 'sink', 1.4, 2.39, 1, .5, .88),
+      furniture('bed-north', 'bed', 5.65, 4.05, .9, 2, .52),
+      furniture('desk-north', 'desk', 4.85, .42, 1.4, .6, .75),
+      furniture('desk-chair-north', 'chair', 5.30, 1.25, .48, .48, .82),
+      furniture('wardrobe-north', 'cabinet', 3.92, 5.45, 1.6, .6, 2.25),
+      furniture('shared-bench', 'bench', 6.02, 6.31, .55, 1.10, .45),
+      furniture('shared-shelf', 'bookcase', 4.1, 6.29, 1.3, .22, 1.20),
+      furniture('bed-south', 'bed', .48, 5.55, .9, 2, .52),
+      furniture('desk-south', 'desk', .65, 8.95, 1.4, .6, .75),
+      furniture('desk-chair-south', 'chair', 1.10, 8.25, .48, .48, .82),
+      furniture('wardrobe-south', 'cabinet', 4.75, 7.69, 1.8, .6, 2.25),
+    ]
     return
   }
   if (floor.id === 'DG') {

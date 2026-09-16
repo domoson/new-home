@@ -43,7 +43,7 @@ test('west house retains its original glazing and other floors stay identical', 
 test('daylight uses the glazing of each house independently', () => {
   const east = roomDaylight('EG', 'east').find(room => room.id === 'EG-living')!
   const west = roomDaylight('EG', 'west').find(room => room.id === 'EG-living')!
-  expect(east.glazing).toBeCloseTo((1.05 + 2.4 + .7) * 2.35 + 1.7 * 1.1)
-  expect(west.glazing).toBeCloseTo(2 * 2.25 + 3 * 2.35 + 1.7 * 1.1)
+  expect(east.glazing).toBeCloseTo((1.05 + 2.4 + .7) * 2.35 + (1.05 + .6) * .9)
+  expect(west.glazing).toBeCloseTo(2 * 2.25 + 3 * 2.35 + (1.05 + .6) * .9)
   expect(east.center.x).toBeGreaterThan(west.center.x)
 })

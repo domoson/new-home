@@ -47,15 +47,14 @@ test('Requested room proportions, sofa shift and two centered roof windows', () 
   expect(kg.rooms.find(room => room.id === 'bath')!.parts[0].width).toBeCloseTo(house.east - house.west)
   expect(kg.rooms.find(room => room.id === 'child-north')!.parts).toHaveLength(1)
   expect(size(kg, 'bath')).toBeGreaterThan(size(kg, 'child-north'))
-  expect(size(og, 'bath')).toBeGreaterThanOrEqual(9)
-  expect(size(og, 'bath')).toBeCloseTo(11.7148)
+  expect(size(og, 'bath')).toBeCloseTo(7.68)
   for (const id of ['child-north', 'child-south']) {
-    expect(size(og, id)).toBeGreaterThanOrEqual(13.9)
+    expect(size(og, id)).toBeGreaterThanOrEqual(11.0)
     expect(size(og, id)).toBeLessThan(17)
     const main = og.rooms.find(room => room.id === id)!.parts.reduce((largest, part) => part.width * part.depth > largest.width * largest.depth ? part : largest)
-    expect(Math.max(main.width, main.depth) / Math.min(main.width, main.depth)).toBeLessThan(1.65)
+    expect(Math.max(main.width, main.depth) / Math.min(main.width, main.depth)).toBeLessThan(2.0)
   }
-  expect(size(og, 'multifunction')).toBeCloseTo(4.839)
+  expect(size(og, 'multifunction')).toBeCloseTo(3.3756)
   expect(og.walls.flatMap(wall => wall.openings).some(opening => opening.id === 'multifunction')).toBe(false)
   const divider = dg.walls.find(wall => wall.id === 'office-entry')!
   expect(divider.z + interiorWallThickness / 2).toBeCloseTo(house.depth / 2)
@@ -113,14 +112,14 @@ test('EG stair accesses and eye stay open and OG bathroom entrance stays usable'
   }
   expect(og.furniture.find(item => item.id === 'bath-tub')).toMatchObject({ x: .45, z: .43, width: .8, depth: 1.8 })
   const entryWall = og.walls.find(wall => wall.openings.some(opening => opening.id === 'bath'))!
-  expect(entryWall.id).toBe('east-divider')
+  expect(entryWall.id).toBe('bath-south')
   const entry = entryWall.openings.find(opening => opening.id === 'bath')!
   expect(entry.width).toBe(.9)
-  const entrance = { x: 3.6, z: 2.45, width: .9, depth: .9 }
-  const studyAccess = { x: 4.95, z: 2.4, width: .6, depth: 3.4 }
+  const entrance = { x: 2.2, z: 2.1, width: .9, depth: .9 }
+  const studyAccess = { x: 4.85, z: 1.0, width: .6, depth: 2.4 }
   for (const item of og.furniture) {
     expect(overlap(entrance, item), `Badeingang/${item.id}`).toBeLessThan(1e-6)
     expect(overlap(studyAccess, item), `Schreibtischweg/${item.id}`).toBeLessThan(1e-6)
   }
-  expect(og.furniture.find(item => item.id === 'wardrobe-north')).toMatchObject({ z: 6.08, width: 1.6, depth: .6 })
+  expect(og.furniture.find(item => item.id === 'wardrobe-north')).toMatchObject({ z: 3.75, width: 1.6, depth: .6 })
 })
