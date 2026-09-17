@@ -35,7 +35,7 @@ for (const id of floorIds) test(`${id}: rooms and furniture fit the new envelope
   }
 })
 
-test('compact children, a north bathroom and open reading share a distributor', () => {
+test('compact storage and a 120 cm shower niche share the unchanged stair distributor', () => {
   const floor = makeFloor('OG'), children = floor.rooms.filter(room => room.id.startsWith('child-'))
   for (const child of children) {
     expect(child.parts.every(part => part.width >= .1)).toBe(true)
@@ -43,19 +43,20 @@ test('compact children, a north bathroom and open reading share a distributor', 
   }
   const southwest = children.find(room => room.id === 'child-south')!
   expect(southwest.parts).toHaveLength(2)
-  expect(southwest.parts[0].width).toBeCloseTo(house.east - house.west)
-  expect(Math.abs(area(children[0].parts) - area(children[1].parts))).toBeLessThan(2)
+  expect(southwest.parts[0].width).toBeCloseTo(3.96)
+  expect(Math.abs(area(children[0].parts) - area(children[1].parts))).toBeLessThan(3)
   for (const child of children) expect(area(child.parts)).toBeGreaterThan(15)
   const bath = floor.rooms.find(room => room.id === 'bath')!
   expect(bath.parts[0].z).toBe(house.north)
   expect(bath.parts[0].width / bath.parts[0].depth).toBeGreaterThan(1.1)
-  expect(area(bath.parts)).toBeCloseTo(8.4736)
-  const reading = floor.rooms.find(room => room.id === 'multifunction')!
-  expect(area(reading.parts)).toBeCloseTo(3.492)
-  expect(reading.parts[0].width / reading.parts[0].depth).toBeGreaterThan(2.4)
-  expect(floor.walls.find(wall => wall.id === 'east')!.openings.some(opening => opening.id === 'east-reading')).toBe(true)
+  expect(area(bath.parts)).toBeCloseTo(9.9136)
+  const storage = floor.rooms.find(room => room.id === 'store')!
+  expect(storage.parts[0].depth).toBeCloseTo(1.1)
+  expect(area(storage.parts)).toBeCloseTo(2.31)
+  expect(floor.furniture.find(item => item.id === 'bath-shower')).toMatchObject({ width: 1.2, depth: 1.2 })
+  expect(floor.rooms.some(room => room.id === 'multifunction')).toBe(false)
   expect(floor.walls.find(wall => wall.id === 'bath-south')!.openings.some(opening => opening.id === 'bath')).toBe(true)
-  expect(area(floor.rooms.find(room => room.id === 'hall')!.parts)).toBeCloseTo(4.578)
+  expect(area(floor.rooms.find(room => room.id === 'hall')!.parts)).toBeCloseTo(3.633)
   expect(floor.rooms.find(room => room.id === 'hall')!.parts).toHaveLength(1)
   const parents = roomArea(makeFloor('DG').rooms.find(room => room.id === 'bedroom')!, 'DG')
   expect(parents.floor).toBeGreaterThan(18)
@@ -80,7 +81,7 @@ test('OG has no unassigned gaps and each window belongs entirely to one room wit
     expect(owners, opening.id).toHaveLength(1)
     counts.set(owners[0].id, (counts.get(owners[0].id) ?? 0) + 1)
   }
-  expect(Object.fromEntries(counts)).toEqual({ bath: 1, 'child-north': 2, multifunction: 1, 'child-south': 2 })
+  expect(Object.fromEntries(counts)).toEqual({ bath: 1, 'child-north': 2, 'child-south': 2 })
 })
 
 test('former recess is an open stair eye without walls, cupboards or upper floor infill', () => {

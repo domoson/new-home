@@ -5,7 +5,7 @@ test('Window-driven daylight distinguishes living rooms, rooflights and basement
   const ground = roomDaylight('EG')
   expect(ground.find(room => room.id === 'EG-living')!.strength).toBeGreaterThan(.8)
   expect(ground.find(room => room.id === 'EG-wc')!.strength).toBeGreaterThan(.3)
-  expect(roomDaylight('OG').find(room => room.id === 'OG-multifunction')!.glazing).toBeGreaterThan(0)
+  expect(roomDaylight('OG').find(room => room.id === 'OG-store')!.glazing).toBe(0)
   expect(roomDaylight('OG').filter(room => ['OG-bath', 'OG-child-north', 'OG-child-south'].includes(room.id)).every(room => room.glazing > 0)).toBe(true)
   expect(roomDaylight('DG').filter(room => !['DG-hall', 'DG-stairs'].includes(room.id)).every(room => room.glazing > 0)).toBe(true)
   expect(roomDaylight('DG').find(room => room.id === 'DG-hall')!.glazing).toBe(0)

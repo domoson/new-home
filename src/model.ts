@@ -153,42 +153,47 @@ function buildMainFloor(floor: Floor) {
     const bathEnd = stairWallStart, hallWidth = 1.05
     const hallWestOG = stairEast + interiorWallThickness
     const eastDividerWestOG = hallWestOG + hallWidth
-    const bathEast = eastDividerWestOG
-    const childNorthEnd = 6.1, readingEnd = 7.46, southStart = readingEnd + interiorWallThickness
-    hall.parts[0] = rect(hallWestOG, stair.z, hallWidth, readingEnd - stair.z)
-    hall.note = '1,05 m lichter Verteiler neben der U-Wendeltreppe, mit direktem Zugang zu Bad, Kind Nordost, Kind Süd und offenem Übergang zur Lesenische. Offenes Treppenauge mit Geländer.'
+    const bathEast = eastDividerWestOG, showerNicheEast = bathEast + 1.2, showerNicheEnd = house.north + 1.2
+    const storageNorth = stair.end, storageEast = stairEast, storageSouth = storageNorth + interiorWallThickness + 1.1
+    const childNorthEnd = storageSouth
+    const childSouthBoundary = childNorthEnd, southStart = childSouthBoundary + interiorWallThickness
+    hall.parts[0] = rect(hallWestOG, stair.z, hallWidth, childSouthBoundary - stair.z)
+    hall.note = '1,05 m lichter Verteiler neben der U-Wendeltreppe, mit direktem Zugang zu Bad, Abstellkammer und beiden Kinderzimmern. Offenes Treppenauge mit Geländer.'
     floor.walls.push(
-      wall('north-divider', 'z', bathEast, house.north, stair.z - house.north),
+      wall('bath-niche-east', 'z', showerNicheEast, house.north, showerNicheEnd - house.north),
+      wall('bath-niche-south', 'x', bathEast, showerNicheEnd, showerNicheEast + interiorWallThickness - bathEast),
       wall('bath-south', 'x', stairEast, bathEnd, bathEast - stairEast, interiorWallThickness, [{ ...door('bath', .26), hinge: 'end' }]),
-      wall('east-divider', 'z', eastDividerWestOG, stair.z, childNorthEnd - stair.z, interiorWallThickness, [door('child-north', .2)]),
-      wall('reading-north', 'x', eastDividerWestOG, childNorthEnd, house.east - eastDividerWestOG),
-      wall('hall-west-south', 'z', stairEast, stair.end, readingEnd - stair.end),
-      wall('store-north', 'x', stairEast, readingEnd, house.east - stairEast, interiorWallThickness, [door('child-south', .26)]),
+      wall('east-divider', 'z', bathEast, showerNicheEnd, childNorthEnd - showerNicheEnd, interiorWallThickness, [door('child-north', stair.z - showerNicheEnd)]),
+      wall('store-north', 'x', storageEast + interiorWallThickness, childSouthBoundary, house.east - storageEast - interiorWallThickness, interiorWallThickness, [{ ...door('child-south', .26), hinge: 'end' }]),
+      wall('storage-east', 'z', storageEast, storageNorth, storageSouth - storageNorth, interiorWallThickness, [{ ...door('store', .21), hinge: 'end', swing: 'reverse' }]),
+      wall('storage-north', 'x', stairEast, storageNorth, interiorWallThickness),
+      wall('storage-south', 'x', house.west, storageSouth, storageEast + interiorWallThickness - house.west),
     )
-    floor.walls.find(wall => wall.id === 'east')!.openings = [windowOpening('east-north', 2.3, 1.4), windowOpening('east-reading', 6.32, 1.08)]
-    floor.walls.find(wall => wall.id === 'south')!.openings = [windowOpening('south-west', 1.1 - house.west, 1.4), windowOpening('south-east', 4.4 - house.west, 1.6)]
+    const childNorthWindow = floor.walls.find(wall => wall.id === 'north')!.openings.find(opening => opening.id === 'north-east')!
+    childNorthWindow.start = 5.2 - house.west; childNorthWindow.width = 1.2
+    floor.walls.find(wall => wall.id === 'east')!.openings = [windowOpening('east-north', 2.1, 1.4), windowOpening('east-south', 7.1, 1.4)]
+    floor.walls.find(wall => wall.id === 'south')!.openings = [windowOpening('south-west', 1.1 - house.west, 1.4)]
     floor.rooms = [
-      room('bath', 'Familienbad', [rect(house.west, house.north, bathEast - house.west, bathEnd - house.north)], colors.wet, 'Rechteckiges Familienbad an der Westwand mit 180 × 80 cm Wanne, 100 × 100 cm Dusche, WC und 100-cm-Waschtisch. Direkter nördlicher Eingang vom Flur. Leitungsführung ungeprüft.', [1.8, 1.6]),
-      room('child-north', 'Kind Nordost', [rect(bathEast + interiorWallThickness, house.north, house.east - bathEast - interiorWallThickness, childNorthEnd - house.north)], colors.child, 'Durchgehend 2,75 m breites Rechteck ohne schmale Nordnische. Nord- und Ostfenster, eigener Flurzugang.', [4.9, 2.5]),
-      room('multifunction', 'Lesenische', [rect(eastDividerWestOG, childNorthEnd + interiorWallThickness, house.east - eastDividerWestOG, readingEnd - childNorthEnd - interiorWallThickness)], colors.work, 'Offene Lesezone zwischen den Kinderzimmern, 2,91 x 1,20 m. Eigenes Ostfenster, Sitzbank am Fenster und flaches Bücherregal an der Nordwand. Kein Durchgang durch ein Kinderzimmer; Schallschutz ungeprüft.', [5.1, 6.95]),
-      room('child-south', 'Kind Süd', [rect(house.west, southStart, house.east - house.west, house.south - southStart), rect(house.west, southRoomStart, stairEast - house.west, southStart - southRoomStart)], colors.child, 'Südlicher Wohn- und Arbeitsbereich mit westlicher Schlafnische unterhalb der Treppe. Zwei Südfenster und eigener Zugang direkt vom Flur.', [3.4, 8.2]),
+      room('bath', 'Familienbad', [rect(house.west, house.north, bathEast - house.west, bathEnd - house.north), rect(bathEast, house.north, showerNicheEast - bathEast, showerNicheEnd - house.north)], colors.wet, 'Familienbad mit 120 x 120 cm bodengleicher Dusche in der nordöstlichen Nische. Hauptbreite zugunsten der 90-cm-Flurtür beibehalten. Abdichtung, Gefälle und Leitungsführung ungeprüft.', [1.8, 1.6]),
+      room('child-north', 'Kind Nordost', [rect(showerNicheEast + interiorWallThickness, house.north, house.east - showerNicheEast - interiorWallThickness, showerNicheEnd + interiorWallThickness - house.north), rect(eastDividerWestOG + interiorWallThickness, showerNicheEnd + interiorWallThickness, house.east - eastDividerWestOG - interiorWallThickness, childNorthEnd - showerNicheEnd - interiorWallThickness)], colors.child, 'Hauptfläche 2,75 x 4,82 m mit kleiner Nordfensternische neben der Dusche. Nord- und Ostfenster, eigener Flurzugang.', [4.9, 3.7]),
+      room('store', 'Abstellkammer', [rect(house.west, storageNorth + interiorWallThickness, storageEast - house.west, storageSouth - storageNorth - interiorWallThickness)], colors.utility, 'Querliegende Abstellkammer direkt südlich der Treppe: 2,10 x 1,10 m licht, 2,31 m². 90-cm-Tür vom Flur und flaches Regal an der Stirnwand. Lüftung ungeprüft.', [1.6, 6]),
+      room('child-south', 'Kind Süd', [rect(storageEast + interiorWallThickness, southStart, house.east - storageEast - interiorWallThickness, house.south - southStart), rect(house.west, storageSouth + interiorWallThickness, storageEast + interiorWallThickness - house.west, house.south - storageSouth - interiorWallThickness)], colors.child, 'Durchgehendes Rechteck 6,22 x 2,90 m südlich von Kammer und Nordzimmer. Je ein Süd- und Ostfenster, eigener Flurzugang. Rund 2,7 m² größer als das Nordzimmer.', [3.2, 8]),
       hall,
     ]
     floor.furniture = [
       furniture('bath-tub', 'bath', .45, .43, .8, 1.8, .6),
-      furniture('bath-shower', 'shower', 1.35, .43, 1, 1, .04),
-      furniture('bath-wc', 'wc', 2.55, .43, .65, .7, .43),
+      furniture('bath-shower', 'shower', bathEast, house.north, 1.2, 1.2, .04),
+      furniture('bath-wc', 'wc', 2.45, .43, .65, .7, .43),
       furniture('bath-sink', 'sink', 1.4, 2.39, 1, .5, .88),
-      furniture('bed-north', 'bed', 5.65, 4.05, .9, 2, .52),
-      furniture('desk-north', 'desk', 4.85, .42, 1.4, .6, .75),
-      furniture('desk-chair-north', 'chair', 5.30, 1.25, .48, .48, .82),
-      furniture('wardrobe-north', 'cabinet', 3.92, 5.45, 1.6, .6, 2.25),
-      furniture('shared-bench', 'bench', 6.02, 6.31, .55, 1.10, .45),
-      furniture('shared-shelf', 'bookcase', 4.1, 6.29, 1.3, .22, 1.20),
-      furniture('bed-south', 'bed', .48, 5.55, .9, 2, .52),
-      furniture('desk-south', 'desk', .65, 8.95, 1.4, .6, .75),
-      furniture('desk-chair-south', 'chair', 1.10, 8.25, .48, .48, .82),
-      furniture('wardrobe-south', 'cabinet', 4.75, 7.69, 1.8, .6, 2.25),
+      furniture('bed-north', 'bed', 5.6, 3.8, .9, 2, .52),
+      furniture('desk-north', 'desk', 4.85, 1.95, 1.4, .6, .75),
+      furniture('desk-chair-north', 'chair', 5.25, 2.72, .48, .48, .82),
+      furniture('wardrobe-north', 'cabinet', 3.92, 5.55, 1.6, .6, 2.25),
+      furniture('store-shelf', 'bookcase', .43, 5.51, .3, 1, 2.1),
+      furniture('bed-south', 'bed', 3.9, 7.0, .9, 2, .52),
+      furniture('desk-south', 'desk', 4.9, 8.75, 1.4, .6, .75),
+      furniture('desk-chair-south', 'chair', 5.0, 8.0, .48, .48, .82),
+      furniture('wardrobe-south', 'cabinet', 4.85, 6.72, 1.6, .6, 2.25),
     ]
     return
   }
