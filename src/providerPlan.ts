@@ -3,7 +3,7 @@ import type { Floor, FloorId, Furniture, Opening, Rect, Room, Wall } from './mod
 import { kitchenFurniture } from './kitchenLayout'
 
 const opening = (id: string, start: number, width = .9, kind: Opening['kind'] = 'door', sill = 0, height = 2.1): Opening => ({ id, start, width, kind, sill, height })
-const windowOpening = (id: string, start: number, width: number, sill = .9, height = 1.25) => opening(id, start, width, 'window', sill, height)
+const windowOpening = (id: string, start: number, width: number, sill = .9, height = 1.25): Opening => ({ ...opening(id, start, width, 'window', sill, height), windowLayout: { columns: width >= 1.5 ? 2 : 1, ...(sill === 0 && !id.includes('fixed') ? { lowerFixed: .7 } : {}) } })
 const wall = (id: string, axis: Wall['axis'], x: number, z: number, length: number, openings: Opening[] = [], thickness = interiorWallThickness): Wall => ({ id, axis, ...rect(x, z, axis === 'x' ? length : thickness, axis === 'z' ? length : thickness), openings })
 const item = (id: string, kind: Furniture['kind'], x: number, z: number, width: number, depth: number, height: number, angle = 0): Furniture => ({ id, kind, x, z, width, depth, height, angle })
 const room = (id: string, name: string, parts: Rect[], spawn: [number, number], color = '#e9e7d6', note = 'Aus dem Anbieterplan rekonstruiert; lichte Geometrie, keine Ausführungsplanung.'): Room => ({ id, name, parts, spawn, color, note })

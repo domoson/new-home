@@ -1,6 +1,7 @@
 import * as THREE from 'three'
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js'
 import { atticCeiling, atticCeilingPanels, construction, house, elevations, floorIds, floorSlabs, lightWells, makeFloor, rect, ridgeElevations, roofHeight, roofInnerElevation, roofOuterElevation, roofPanels, roofVerticalThickness, roofWindows, slabThickness, stairFor, stairGuards, stairHandrails, stairSolids, storeyRise, wallSolids } from './model'
+import { windowFrame, windowGap, windowJoint, windowPanels } from './windowLayout'
 import { kitchenModules, moduleFront } from './kitchenStorage'
 import { terraceFurniture, terraceParts, westTerraceFurniture } from './terrace'
 import { createPartyRoom } from './partyRoom'
@@ -424,18 +425,36 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
         const openHeight = cut && opening.kind !== 'window' ? Math.min(opening.height, Math.max(0, 1.05 - opening.sill)) : opening.height
         if (opening.kind === 'window') {
           if (openHeight <= 0) continue
-          const bounds = wall.axis === 'x' ? rect(east, south - .015, opening.width, .03) : rect(east - .015, south, .03, opening.width)
-          if (opening.id.includes('fixed')) addBox(bounds, base + opening.sill, openHeight, glass)
-          else {
-            const pivot = new THREE.Group(); pivot.position.set(east, base + opening.sill, south); pivot.rotation.y = wall.axis === 'x' ? 0 : -Math.PI / 2; group.add(pivot)
-            const mesh = addBox(rect(0, -.015, opening.width, .03), 0, openHeight, glass, false, false, pivot)
-            for (const edge of [0, opening.width - .04]) addBox(rect(edge, -.035, .04, .07), 0, openHeight, frameMaterial, false, false, pivot)
-            for (const bottom of [0, openHeight - .04]) addBox(rect(0, -.035, opening.width, .07), bottom, .04, frameMaterial, false, false, pivot)
-            const labels: Record<string, string> = { 'wc-window': 'Dusch-WC', 'kitchen-window': 'Küche', 'multifunction-window': 'Multifunktion', 'east-reading': 'Lesenische / Ost', 'gable-office': 'Eltern / Ostgiebel', 'gable-office-north': 'Gäste / Arbeit / Ostgiebel', 'well-laundry': 'Waschen / Lichtschacht', 'well-hobby': 'Kinderpartyraum / Lichtschacht', 'well-plant': 'Technik / Lichtschacht' }
-            doors.push({ id: `${id}-${opening.id}`, label: `${id} · Fenster ${labels[opening.id] ?? ({ 'north-west': 'Nordwest', 'north-east': 'Nordost', 'east-north': 'Ost / Nord', 'east-south': 'Ost / Süd', 'south-east': 'Südost', 'south-west': 'Südwest' }[opening.id] ?? opening.id)}`, kind: 'window', pivot, closedAngle: pivot.rotation.y, direction: ['north', 'east'].includes(wall.id) ? -1 : 1, amount: 0, open: false, size: new THREE.Vector3(opening.width, openHeight, .03), center: mesh.position.clone(), position: pivot.position.clone(), object: mesh, sliding: false })
+          const fixedBox = (start: number, bottom: number, width: number, height: number, material: THREE.Material, thickness = .08) => {
+            const bounds = wall.axis === 'x' ? rect(east + start, south - thickness / 2, width, thickness) : rect(east - thickness / 2, south + start, thickness, width)
+            return addBox(bounds, base + opening.sill + bottom, height, material)
           }
-          for (const fraction of [0, 1]) addBox(wall.axis === 'x' ? rect(east + fraction * opening.width - .025, south - .04, .05, .08) : rect(east - .04, south + fraction * opening.width - .025, .08, .05), base + opening.sill, openHeight, frameMaterial, false)
-          addBox(wall.axis === 'x' ? rect(east, south - .06, opening.width, .12) : rect(east - .06, south, .12, opening.width), base + opening.sill - .025, .05, frameMaterial, false)
+          for (const start of [0, opening.width - windowFrame]) fixedBox(start, 0, windowFrame, openHeight, frameMaterial)
+          for (const bottom of [0, openHeight - windowFrame]) fixedBox(windowFrame, bottom, opening.width - 2 * windowFrame, windowFrame, frameMaterial)
+          const columns = opening.windowLayout?.columns ?? 1, lowerFixed = opening.windowLayout?.lowerFixed
+          if (columns === 2) fixedBox(opening.width / 2 - windowJoint / 2, windowFrame, windowJoint, openHeight - 2 * windowFrame, frameMaterial).name = `${id}-${opening.id}-mullion`
+          for (const panel of windowPanels(opening)) {
+            if (lowerFixed && panel.fixed) fixedBox(panel.start, lowerFixed - windowJoint / 2, panel.width, windowJoint, frameMaterial).name = `${id}-${opening.id}-transom-${panel.column}`
+            if (panel.fixed) {
+              fixedBox(panel.start, panel.bottom, panel.width, panel.height, glass, .03).name = `${id}-${opening.id}-fixed-${panel.column}`
+              continue
+            }
+            const width = panel.width - 2 * windowGap, height = panel.height - 2 * windowGap
+            const reverseHinge = panel.hinge === 'end', start = panel.start + windowGap + (reverseHinge ? width : 0)
+            const pivot = new THREE.Group()
+            pivot.position.set(east + (wall.axis === 'x' ? start : 0), base + opening.sill + panel.bottom + windowGap, south + (wall.axis === 'z' ? start : 0))
+            pivot.rotation.y = (wall.axis === 'x' ? 0 : -Math.PI / 2) + (reverseHinge ? Math.PI : 0)
+            group.add(pivot)
+            const mesh = addBox(rect(.035, -.015, width - .07, .03), .035, height - .07, glass, false, false, pivot)
+            for (const edge of [0, width - .035]) addBox(rect(edge, -.03, .035, .06), 0, height, frameMaterial, false, false, pivot)
+            for (const bottom of [0, height - .035]) addBox(rect(.035, -.03, width - .07, .06), bottom, .035, frameMaterial, false, false, pivot)
+            const direction = (['north', 'east'].includes(wall.id) ? -1 : 1) * (reverseHinge ? -1 : 1)
+            addBox(rect(width - .03, direction < 0 ? .033 : -.045, .018, .012), Math.max(.12, height / 2 - .08), .16, dark, false, false, pivot)
+            const leafId = `${id}-${opening.id}${panel.column ? '-secondary' : ''}`
+            pivot.name = `${leafId}-sash`
+            const name = ({ 'kitchen-window': 'Küche', 'bath-window': 'Bad', 'child-north-window': 'Kind Nord', 'living-east': 'Wohnen / Ost', 'east-north': 'Ost / Nord', 'east-south': 'Ost / Süd', 'south-west': 'Südwest', 'south-east': 'Südost', 'gable-office': 'Büro / Ostgiebel', 'gable-parents': 'Schlafen / Ostgiebel', 'well-plant': 'Technik / Lichtschacht', 'well-hobby': 'Keller / Lichtschacht' } as Record<string, string>)[opening.id] ?? opening.id
+            doors.push({ id: leafId, label: `${id} · Fenster ${name}${columns === 2 ? ` · Flügel ${panel.column + 1}` : ''}`, kind: 'window', pivot, closedAngle: pivot.rotation.y, direction, amount: 0, open: false, size: new THREE.Vector3(width, height, .06), center: new THREE.Vector3(width / 2, height / 2, 0), position: pivot.position.clone(), object: mesh, sliding: false })
+          }
         } else {
           const reverseHinge = opening.hinge === 'end'
           const pivot = new THREE.Group(); pivot.position.set(east + (reverseHinge && wall.axis === 'x' ? opening.width : 0), base, south + (reverseHinge && wall.axis === 'z' ? opening.width : 0)); group.add(pivot)
@@ -446,6 +465,7 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
           if (glazed) {
             for (const east of [0, opening.width - .035]) addBox(rect(east, -.025, .035, .05), 0, openHeight, frameMaterial, false, false, pivot)
             for (const bottom of [0, openHeight - .035]) addBox(rect(0, -.025, opening.width, .05), bottom, .035, frameMaterial, false, false, pivot)
+            if (opening.id.startsWith('garden-door') && openHeight > .75) addBox(rect(.035, -.025, opening.width - .07, .05), .67, .06, frameMaterial, false, false, pivot).name = `${id}-${opening.id}-transom`
             addBox(rect(.1, -.08, .025, .025), Math.min(.8, openHeight - .25), .2, dark, false, false, pivot)
             addBox(rect(east, south - .09, opening.width * (sliding ? 2 : 1), .18), base, .012, frameMaterial, false)
           }

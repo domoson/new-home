@@ -36,6 +36,11 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
 - EG: Kueche, Speisekammer, Dusche, Flur und Wohnen/Essen. OG: Bad, zwei
   Kinderzimmer und drittes Zimmer. DG: Buero, Schlafen/Ankleide und Abstellraum.
 - Bestehende Kuechengeraete, Sideboard und Buecherregal behalten ihre Masse.
+- Fenster nach Aussenansichten geteilt: breite Fenster zwei einzeln nach innen
+  oeffnende Fluegel, hohe Fenster mit festem Unterlicht/Querholm bei 70 cm.
+  Teilungshoehe und Profile angenaehert; keine Hersteller-/Absturzsicherungsfreigabe.
+  Garten-Festverglasung bleibt fest (Mittelpfosten); Gartentueren mit unterem
+  Querholm im beweglichen Fluegel. Oeffnungsgroessen/-positionen unveraendert.
 - SPK mit 30/32 cm tiefen Vorratsregalen an Nord-/Ostwand und freier Mitte.
   Kellertrennwand rechts vom Flur 30 cm nach Osten versetzt, mit 12,5 cm
   Wandanschluss neben beiden Tueren; 0,60 m2 vom Kellerraum zum Flur verschoben.

@@ -1,6 +1,38 @@
 import { expect, test } from '@playwright/test'
 import { PNG } from 'pngjs'
 
+test('Fensterflügel öffnen einzeln nach innen und lassen Unterlichter stehen', async ({ page }) => {
+  await page.goto('/')
+  const result = await page.evaluate(async () => {
+    const { buildScene } = await import('/src/scene.ts')
+    const { floorIds, makeFloor } = await import('/src/model.ts')
+    const model = buildScene('EG', true, true, false)
+    const checks = []
+    for (const floor of floorIds) for (const wall of makeFloor(floor).walls) for (const opening of wall.openings.filter(opening => opening.kind === 'window')) {
+      const id = `${floor}-${opening.id}`, primary = model.doors.find(door => door.id === id), secondary = model.doors.find(door => door.id === `${id}-secondary`)
+      if (opening.id.includes('fixed')) { checks.push({ id, fixed: !primary && !secondary }); continue }
+      const fixed = model.group.getObjectByName(`${id}-fixed-0`), before = fixed?.matrixWorld.clone()
+      for (const door of [primary, secondary].filter(Boolean)) {
+        const closed = door.pivot.localToWorld(door.center.clone())
+        model.setOpening(door.id, 1)
+        const opened = door.pivot.localToWorld(door.center.clone())
+        checks.push({ id: door.id, inward: wall.id === 'north' ? opened.z > closed.z : wall.id === 'south' ? opened.z < closed.z : opened.x < closed.x, width: door.size.x, expectedWidth: (opening.width - .1 - (opening.windowLayout.columns - 1) * .06) / opening.windowLayout.columns - .008, independent: door === primary ? !secondary || secondary.amount === 0 : primary.amount === 0 })
+        model.setOpening(door.id, 0)
+      }
+      if (opening.windowLayout.columns === 2) checks.push({ id, divided: !!secondary && !!model.group.getObjectByName(`${id}-mullion`) })
+      if (opening.windowLayout.lowerFixed) checks.push({ id, lowerFixed: !!fixed && before.equals(fixed.matrixWorld) && !!model.group.getObjectByName(`${id}-transom-0`) })
+    }
+    const mirrored = model.doors.find(door => door.id === 'west-EG-kitchen-window-secondary')
+    checks.push({ id: 'west', mirrored: !!mirrored && model.setOpening(mirrored.id, .5) && mirrored.amount === .5 })
+    model.dispose()
+    return checks
+  })
+  for (const check of result) {
+    for (const key of ['fixed', 'inward', 'independent', 'divided', 'lowerFixed', 'mirrored']) if (key in check) expect(check[key], `${check.id} ${key}`).toBe(true)
+    if ('width' in check) expect(check.width).toBeCloseTo(check.expectedWidth)
+  }
+})
+
 test('Möbelfronten und Bettkopfteile haben getrennte Flächen', async ({ page }) => {
   await page.goto('/')
   const gaps = await page.evaluate(async () => {
@@ -57,6 +89,7 @@ test('Anbieterplaene, Flächenabgleich und bewegtes 3D-Modell', async ({ page },
     await page.getByRole('button', { name: floor, exact: true }).click()
     await expect(page.locator('svg.floor-plan')).toContainText('11,40 m')
     await expect(page.locator('svg.floor-plan')).toContainText('6,60 m')
+    await expect(page.locator('[data-window-mullion]')).toHaveCount(({ KG: 0, EG: 3, OG: 3, DG: 2 } as Record<string, number>)[floor])
     if (floor === 'KG') {
       const wells = page.locator('[data-light-well]')
       await expect(wells).toHaveCount(2)
