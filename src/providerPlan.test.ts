@@ -85,7 +85,9 @@ describe('Anbieterentwurf', () => {
     expect(pantry.width).toBe(.73)
     expect(pantry.start).toBeGreaterThan(.48)
     expect(floor.walls.find(wall => wall.id === 'east')!.openings.find(opening => opening.id === 'entrance')).toMatchObject({ hinge: 'end', swing: 'reverse' })
-    expect(floor.furniture.find(item => item.id === 'dining')!.x - house.west).toBeCloseTo(.05)
+    const dining = floor.furniture.find(item => item.id === 'dining')!
+    expect(dining).toMatchObject({ x: .35, z: 7.85, width: 1.8, depth: .9 })
+    expect(floor.furniture.filter(item => item.id.startsWith('dining-chair')).every(item => item.x >= dining.x && item.x + item.width <= dining.x + dining.width + .001)).toBe(true)
   })
   it('gives the upper hall one metre clear width and fully separates the south rooms', () => {
     const floor = makeFloor('OG')
@@ -162,8 +164,11 @@ describe('Anbieterentwurf', () => {
   it('uses smaller attic doors and an east-side storage entrance', () => {
     const floor = makeFloor('DG')
     expect(floor.walls.find(wall => wall.id === 'parents-entry-south')!.openings[0].width).toBe(.85)
+    expect(floor.walls.find(wall => wall.id === 'parents-entry-south')!.openings[0].height).toBe(2)
+    expect(floor.walls.find(wall => wall.id === 'office-west')!.openings[0].height).toBe(2)
     expect(floor.walls.find(wall => wall.id === 'store-north')!.openings).toEqual([])
     expect(floor.walls.find(wall => wall.id === 'store-east')!.openings[0]).toMatchObject({ id: 'store', width: .73, swing: 'reverse' })
+    expect(floor.walls.find(wall => wall.id === 'store-east')!.openings[0].height).toBe(1.6)
   })
   it('has no interior fixtures, circuits or artificial bounce light', () => {
     expect(lightingCircuits).toEqual([])
@@ -193,7 +198,7 @@ describe('Anbieterentwurf', () => {
     expect(bath.walls.find(wall => wall.id === 'bath-installation-west')).toMatchObject({ width: .12, height: 1.05 })
     expect(wallSolids(bath.walls.find(wall => wall.id === 'bath-installation-east')!, bath.height)[0].height).toBe(1.2)
     for (const id of ['bath-wc', 'bath-sink']) expect(bath.furniture.find(item => item.id === id)!.angle).toBe(Math.PI / 2)
-    expect(makeFloor('EG').furniture.find(item => item.id === 'dining')).toMatchObject({ width: 2, depth: 1, z: 7.85 })
+    expect(makeFloor('EG').furniture.find(item => item.id === 'dining')).toMatchObject({ width: 1.8, depth: .9, z: 7.85 })
     const attic = makeFloor('DG'), cabinet = attic.furniture.find(item => item.id === 'dressing-low')!
     expect(cabinet.z + cabinet.depth).toBeCloseTo(attic.walls.find(wall => wall.id === 'store-north')!.z)
     expect(attic.walls.find(wall => wall.id === 'store-east')!.openings[0].height).toBe(1.6)
