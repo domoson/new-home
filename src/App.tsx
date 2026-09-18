@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react'
-import { ArrowDownToLine, ArrowUpRight, Box, BrickWall, Footprints, Info, Layers2, Maximize, Minus, Plus, Ruler, Scissors, Sofa, Trees, X } from 'lucide-react'
+import { ArrowDownToLine, ArrowUpRight, Box, BrickWall, ChevronDown, Footprints, Info, Layers2, Maximize, Minus, Plus, Ruler, Scissors, Sofa, Trees, X } from 'lucide-react'
 import { area, floorIds, format, makeFloor, roomArea, stairOpeningParts } from './model'
 import type { FloorId } from './model'
 import FloorPlan from './FloorPlan'
@@ -30,7 +30,43 @@ export default function App() {
   const [reset, setReset] = useState(0)
   const [info, setInfo] = useState(false)
   const [roomsOpen, setRoomsOpen] = useState(false)
+  const [versions, setVersions] = useState<Array<{ id: string; name: string }>>([])
+  const [currentVersion, setCurrentVersion] = useState('latest')
   const canvasArea = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    // Detect current version from URL path
+    const pathParts = window.location.pathname.replace(/\/+$/, '').split('/')
+    const lastPart = pathParts[pathParts.length - 1]
+    
+    fetch('./versions.json')
+      .then(res => res.json())
+      .then((data: Array<{ id: string; name: string }>) => {
+        if (Array.isArray(data)) {
+          setVersions(data)
+          const matched = data.find(v => v.id === lastPart)
+          if (matched) {
+            setCurrentVersion(matched.id)
+          } else if (lastPart === 'latest' || lastPart === '') {
+            setCurrentVersion('latest')
+          }
+        }
+      })
+      .catch(() => {})
+  }, [])
+
+  const switchVersion = (targetVersionId: string) => {
+    if (targetVersionId === currentVersion) return
+    const isRootOrLatest = currentVersion === 'latest' && !window.location.pathname.includes('/latest')
+    let targetPath = ''
+    if (isRootOrLatest) {
+      targetPath = targetVersionId === 'latest' ? './' : `./${targetVersionId}/`
+    } else {
+      targetPath = targetVersionId === 'latest' ? '../latest/' : `../${targetVersionId}/`
+    }
+    window.location.href = targetPath
+  }
+
   useEffect(() => {
     if (mode !== 'plan') return
     const host = canvasArea.current!
@@ -56,7 +92,39 @@ export default function App() {
     const link = document.createElement('a'); link.href = url; link.download = `Hausentwurf-${exterior ? 'Aussenanlagen' : section ? 'Schnitt' : floorId}.svg`; link.click(); URL.revokeObjectURL(url)
   }
   return <div className="app">
-    <header className="header"><div className="brand-mark"><Layers2 size={24} strokeWidth={1.6} /></div><div className="brand"><h1>Doppelhausentwurf <span>Ost</span></h1><p>DOPPELHAUSHÄLFTE · VORENTWURF</p></div><div className="project-state"><span className="status-dot" /> Vorentwurf <span className="revision">01</span></div><button className="icon-button" onClick={() => setInfo(true)} title="Planungsannahmen" aria-label="Planungsannahmen"><Info size={20} /></button></header>
+    <header className="header">
+      <div className="brand-mark"><Layers2 size={24} strokeWidth={1.6} /></div>
+      <div className="brand">
+        <h1>Doppelhausentwurf <span>Ost</span></h1>
+        <p>DOPPELHAUSHÄLFTE · VORENTWURF</p>
+      </div>
+      <div className="project-state">
+        {versions.length > 0 ? (
+          <div className="version-selector-wrap">
+            <span className="status-dot" />
+            <span className="version-label">Stand:</span>
+            <div className="version-select-box">
+              <select
+                className="version-select"
+                value={currentVersion}
+                onChange={e => switchVersion(e.target.value)}
+                aria-label="Entwurfsstand auswählen"
+              >
+                {versions.map(v => (
+                  <option key={v.id} value={v.id}>
+                    {v.name}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown size={14} className="version-select-arrow" />
+            </div>
+          </div>
+        ) : (
+          <><span className="status-dot" /> Vorentwurf <span className="revision">01</span></>
+        )}
+      </div>
+      <button className="icon-button" onClick={() => setInfo(true)} title="Planungsannahmen" aria-label="Planungsannahmen"><Info size={20} /></button>
+    </header>
     <div className="workspace">
       <aside className={`sidebar ${roomsOpen ? 'is-open' : ''}`}>
         {exterior ? <><div className="sidebar-heading"><span className="eyebrow">GRUNDSTÜCK</span><span className="small-index">OST + WEST</span></div><div className="floor-heading"><h2>Außenanlagen</h2></div><div className="level-metrics"><div><strong>{format(siteArea)}<small> m²</small></strong><span>Grundstück gesamt</span></div><div><strong>4</strong><span>Stellplätze</span></div></div><div className="room-list" aria-label="Außenobjekte">{siteItems.filter(item => !item.id.startsWith('approach') && !item.id.startsWith('access')).map(item => <button key={item.id} className={`room-row ${siteItem.id === item.id ? 'active' : ''}`} aria-pressed={siteItem.id === item.id} onClick={() => setSiteItem(item)}><span className="room-swatch" style={{ background: item.color }} /><span>{item.name}</span></button>)}</div><section className="room-detail" aria-live="polite"><div className="eyebrow">AUSSENMASSE</div><h3>{siteItem.name}</h3><p>{siteItem.details}</p>{siteItem.id.startsWith('carport') && <p>3,00 m Mindestabstand zur Südgrenze. Rückwand geschlossen; Tonnenfläche dahinter.</p>}{siteItem.id.startsWith('bins') && <p>Kompost, Restmüll, Papier: je eine schematische 240-l-Tonne, 60 × 75 cm. Bedienfläche davor 0,90 m tief.</p>}{siteItem.id.startsWith('open') && <p>5,00 m Stellplatzlänge plus mindestens 0,45 m Vorfläche zur schrägen Südgrenze.</p>}</section></> : <>

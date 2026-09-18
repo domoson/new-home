@@ -3,6 +3,7 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
+    tags: ['*']
   workflow_dispatch:
 
 permissions:
@@ -18,21 +19,68 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out repository
+      - name: Check out repository with full history & tags
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
-      - name: Install dependencies
-        run: npm ci
-      - name: Build app
-        run: npm run build
+
+      - name: Build all tagged versions and latest
+        run: |
+          mkdir -p output/latest
+
+          # 1. Build current branch (latest)
+          npm ci
+          npm run build
+          cp -r dist/* output/latest/
+          cp -r dist/* output/
+
+          # 2. Collect tags and human-readable names
+          TAGS=$(git tag -l --sort=-creatordate)
+          
+          # Initialize versions json with latest
+          VERSIONS_JSON='[{"id":"latest","name":"Aktuelle Version (main)"}'
+
+          for TAG in $TAGS; do
+            echo "Processing tag $TAG..."
+            DISPLAY_NAME="$TAG"
+            if [ "$TAG" = "7x10-final" ]; then
+              DISPLAY_NAME="7x10 final"
+            elif [ "$TAG" = "MHW-Entwurf" ]; then
+              DISPLAY_NAME="MHW Entwurf"
+            fi
+            
+            VERSIONS_JSON="$VERSIONS_JSON,{\"id\":\"$TAG\",\"name\":\"$DISPLAY_NAME\"}"
+          done
+
+          VERSIONS_JSON="$VERSIONS_JSON]"
+
+          # 3. Build each tag into its own subdirectory
+          for TAG in $TAGS; do
+            echo "Building tag $TAG..."
+            mkdir -p output/$TAG
+            git checkout $TAG
+            npm ci || npm install
+            npm run build
+            cp -r dist/* output/$TAG/
+          done
+
+          # 4. Place versions.json in root and in every sub-build folder
+          echo "$VERSIONS_JSON" > output/versions.json
+          cp output/versions.json output/latest/versions.json
+          for TAG in $TAGS; do
+            cp output/versions.json output/$TAG/versions.json || true
+          done
+
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: ./dist
+          path: ./output
 
   deploy:
     needs: build
