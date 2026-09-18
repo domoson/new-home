@@ -41,6 +41,9 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
   Teilungshoehe und Profile angenaehert; keine Hersteller-/Absturzsicherungsfreigabe.
   Garten-Festverglasung bleibt fest (Mittelpfosten); Gartentueren mit unterem
   Querholm im beweglichen Fluegel. Oeffnungsgroessen/-positionen unveraendert.
+- Fehlendes EG-Duschbadfenster an der Ostwand ergaenzt: einfluegelig,
+  80 x 105 cm, Bruestung 130 cm oberhalb der Vorwand, Nordkante bei z=1,90 m.
+  Lage und Masse aus dem unbemassten Planausschnitt angenaehert.
 - SPK mit 30/32 cm tiefen Vorratsregalen an Nord-/Ostwand und freier Mitte.
   Kellertrennwand rechts vom Flur 30 cm nach Osten versetzt, mit 12,5 cm
   Wandanschluss neben beiden Tueren; 0,60 m2 vom Kellerraum zum Flur verschoben.

@@ -84,7 +84,7 @@ describe('Anbieterentwurf', () => {
     const pantry = floor.walls.find(wall => wall.id === 'kitchen-east')!.openings[0]
     expect(pantry.width).toBe(.73)
     expect(pantry.start).toBeGreaterThan(.48)
-    expect(floor.walls.find(wall => wall.id === 'east')!.openings[0]).toMatchObject({ hinge: 'end', swing: 'reverse' })
+    expect(floor.walls.find(wall => wall.id === 'east')!.openings.find(opening => opening.id === 'entrance')).toMatchObject({ hinge: 'end', swing: 'reverse' })
     expect(floor.furniture.find(item => item.id === 'dining')!.x - house.west).toBeCloseTo(.05)
   })
   it('gives the upper hall one metre clear width and fully separates the south rooms', () => {

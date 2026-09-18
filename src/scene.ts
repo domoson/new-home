@@ -452,7 +452,7 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
             addBox(rect(width - .03, direction < 0 ? .033 : -.045, .018, .012), Math.max(.12, height / 2 - .08), .16, dark, false, false, pivot)
             const leafId = `${id}-${opening.id}${panel.column ? '-secondary' : ''}`
             pivot.name = `${leafId}-sash`
-            const name = ({ 'kitchen-window': 'Küche', 'bath-window': 'Bad', 'child-north-window': 'Kind Nord', 'living-east': 'Wohnen / Ost', 'east-north': 'Ost / Nord', 'east-south': 'Ost / Süd', 'south-west': 'Südwest', 'south-east': 'Südost', 'gable-office': 'Büro / Ostgiebel', 'gable-parents': 'Schlafen / Ostgiebel', 'well-plant': 'Technik / Lichtschacht', 'well-hobby': 'Keller / Lichtschacht' } as Record<string, string>)[opening.id] ?? opening.id
+            const name = ({ 'kitchen-window': 'Küche', 'wc-window': 'Dusche / Ost', 'bath-window': 'Bad', 'child-north-window': 'Kind Nord', 'living-east': 'Wohnen / Ost', 'east-north': 'Ost / Nord', 'east-south': 'Ost / Süd', 'south-west': 'Südwest', 'south-east': 'Südost', 'gable-office': 'Büro / Ostgiebel', 'gable-parents': 'Schlafen / Ostgiebel', 'well-plant': 'Technik / Lichtschacht', 'well-hobby': 'Keller / Lichtschacht' } as Record<string, string>)[opening.id] ?? opening.id
             doors.push({ id: leafId, label: `${id} · Fenster ${name}${columns === 2 ? ` · Flügel ${panel.column + 1}` : ''}`, kind: 'window', pivot, closedAngle: pivot.rotation.y, direction, amount: 0, open: false, size: new THREE.Vector3(width, height, .06), center: new THREE.Vector3(width / 2, height / 2, 0), position: pivot.position.clone(), object: mesh, sliding: false })
           }
         } else {
