@@ -1,0 +1,5 @@
+.area-comparison { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 12px; }
+.area-comparison th, .area-comparison td { padding: 8px 4px; border-bottom: 1px solid #dce3d8; text-align: right; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+.area-comparison th:first-child { width: 36%; text-align: left; }
+.area-comparison tbody th { font-weight: 400; }
+.area-comparison tfoot { font-weight: 600; background: #f1f4ef; }

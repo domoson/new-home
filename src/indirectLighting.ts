@@ -2,6 +2,7 @@ import * as THREE from 'three'
 import { area, elevations, makeFloor, roofHeight, stairOpeningParts } from './model'
 import type { FloorId } from './model'
 import { roomDaylight } from './roomDaylight'
+import { interiorLightingEnabled } from './lighting'
 
 export function createIndirectLighting(floors: FloorId[], materials: THREE.Material[], coordinates = new THREE.Matrix4(), houseSide: 'east' | 'west' = 'east') {
   const volumes = floors.flatMap(floorId => {
@@ -58,6 +59,6 @@ export function createIndirectLighting(floors: FloorId[], materials: THREE.Mater
     material.needsUpdate = true
   }
   return { volumes, uniforms, setDaylight(strength: number) { uniforms.roomDaylightLevel.value = strength }, update(states: Record<string, boolean>, activeFloor: FloorId) {
-    volumes.forEach((volume, index) => { uniforms.bounceStrength.value[index] = volume.floor === activeFloor && (states[volume.id] ?? volume.floor === 'KG') ? volume.strength : 0 })
+    volumes.forEach((volume, index) => { uniforms.bounceStrength.value[index] = interiorLightingEnabled && volume.floor === activeFloor && (states[volume.id] ?? volume.floor === 'KG') ? volume.strength : 0 })
   } }
 }

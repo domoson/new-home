@@ -28,7 +28,7 @@ export const neighborItems: SiteItem[] = [
 export const siteItems: SiteItem[] = [
   rectangle('house-east', 'Haus Ost', { x: 0, z: 0, width: house.width, depth: house.depth }, '#e9e7df'),
   rectangle('house-west', 'Haus West', partner, '#e9e7df'),
-  ...(['east', 'west'] as const).map(side => {
+  ...(['east', 'west'] as const).filter(() => terraceArea > 0).map(side => {
     const point = (east: number, south: number): [number, number] => side === 'east' ? [east, south] : [-east, south + partner.z]
     return { ...rectangle(`terrace-${side}`, `Terrasse ${side === 'east' ? 'Ost' : 'West'}`, terraceMain, '#d7c5a6', point), points: terraceOutline.map(([east, south]) => point(east, south)), dimensionPoints: rectCorners(terraceMain).map(([east, south]) => point(east, south)), details: `5,00 m × 3,00 m + Rücklauf 0,75 m × 1,50 m · ${terraceArea.toLocaleString('de-DE', { maximumFractionDigits: 2 })} m²` }
   }),

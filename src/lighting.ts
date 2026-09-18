@@ -1,9 +1,10 @@
 import * as THREE from 'three'
-import { area, elevations, floorIds, makeFloor, roofHeight, stair, stairOpeningParts, storeyRise } from './model'
+import { area, ceilingHeight, elevations, floorIds, makeFloor, stair, stairOpeningParts, storeyRise } from './model'
 import type { FloorId } from './model'
 
 export type LightingCircuit = { id: string; label: string; floor: FloorId; defaultOn: boolean }
-export const lightingCircuits: LightingCircuit[] = [...floorIds.flatMap(floor => [...makeFloor(floor).rooms.map(room => ({ id: `${floor}-${room.id}`, label: room.name, floor, defaultOn: floor === 'KG' })), { id: `${floor}-stairs`, label: 'Treppe', floor, defaultOn: floor === 'KG' }]), { id: 'KG-party-effects', label: 'Partylicht', floor: 'KG', defaultOn: true }]
+export const interiorLightingEnabled = false
+export const lightingCircuits: LightingCircuit[] = (interiorLightingEnabled ? floorIds : []).flatMap(floor => [...makeFloor(floor).rooms.map(room => ({ id: `${floor}-${room.id}`, label: room.name, floor, defaultOn: floor === 'KG' })), { id: `${floor}-stairs`, label: 'Treppe', floor, defaultOn: floor === 'KG' }])
 
 export function daylightLevels(altitude: number, mode: 'room' | 'global' = 'room') {
   const daylight = THREE.MathUtils.smoothstep(Math.sin(altitude), -.08, .35)
@@ -12,23 +13,23 @@ export function daylightLevels(altitude: number, mode: 'room' | 'global' = 'room
 
 export function createRoomLighting(floors: FloorId[], materials: THREE.Material[], furnished = true) {
   const group = new THREE.Group(); group.name = 'room-lighting'
-  const circuits = floors.flatMap(floorId => {
+  const circuits = (interiorLightingEnabled ? floors : []).flatMap(floorId => {
     const floor = makeFloor(floorId)
     const stairRoom = { id: 'stairs', parts: stairOpeningParts }
     return [...floor.rooms, stairRoom].map(room => {
       const id = `${floorId}-${room.id}`
       const isStair = room.id === 'stairs'
       const part = room.parts.reduce((largest, current) => area([current]) > area([largest]) ? current : largest)
-      const positions = isStair ? [[stair.x + .065, stair.z + stair.depth / 2]] : room.id === 'living' ? [[5.1, 3.65], [3.1, 7.25], [5.9, 8.1]] : floorId === 'KG' && room.id === 'child-south' ? [[4.8, 7.5]] : [[part.x + part.width / 2, part.z + part.depth / 2]]
+      const positions = isStair ? [[stair.x + .065, stair.z + stair.depth / 2]] : room.id === 'living' ? [[1.95, 7.9], [4.8, 9.3]] : [[part.x + part.width / 2, part.z + part.depth / 2]]
       const diffuser = new THREE.MeshStandardMaterial({ color: '#f2f0e8', roughness: .55, emissive: '#ffe3bc', emissiveIntensity: 0 })
       const trim = new THREE.MeshStandardMaterial({ color: '#deded9', roughness: .65 })
       materials.push(diffuser, trim)
       const lamps = positions.map(([east, south], index) => {
         const rise = storeyRise(floorId)
-        const ceiling = isStair ? (floorId === 'DG' ? 1.7 : rise / 2 + 1.2) : floorId === 'DG' ? roofHeight(south) : floor.height
+        const ceiling = isStair ? (floorId === 'DG' ? 1.7 : rise / 2 + 1.2) : floorId === 'DG' ? ceilingHeight(south) : floor.height
         const mount = new THREE.Group(); mount.name = `${id}-${isStair ? 'wall' : 'ceiling'}-light-${index}`; mount.userData.lightCircuit = id
         mount.position.set(east, floor.elevation + ceiling - .05, south)
-        if (floorId === 'DG' && !isStair) mount.rotation.x = -Math.atan((roofHeight(south + .01) - roofHeight(south)) / .01)
+        if (floorId === 'DG' && !isStair) mount.rotation.x = -Math.atan((ceilingHeight(south + .01) - ceilingHeight(south)) / .01)
         const body = new THREE.Mesh(isStair ? new THREE.BoxGeometry(.1, .28, .34) : new THREE.CylinderGeometry(.19, .19, .07, 24), trim)
         const glass = new THREE.Mesh(isStair ? new THREE.BoxGeometry(.012, .2, .28) : new THREE.CylinderGeometry(.175, .175, .018, 24), diffuser)
         if (isStair) glass.position.x = .055
@@ -42,7 +43,7 @@ export function createRoomLighting(floors: FloorId[], materials: THREE.Material[
         light.visible = false; group.add(light, light.target)
         return { mount, light }
       })
-      if (furnished && floorId === 'EG' && room.id === 'living') {
+      if (furnished && floorId === 'EG' && room.id === 'kitchen') {
         const cabinet = floor.furniture.find(item => item.id === 'kitchen-upper')!
         const mount = new THREE.Group(); mount.name = 'kitchen-task-light'; mount.userData.lightCircuit = id
         mount.position.set(cabinet.x + cabinet.width / 2, cabinet.bottom! + .008, cabinet.z + cabinet.depth - .035)
@@ -50,7 +51,7 @@ export function createRoomLighting(floors: FloorId[], materials: THREE.Material[
         const light = new THREE.SpotLight('#ffe3bc', 35, 2.5, 1.1, .8, 2)
         light.name = 'EG-kitchen-task-source'; light.position.copy(mount.position); light.position.y -= .025
         light.castShadow = true; light.shadow.mapSize.set(256, 256); light.shadow.camera.near = .05; light.shadow.camera.far = 2.5; light.shadow.bias = -.00015
-        light.target.position.set(mount.position.x, .92, 3.05)
+        light.target.position.set(mount.position.x, .92, .75)
         light.visible = false; group.add(light, light.target); lamps.push({ mount, light })
       }
       return { id, floor: floorId, diffuser, lamps }

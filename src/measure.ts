@@ -1,4 +1,4 @@
-import { lightWells, rect, roofHeight, roofWindows, roomArea, stairFor, stairSolids, storeyRise, wallSolids } from './model'
+import { house, lightWells, rect, roofHeight, roofWindows, roomArea, stairFor, stairSolids, storeyRise, wallSolids } from './model'
 import type { Floor, Furniture, Rect } from './model'
 import { terraceArea, terraceFurniture, terraceParts } from './terrace'
 import { kitchenModules } from './kitchenStorage'
@@ -19,7 +19,7 @@ export const contains = (bounds: Rect & { footprint?: [number, number][] }, poin
 export const furnitureName = (item: Furniture) => ({ 'kitchen-tall': 'Hochschrank / Backofen', fridge: 'Einbaukühl-/Gefrierschrank', peninsula: 'Kochhalbinsel', kitchen: 'Spülenzeile', 'coffee-counter': 'Geräte- und Eckarbeitsplatte', 'kitchen-upper': 'Deckenhohe Hängeschränke', 'kitchen-scribe': 'Hochschrank-Abschlussblende', toaster: 'Toaster', sodastream: 'Wassersprudler', cookit: 'Cookit / Küchenmaschine', wardrobe: 'Garderobe', bookshelf: 'Bücherregal', sideboard: 'Sideboard', 'sofa-chaise': 'Chaiselongue', 'parents-bed': 'Elternbett', 'guest-bed': 'Gästebett', 'kitchen-sink': 'Spüle' }[item.id] ?? { bed: 'Bett', sofa: 'Sofa', chaise: 'Chaiselongue', bookcase: 'Regal', table: 'Tisch', chair: 'Stuhl', bench: 'Essbank', cabinet: 'Schrank', counter: 'Arbeitsplatte', sink: 'Waschbecken', wc: 'WC', shower: 'Dusche', bath: 'Badewanne', desk: 'Schreibtisch', tv: 'Fernseher', plant: 'Pflanze', machine: 'Haustechnik / Gerät', hob: 'Induktionskochfeld', espresso: 'Siebträgermaschine' }[item.kind])
 export const furnitureMeasure = (item: Furniture): Measurable => ({ ...item, label: furnitureName(item), details: `Höhe ${metres(item.height)}${item.bottom ? ` · Aufstand ${metres(item.bottom)}` : ''}` })
 export function planObjects(floor: Floor, furnished: boolean): Measurable[] {
-  const objects: Measurable[] = [{ ...rect(-.22, 0, .22, 10), label: 'Nachbaranschluss (schematisch)', details: 'Keine vermessene Nachbarwand' }]
+  const objects: Measurable[] = [{ ...rect(-.22, 0, .22, house.depth), label: 'Nachbaranschluss (schematisch)', details: 'Keine vermessene Nachbarwand' }]
   if (floor.id === 'EG') {
     objects.push(...terraceParts.map((part, index) => ({ ...part, label: index ? 'Terrassenrücklauf' : 'Holzterrasse', details: `${terraceArea.toLocaleString('de-DE', { maximumFractionDigits: 2 })} m² gesamt · Dielen 14,4 cm / Fuge 6 mm` })))
     if (furnished) objects.push(...terraceFurniture.map(furnitureMeasure))

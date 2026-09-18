@@ -199,8 +199,9 @@ export function createSurroundings() {
   }
   const gardenVegetationSeed = 793149848
   seed = gardenVegetationSeed
-  for (const east of [-3.5, 3.5]) tree(garden, east, boundaryZ(east, 2) - 2.5, 4.2 + random(), 1.35)
-  for (const east of [-5.8, 5.6]) tree(garden, east, (boundaryZ(east, 0) + (east < 0 ? partner.z : 0)) / 2, 3.6, 1)
+  const removedGardenTreeRandomSamples = 6
+  for (let sample = 0; sample < removedGardenTreeRandomSamples; sample++) random()
+  for (const east of [-5.8, 5.6]) tree(garden, east, (boundaryZ(east, 0) + (east < 0 ? 1.2 : 0)) / 2, 3.6, 1)
   for (const { side, carport, open, bins, binAccess, angle, origin, point, streetZ, passagePoints, approach } of siteParking) {
     const parking = new THREE.Group(); parking.name = `parking-area-${side}`; parking.position.set(origin.x, 0, origin.z); parking.rotation.y = -angle; garden.add(parking)
     const structure = new THREE.Group(); structure.name = `carport-${side}`; parking.add(structure)

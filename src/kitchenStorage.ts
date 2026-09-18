@@ -4,6 +4,10 @@ export type KitchenModule = Rect & { id: string; front: 'north' | 'south' | 'wes
 
 export function kitchenModules(item: Furniture): KitchenModule[] {
   const { x, z, width } = item
+  if (item.id === 'kitchen-south-counter') return [
+    { id: 'south-drawers', x, z, width: .9, depth: item.depth, front: 'north', use: 'drawers' },
+    { id: 'south-storage', x: x + .9, z, width: width - .9, depth: item.depth, front: 'north', use: 'cupboard' },
+  ]
   if (item.id === 'peninsula') return [
     { id: 'hob-drawers', x, z, width: 1, depth: .6, front: 'north', use: 'drawers' },
     { id: 'prep-drawers', x: x + 1, z, width: 1, depth: .6, front: 'north', use: 'drawers' },
@@ -11,11 +15,15 @@ export function kitchenModules(item: Furniture): KitchenModule[] {
     { id: 'rear-storage-east', x: x + 1.04, z: z + .65, width: 1, depth: .35, front: 'south', use: 'cupboard' },
   ]
   if (item.id === 'kitchen') return [
-    { id: 'east-prep', x, z, width: width - .05, depth: .75, front: 'west', use: 'drawers' },
-    { id: 'sink-base', x, z: z + .75, width: width - .05, depth: .8, front: 'west', use: 'sink' },
-    { id: 'dishwasher', x, z: z + 1.55, width: width - .05, depth: .6, front: 'west', use: 'dishwasher' },
+    { id: 'west-prep', x, z, width, depth: .8, front: 'east', use: 'drawers' },
+    { id: 'hob-drawers', x, z: z + .8, width, depth: item.depth - .8, front: 'east', use: 'drawers' },
   ]
-  if (item.id === 'coffee-counter') return [{ id: 'corner-storage', x, z, width, depth: .65, front: 'south', use: 'cupboard', frontOffset: .05, frontLength: .6 }]
+  if (item.id === 'coffee-counter') return [
+    { id: 'corner-storage', x, z, width: .65, depth: .65, front: 'south', use: 'cupboard' },
+    { id: 'dishwasher', x: x + .65, z, width: .6, depth: .65, front: 'south', use: 'dishwasher' },
+    { id: 'sink-base', x: x + 1.25, z, width: .8, depth: .65, front: 'south', use: 'sink' },
+    { id: 'coffee-storage', x: x + 2.05, z, width: width - 2.05, depth: .65, front: 'south', use: 'drawers' },
+  ]
   return []
 }
 

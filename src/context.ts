@@ -19,7 +19,7 @@ export function boundaryDistance(point: [number, number], side: number) {
   const start = siteBoundary[side], end = siteBoundary[(side + 1) % 4], east = end[0] - start[0], south = end[1] - start[1]
   return (east * (point[1] - start[1]) - south * (point[0] - start[0])) / Math.hypot(east, south)
 }
-export const partner = { x: -house.width, z: 1.2, width: house.width, depth: house.depth }
+export const partner = { x: -house.width, z: .9, width: house.width, depth: house.depth }
 export const finishes = {
   facade: [{ name: 'Kreideweiß', color: '#fafafa' }, { name: 'Lichtgrau', color: '#d3d7d6' }, { name: 'Salbeigrau', color: '#bfc9bd' }, { name: 'Muschelweiß', color: '#eeeae0' }, { name: 'Nebelblau', color: '#bdcdd3' }, { name: 'Mineralgrün', color: '#9eaea4' }, { name: 'Steingrau', color: '#b4b4b0' }, { name: 'Kohle', color: '#666b68' }],
   roof: [{ name: 'Graphit', color: '#424749' }, { name: 'Ziegelrot', color: '#99584c' }, { name: 'Zinkgrau', color: '#89928f' }, { name: 'Schwarz', color: '#252927' }, { name: 'Naturrot', color: '#b66b52' }, { name: 'Warmes Schiefergrau', color: '#747a78' }, { name: 'Basaltgrau', color: '#686f6e' }, { name: 'Kaffeebraun', color: '#5b493f' }, { name: 'Umbra', color: '#665247' }, { name: 'Mangan', color: '#4c4641' }],

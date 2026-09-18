@@ -18,7 +18,69 @@ freien Port. `npm run build` erstellt `dist/`, das auf einem statischen HTTP-Hos
 betrieben werden kann. `npm run preview` dient der lokalen Build-Vorschau.
 Nicht ueber `file://` oeffnen. WebGL2 ist fuer 3D erforderlich, 2D funktioniert ohne.
 
-## Bedienung
+## Aktueller Anbieterentwurf
+
+Die Anbieter-Screenshots ersetzen den frueheren Hausentwurf. Die Osthaelfte ist
+auf KG, EG, OG und DG rekonstruiert und eingerichtet; die Westhaelfte bleibt
+ein Baukoerper ohne Innenausbau. Alte Terrasse und Vordach sind entfernt.
+Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
+
+- Je Haelfte 6,60 x 11,40 m; Gesamtbreite 13,20 m, Versatz 0,90 m nach Sueden
+  fuer West. Gemeinsame Hauswand auf der unveraenderten, flaechengleichen Teilung.
+- FFB KG / EG / OG / DG: -2,45 / 0,00 / 2,97 / 5,94 m.
+- Lichte Hoehen KG 2,25 m, EG/OG 2,77 m; Geschossdecken 20 cm.
+- Dach 35 Grad, Innenknie 50 cm; DG-Decke bei 2,77 m, 24 cm stark.
+  Aussen-/Trennwaende 30 cm, Innenwaende 12,5 cm und Dachpaket 24 cm sind Annahmen.
+  Zentrale Querwaende an Treppe/Flur 20 cm; kein statischer Nachweis.
+  DG-Innenwaende enden an der Unterkante der Spitzbodendecke.
+- EG: Kueche, Speisekammer, Dusche, Flur und Wohnen/Essen. OG: Bad, zwei
+  Kinderzimmer und drittes Zimmer. DG: Buero, Schlafen/Ankleide und Abstellraum.
+- Bestehende Kuechengeraete, Sideboard und Buecherregal behalten ihre Masse.
+- SPK mit 30/32 cm tiefen Vorratsregalen an Nord-/Ostwand und freier Mitte.
+  Kellertrennwand rechts vom Flur 30 cm nach Osten versetzt, mit 12,5 cm
+  Wandanschluss neben beiden Tueren; 0,60 m2 vom Kellerraum zum Flur verschoben.
+- Kellerfenster 90 x 75 cm; oestliches Fenster 1,35 m von der suedlichen
+  Aussenkante entfernt, 90 cm weiter suedlich als zuvor. Beide Lichtschaechte
+  mittig, 130 x 50 cm im Grundriss (aus Zeichnung angenaehert, kein Herstellermass).
+- EG-Dusche nordwestlich, WC nordoestlich und Waschtisch suedoestlich mit
+  Unterputzarmaturen. Ost-Vorwand 20 cm tief/120 cm hoch; Dusch-Vorwand
+  96 cm breit/10 cm tief/220 cm hoch. Vorwandflaechen abgezogen; Leitungsplanung offen.
+- Kuechentuer nach links versetzt, Hochschraenke rechts, Arbeitszeile im Sueden.
+  Esstisch 200 x 100 cm, 40 cm suedlicher. OG-Bad mit halbhohen Installationsvorwaenden.
+- DG-Abstellraumtuer 73 x 160 cm, rechteckig und ueber den Schwenkweg unter dem
+  Dach geprueft. Kein aufrechter Durchgang; der Rundgang hat keine Duckfunktion.
+- Die Planungsannahmen zeigen fuer jeden Raum Modell- und Angebotsflaechen.
+  Wohnflaechen: 3 % Abzug; im DG zusaetzlich Hoehengewichtung unter 1 / 2 m.
+  Tuerlaibungen nicht eingerechnet. Kein WoFlV-Nachweis.
+- Treppenannahme: 1,90 x 2,00 m, 15 Steigungen, 30 cm gerade Auftritte,
+  nominell 85 cm Laufbreite und 20 cm modellierte Staerke. Begehbare Physik
+  ersetzt keine Pruefung von Treppennorm, Kopffreiheit oder Tragwerk.
+- Lage und Fenstermasse sind aus Screenshots angenaehert, nicht vermessen.
+  Abstandsrecht, Tragwerk, Brand-/Schallschutz und Genehmigung bleiben offen.
+
+Aktuelle Modellquelle: `src/providerPlan.ts`; gemeinsame Hoehen: `src/model.ts`.
+Fokussierte Pruefung des neuen Entwurfs:
+
+```sh
+npx vitest run src/providerPlan.test.ts
+npx playwright test tests/provider-plan.spec.ts
+npm run build
+npm run lint
+```
+
+Die neuen Browsertests pruefen Grundrisse, Schnitt, Flaechentabelle, bewegtes
+3D-Bild sowie alle sechs Treppenrichtungen und Raumzugaenge mit Kollisionen
+auf Desktop und Mobil. Aeltere layoutbezogene Tests enthalten noch die Masse
+des vorherigen Entwurfs und sind nicht als Nachweis dieses Entwurfs geeignet.
+
+## Historische Dokumentation
+
+**Die folgenden Abschnitte dokumentieren den vorherigen Entwurf.** Insbesondere
+Hausmasse, Innenaufteilung, Terrassen, Fenster, Treppen und Flaechen darin gelten
+nicht mehr. Fuer den aktuellen Stand gelten der Abschnitt oben und die
+Planungsannahmen in der Anwendung. Umgebungsmodelle bleiben weiterverwendet.
+
+### Bisherige Bedienung
 
 - KG, EG, OG und DG waehlen; Raeume im Plan oder in der Raumliste anklicken.
 - 2D: Plus/Minus zoomt; auf freier Zeichenflaeche ziehen verschiebt den vergroesserten
