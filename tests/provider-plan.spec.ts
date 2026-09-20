@@ -63,7 +63,7 @@ test('Bemaßung schaltet auch Raumlabels im Grundriss um', async ({ page }, test
   await page.goto('/')
   const plan = page.locator('svg.floor-plan')
   const toggle = page.getByRole('button', { name: 'Bemaßung', exact: true })
-  for (const [floor, count] of [['KG', 4], ['EG', 5], ['OG', 5], ['DG', 4]] as const) {
+  for (const [floor, count] of [['KG', 4], ['EG', 4], ['OG', 5], ['DG', 4]] as const) {
     await page.getByRole('button', { name: floor, exact: true }).click()
     await expect(plan.locator('[data-room-label]')).toHaveCount(count)
     await expect(plan.locator('[data-room-label] rect')).toHaveCount(count)
@@ -97,7 +97,15 @@ test('Anbieterplaene, Flächenabgleich und bewegtes 3D-Modell', async ({ page },
       expect(Number(await wells.nth(0).getAttribute('height'))).toBeCloseTo(1.3)
       expect(Number(await wells.nth(1).getAttribute('width'))).toBeCloseTo(1.3)
     }
-    if (floor === 'EG') await expect(page.locator('[data-concealed-fittings="true"]')).toHaveCount(3)
+    if (floor === 'EG') {
+      await expect(page.locator('[data-concealed-fittings="true"]')).toHaveCount(3)
+      const entranceCenter = await page.evaluate(async () => {
+        const { makeFloor } = await import('/src/model.ts')
+        const entrance = makeFloor('EG').walls.find(wall => wall.id === 'east').openings.find(opening => opening.id === 'entrance')
+        return entrance.start + entrance.width / 2
+      })
+      await expect(page.locator('[data-entrance-marker]')).toHaveAttribute('transform', `translate(0 ${entranceCenter})`)
+    }
     if (floor === 'DG') await expect(page.locator('[data-bed-head="south"] [data-furniture="parents-bed"]')).toHaveCount(1)
     await expect(page.locator('[data-stair-start]')).toHaveCount(1)
     await expect(page.locator('[data-step][data-hidden-step="true"]')).toHaveCount(7)
@@ -173,10 +181,10 @@ test('Neue Treppe, Raumwege und niedrige Abstellraumtür berücksichtigen Kollis
       ['KG-store', 'KG', [[2.85, 5.65], [2.85, 4.95], [4.6, 4.95]]],
       ['KG-hobby', 'KG', [[2.85, 5.65], [3.05, 5.65], [3.05, 8]]],
       ['EG-kitchen', 'EG', [[2.85, 5.65], [2.7, 5.65], [2.7, 3.2], [2.1, 2.4]]],
-      ['EG-pantry', 'EG', [[2.1, 2.4], [2.7, 2.4], [2.7, 1.25], [5.2, 1.25]]],
-      ['EG-shower', 'EG', [[4.2, 5.2], [4.4, 5.2], [4.4, 3.1], [5.1, 3.1]]],
+      ['EG-open-kitchen-living', 'EG', [[2.1, 2.4], [2.7, 2.4], [2.7, 4.25], [4.2, 4.25], [4.2, 5.4], [3.45, 6.85]]],
+      ['EG-shower', 'EG', [[4.4, 3.35], [4.4, 1.6], [5.1, 1.6]]],
       ['EG-living', 'EG', [[2.85, 5.65], [3.03, 5.65], [3.03, 6.85], [3.45, 6.85], [3.45, 9.4]]],
-      ['EG-entrance', 'EG', [[4.2, 5.2], [5.9, 4.85], [7.1, 4.85]]],
+      ['EG-entrance', 'EG', [[4.4, 3.35], [5.9, 3.25], [7.1, 3.25]]],
       ['OG-bath', 'OG', [[2.8, 5.65], [2.7, 5.65], [2.7, 3.35], [1.7, 3.35]]],
       ['OG-north', 'OG', [[2.8, 5.65], [2.8, 4.5], [4.4, 4.5], [4.4, 3.5]]],
       ['OG-south', 'OG', [[2.8, 5.65], [2.8, 6.95], [4.6, 6.95], [4.6, 8]]],
@@ -219,7 +227,7 @@ test('Neue Treppe, Raumwege und niedrige Abstellraumtür berücksichtigen Kollis
     }
     const { OBB } = await import('/node_modules/three/examples/jsm/math/OBB.js')
     const doorFurnitureCollisions = []
-    for (const [floorId, doorId] of [['EG', 'kitchen-door'], ['EG', 'pantry'], ['EG', 'wc'], ['OG', 'child-north'], ['DG', 'attic-office'], ['DG', 'store']]) {
+    for (const [floorId, doorId] of [['EG', 'entrance'], ['EG', 'wc'], ['OG', 'child-north'], ['DG', 'attic-office'], ['DG', 'store']]) {
       const door = model.doors.find(door => door.id === `${floorId}-${doorId}`)
       for (let sample = 0; sample <= 20; sample++) {
         model.setOpening(door.id, sample / 20)
@@ -254,7 +262,7 @@ test('Neue Treppe, Raumwege und niedrige Abstellraumtür berücksichtigen Kollis
   expect(result.neighborCrowns).toBe(48)
   expect(result.ceilings).toHaveLength(6)
   for (const ceiling of result.ceilings) { expect(ceiling.min).toBeCloseTo(8.71); expect(ceiling.max).toBeCloseTo(8.95) }
-  expect(result.entrancePivot.z).toBeCloseTo(5.33)
+  expect(result.entrancePivot.z).toBeCloseTo(5.33 - (3.28 / 2.35 + .125))
   expect(result.entranceTip.z).toBeCloseTo(result.entrancePivot.z)
   expect(result.entranceTip.x).toBeLessThan(result.entrancePivot.x)
   expect(result.bedHeads).toHaveLength(1)

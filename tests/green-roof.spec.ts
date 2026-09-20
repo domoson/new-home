@@ -49,7 +49,7 @@ test('Carport-Gruendach: Pflanzenaufbau, Umschaltung und Detailansicht', async (
     renderer.domElement.id = 'green-roof-detail'; renderer.domElement.style.cssText = 'position:fixed;inset:0;z-index:9999;width:100%;height:100%'
     document.body.append(renderer.domElement)
     const camera = new THREE.PerspectiveCamera(40, innerWidth / innerHeight, .1, 100)
-    const target = new THREE.Vector3(1.625, 1.8, 3)
+    const target = new THREE.Vector3(1.5, 1.8, 3)
     const direction = new THREE.Vector3(6, 6.5, 9).normalize()
     camera.position.copy(target).addScaledVector(direction, innerWidth < 600 ? 24 : 13)
     camera.lookAt(target); renderer.render(scene, camera)

@@ -8,11 +8,8 @@ import { createRoomLighting, lightingCircuits } from './lighting'
 import { createIndirectLighting } from './indirectLighting'
 
 describe('Anbieterentwurf', () => {
-  it('keeps pantry shelving shallow and the cellar divider clear of both door openings', () => {
-    const pantry = makeFloor('EG').furniture.filter(item => item.id.startsWith('pantry-shelf'))
-    expect(pantry).toHaveLength(2)
-    expect(pantry.find(item => item.id === 'pantry-shelf-north')).toMatchObject({ width: 1.9, depth: .3 })
-    expect(pantry.find(item => item.id === 'pantry-shelf')).toMatchObject({ width: .32, angle: Math.PI })
+  it('removes pantry storage and keeps the cellar divider clear of both door openings', () => {
+    expect(makeFloor('EG').furniture.filter(item => item.id.startsWith('pantry-'))).toEqual([])
     const floor = makeFloor('KG'), divider = floor.walls.find(wall => wall.id === 'east-divider')!
     expect(divider.x).toBe(3.625)
     for (const id of ['bath-south', 'store-north']) {
@@ -49,13 +46,13 @@ describe('Anbieterentwurf', () => {
   it('reconstructs all offered rooms and keeps floor totals within five percent', () => {
     for (const id of floorIds) {
       const floor = makeFloor(id)
-      expect(floor.rooms.map(room => room.id).sort()).toEqual(Object.keys(offeredAreas[id]).sort())
+      expect(floor.rooms.map(room => room.id).sort()).toEqual(Object.keys(offeredAreas[id]).filter(room => id !== 'EG' || room !== 'pantry').sort())
       const actual = floor.rooms.reduce((sum, room) => sum + roomArea(room, id).floor, 0)
       const target = Object.values(offeredAreas[id]).reduce((sum, values) => sum + values[0], 0)
       for (const room of floor.rooms) {
+        if (id === 'EG') continue
         const corridorAdjustment = id === 'OG' && room.id.startsWith('child-') ? .15 * room.parts[0].depth : 0
-        const serviceAdjustment = id === 'EG' && room.id === 'wc' ? floor.walls.filter(wall => wall.id.startsWith('wc-installation-')).reduce((sum, wall) => sum + wall.width * wall.depth, 0) : 0
-        expect(Math.abs(roomArea(room, id).floor - (offeredAreas[id][room.id][0] - corridorAdjustment - serviceAdjustment)), `${id} ${room.id}`).toBeLessThan(.7)
+        expect(Math.abs(roomArea(room, id).floor - (offeredAreas[id][room.id][0] - corridorAdjustment)), `${id} ${room.id}`).toBeLessThan(.7)
       }
       expect(Math.abs(actual - target) / target).toBeLessThan(.05)
       expect(makeFloor(id, 'west').furniture).toEqual([])
@@ -74,17 +71,29 @@ describe('Anbieterentwurf', () => {
       }
     }
   })
-  it('uses the revised entrance niche, pantry door and wall-side dining group', () => {
+  it('moves the entrance and bathroom north and opens the kitchen and living transitions', () => {
     const floor = makeFloor('EG')
+    const shift = 3.28 / (house.east - 3.95) + .125
     const bathroom = floor.walls.find(wall => wall.id === 'wc-south')!
-    expect(bathroom.z).toBe(floor.walls.find(wall => wall.id === 'kitchen-south')!.z)
+    expect(bathroom.z).toBeCloseTo(winderCore.z - .2 - shift)
     expect(bathroom.x + bathroom.openings[0].start).toBeCloseTo(3.975)
     expect(floor.walls.find(wall => wall.id === 'wc-niche-return')).toBeDefined()
     expect(floor.furniture.find(item => item.id === 'hall-niche-storage')).toBeDefined()
-    const pantry = floor.walls.find(wall => wall.id === 'kitchen-east')!.openings[0]
-    expect(pantry.width).toBe(.73)
-    expect(pantry.start).toBeGreaterThan(.48)
-    expect(floor.walls.find(wall => wall.id === 'east')!.openings.find(opening => opening.id === 'entrance')).toMatchObject({ hinge: 'end', swing: 'reverse' })
+    expect(floor.rooms.some(room => room.id === 'pantry')).toBe(false)
+    expect(floor.walls.some(wall => ['pantry-south', 'kitchen-south'].includes(wall.id))).toBe(false)
+    expect(floor.walls.flatMap(wall => wall.openings).some(opening => ['pantry', 'kitchen-door', 'living'].includes(opening.id))).toBe(false)
+    const east = floor.walls.find(wall => wall.id === 'east')!
+    expect(east.openings.find(opening => opening.id === 'entrance')).toMatchObject({ hinge: 'end', swing: 'reverse' })
+    expect(east.openings.find(opening => opening.id === 'entrance')!.start).toBeCloseTo(4.2 - shift)
+    expect(east.openings.find(opening => opening.id === 'wc-window')!.start).toBeCloseTo(1.9 - shift)
+    const screen = floor.walls.find(wall => wall.id === 'living-north')!, wardrobe = floor.furniture.find(item => item.id === 'wardrobe')!
+    expect(screen.z).toBeCloseTo(winderCore.end - shift)
+    expect(screen.width).toBeCloseTo(1.55)
+    expect(screen.x - winderCore.x - winderCore.width).toBeCloseTo(2.55)
+    expect(screen.openings).toEqual([])
+    expect(wardrobe.x - screen.x).toBeCloseTo(.05)
+    expect(screen.x + screen.width - wardrobe.x - wardrobe.width).toBeCloseTo(.05)
+    expect(screen.z - wardrobe.z - wardrobe.depth).toBeCloseTo(.02)
     const dining = floor.furniture.find(item => item.id === 'dining')!
     expect(dining).toMatchObject({ x: .35, z: 7.85, width: 1.8, depth: .9 })
     expect(floor.furniture.filter(item => item.id.startsWith('dining-chair')).every(item => item.x >= dining.x && item.x + item.width <= dining.x + dining.width + .001)).toBe(true)
@@ -179,16 +188,27 @@ describe('Anbieterentwurf', () => {
     indirect.update({ 'KG-bath': true }, 'KG')
     expect(indirect.uniforms.bounceStrength.value.every(value => value === 0)).toBe(true)
   })
-  it('mirrors the requested door hinges and leaves space for the eastern kitchen units', () => {
-    for (const [id, wallId, doorId] of [['DG', 'office-west', 'attic-office'], ['OG', 'east-divider', 'child-north'], ['EG', 'kitchen-east', 'pantry'], ['EG', 'kitchen-south', 'kitchen-door']] as const) {
+  it('preserves upper door hinges and an unobstructed kitchen entrance', () => {
+    for (const [id, wallId, doorId] of [['DG', 'office-west', 'attic-office'], ['OG', 'east-divider', 'child-north']] as const) {
       expect(makeFloor(id).walls.find(wall => wall.id === wallId)!.openings.find(open => open.id === doorId)!.hinge).toBe('end')
     }
-    const floor = makeFloor('EG'), wall = floor.walls.find(wall => wall.id === 'kitchen-south')!, door = wall.openings[0]
-    expect(wall.x + door.start).toBeCloseTo(2.275)
+    const floor = makeFloor('EG')
     for (const id of ['fridge', 'kitchen-tall', 'kitchen-east-storage']) {
       const cabinet = floor.furniture.find(item => item.id === id)!
-      expect(cabinet.x).toBeGreaterThan(wall.x + door.start + door.width)
+      expect(cabinet.x - winderCore.x - winderCore.width).toBeGreaterThanOrEqual(.975 - .001)
       expect(cabinet.angle).toBe(-Math.PI)
+    }
+  })
+  it('keeps revised EG room contours disjoint and clear of walls and the stair opening', () => {
+    const floor = makeFloor('EG')
+    const overlap = (first: { x: number; z: number; width: number; depth: number }, second: typeof first) => Math.min(first.x + first.width, second.x + second.width) - Math.max(first.x, second.x) > .001 && Math.min(first.z + first.depth, second.z + second.depth) - Math.max(first.z, second.z) > .001
+    const parts = floor.rooms.flatMap(room => room.parts.map(part => ({ ...part, room: room.id })))
+    for (const [index, part] of parts.entries()) {
+      expect(part.width).toBeGreaterThan(0)
+      expect(part.depth).toBeGreaterThan(0)
+      expect(overlap(part, winderCore), part.room).toBe(false)
+      for (const other of parts.slice(index + 1)) expect(overlap(part, other), `${part.room}/${other.room}`).toBe(false)
+      for (const wall of floor.walls) expect(overlap(part, wall), `${part.room}/${wall.id}`).toBe(false)
     }
   })
   it('models substantial cross walls, bathroom service walls and the requested furniture sizes', () => {

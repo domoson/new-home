@@ -11,7 +11,7 @@ for (const reducedMotion of [false, true]) test(`Leon faehrt per Klick rueckwaer
   const expected = await page.evaluate(async () => {
     const { siteParking } = await import('/src/parking.ts')
     const parking = siteParking.find(placement => placement.side === 'east')!
-    return parking.streetZ(1.625) + 3.9
+    return parking.streetZ(parking.carport.x + parking.carport.width / 2) + 3.9
   })
   const clickCar = async () => {
     const screen = await page.evaluate(() => window.__house!.vehicle!()!.screen)
@@ -65,5 +65,5 @@ test('Auto bleibt beim Ausparken in der Einfahrt und endet auf der Fahrbahn', as
   expect(Math.min(...result.offsets)).toBeGreaterThan(1.1)
   expect(Math.max(...result.offsets)).toBeLessThan(6.7)
   expect(result.outside).toBeGreaterThan(10)
-  expect(result.parked).toEqual([1.625, -.1, 3])
+  expect(result.parked).toEqual([1.5, -.1, 3])
 })

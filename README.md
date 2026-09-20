@@ -33,18 +33,24 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
   Aussen-/Trennwaende 30 cm, Innenwaende 12,5 cm und Dachpaket 24 cm sind Annahmen.
   Zentrale Querwaende an Treppe/Flur 20 cm; kein statischer Nachweis.
   DG-Innenwaende enden an der Unterkante der Spitzbodendecke.
-- EG: Kueche, Speisekammer, Dusche, Flur und Wohnen/Essen. OG: Bad, zwei
+- EG: Kueche, Dusche, offene Diele und Wohnen/Essen, keine Speisekammer. OG: Bad, zwei
   Kinderzimmer und drittes Zimmer. DG: Buero, Schlafen/Ankleide und Abstellraum.
+- EG-Revision: Bad, Eingang samt Aussenpodest und Dielenbereich rund 1,52 m
+  nach Norden verschoben. Kuechentuer samt suedlicher Kuechenwand und Tuer zum
+  Wohnen entfallen. Wohntrennwand nach Norden versetzt und auf 1,55 m gekuerzt,
+  passend zur 1,45 m breiten Garderobe; daneben 2,55 m offener Durchgang.
+  Treppe und Kuechenmoebel unveraendert. Tragwerk und Leitungsfuehrung ungeprueft.
 - Bestehende Kuechengeraete, Sideboard und Buecherregal behalten ihre Masse.
 - Fenster nach Aussenansichten geteilt: breite Fenster zwei einzeln nach innen
   oeffnende Fluegel, hohe Fenster mit festem Unterlicht/Querholm bei 70 cm.
   Teilungshoehe und Profile angenaehert; keine Hersteller-/Absturzsicherungsfreigabe.
   Garten-Festverglasung bleibt fest (Mittelpfosten); Gartentueren mit unterem
-  Querholm im beweglichen Fluegel. Oeffnungsgroessen/-positionen unveraendert.
+  Querholm im beweglichen Fluegel. Oeffnungsgroessen unveraendert;
+  EG-Eingang und Badfenster mit dem Eingangs-/Badbereich nach Norden versetzt.
 - Fehlendes EG-Duschbadfenster an der Ostwand ergaenzt: einfluegelig,
-  80 x 105 cm, Bruestung 130 cm oberhalb der Vorwand, Nordkante bei z=1,90 m.
-  Lage und Masse aus dem unbemassten Planausschnitt angenaehert.
-- SPK mit 30/32 cm tiefen Vorratsregalen an Nord-/Ostwand und freier Mitte.
+  80 x 105 cm, Bruestung 130 cm oberhalb der Vorwand, Nordkante jetzt z~0,38 m.
+  Masse aus dem unbemassten Planausschnitt angenaehert; neue Lage Entwurfsannahme.
+- Speisekammer samt Regalen entfernt; Angebotsflaeche bleibt im Vergleich sichtbar.
   Kellertrennwand rechts vom Flur 30 cm nach Osten versetzt, mit 12,5 cm
   Wandanschluss neben beiden Tueren; 0,60 m2 vom Kellerraum zum Flur verschoben.
 - Kellerfenster 90 x 75 cm; oestliches Fenster 1,35 m von der suedlichen
@@ -53,8 +59,8 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
 - EG-Dusche nordwestlich, WC nordoestlich und Waschtisch suedoestlich mit
   Unterputzarmaturen. Ost-Vorwand 20 cm tief/120 cm hoch; Dusch-Vorwand
   96 cm breit/10 cm tief/220 cm hoch. Vorwandflaechen abgezogen; Leitungsplanung offen.
-- Kuechentuer nach links versetzt, Hochschraenke rechts, Arbeitszeile im Sueden.
-  Esstisch 200 x 100 cm, 40 cm suedlicher. OG-Bad mit halbhohen Installationsvorwaenden.
+- Kueche offen nach Sueden, Hochschraenke rechts, Arbeitszeile im Sueden.
+  Esstisch 180 x 90 cm an der Westwand. OG-Bad mit halbhohen Installationsvorwaenden.
 - DG-Abstellraumtuer 73 x 160 cm, rechteckig und ueber den Schwenkweg unter dem
   Dach geprueft. Kein aufrechter Durchgang; der Rundgang hat keine Duckfunktion.
 - Die Planungsannahmen zeigen fuer jeden Raum Modell- und Angebotsflaechen.

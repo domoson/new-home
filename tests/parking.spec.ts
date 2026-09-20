@@ -66,7 +66,7 @@ test('Carports: Abmessungen, Holztoene, freie Zugaenge und Pfostenkollision', as
     return { placements, fenceBlocks, eastWood }
   })
   for (const placement of result.placements) {
-    expect(placement.width).toBeCloseTo(3.25)
+    expect(placement.width).toBeCloseTo(3)
     expect(placement.depth).toBeCloseTo(6)
     expect(placement.roofCorrect).toBe(true)
     expect(placement.color).toBe(placement.side === 'east' ? '514f48' : '92968f')

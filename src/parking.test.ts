@@ -5,7 +5,7 @@ import { parkingEntrance, rectCorners, siteParking } from './parking'
 test('Je Haushälfte zwei Mindeststellplätze, Carport mit 3 m Südabstand und freier Fahrradpassage', () => {
   expect(siteParking).toHaveLength(2)
   for (const { side, carport, covered, open, passage, bins, binAccess, point, streetZ } of siteParking) {
-    expect(carport.width).toBe(3.25)
+    expect(carport.width).toBe(3)
     expect(carport.depth).toBe(6)
     for (const [x, z] of rectCorners(carport)) expect(boundaryDistance(point(x, z), 2)).toBeGreaterThanOrEqual(3 - 1e-9)
     expect(Math.min(...rectCorners(carport).map(([x, z]) => boundaryDistance(point(x, z), 2)))).toBeCloseTo(3, 9)
@@ -26,7 +26,7 @@ test('Je Haushälfte zwei Mindeststellplätze, Carport mit 3 m Südabstand und f
     expect(carport.x >= passage.x + passage.width - 1e-9 || carport.x + carport.width <= passage.x + 1e-9).toBe(true)
     expect(bins.width).toBeGreaterThanOrEqual(3 * .65 + .2)
     expect(bins.depth).toBeGreaterThanOrEqual(.8)
-    const edge = side === 'west' ? 3 : 1, outerX = side === 'west' ? 0 : 3.25
+    const edge = side === 'west' ? 3 : 1, outerX = side === 'west' ? 0 : carport.width
     expect(boundaryDistance(point(outerX, 0), edge)).toBeCloseTo(.18)
     expect(boundaryDistance(point(outerX, 6), edge)).toBeCloseTo(.18)
   }
