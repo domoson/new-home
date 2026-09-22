@@ -22,7 +22,7 @@ export function createWalker(model: SceneModel, camera: THREE.PerspectiveCamera,
   const body = world.createRigidBody(RAPIER.RigidBodyDesc.kinematicPositionBased().setTranslation(spawn.x, spawn.y + .9, spawn.z))
   const capsule = world.createCollider(RAPIER.ColliderDesc.capsule(.625, .25), body)
   const controller = world.createCharacterController(.012)
-  controller.enableAutostep(.205, .16, false); controller.enableSnapToGround(.3); controller.setMaxSlopeClimbAngle(Math.PI / 4); controller.setMinSlopeSlideAngle(Math.PI / 3)
+  controller.enableAutostep(.22, .16, false); controller.enableSnapToGround(.3); controller.setMaxSlopeClimbAngle(Math.PI / 4); controller.setMinSlopeSlideAngle(Math.PI / 3)
   const keys = new Set<string>()
   const moveVector = { x: 0, y: 0 }
   let falling = 0, stopped = false

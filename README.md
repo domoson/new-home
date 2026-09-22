@@ -18,55 +18,80 @@ freien Port. `npm run build` erstellt `dist/`, das auf einem statischen HTTP-Hos
 betrieben werden kann. `npm run preview` dient der lokalen Build-Vorschau.
 Nicht ueber `file://` oeffnen. WebGL2 ist fuer 3D erforderlich, 2D funktioniert ohne.
 
-## Aktueller Anbieterentwurf
+## Aktuelle Variante 7,00 x 10,60 m
 
-Die Anbieter-Screenshots ersetzen den frueheren Hausentwurf. Die Osthaelfte ist
-auf KG, EG, OG und DG rekonstruiert und eingerichtet; die Westhaelfte bleibt
+Die neue EG-/OG-Skizze ersetzt die bisherige Raumaufteilung. Die Osthaelfte ist
+auf KG, EG, OG und DG angepasst und eingerichtet; die Westhaelfte bleibt
 ein Baukoerper ohne Innenausbau. Alte Terrasse und Vordach sind entfernt.
 Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
 
-- Je Haelfte 6,60 x 11,40 m; Gesamtbreite 13,20 m, Versatz 0,90 m nach Sueden
+- Je Haelfte 7,00 x 10,60 m; Gesamtbreite 14,00 m, Versatz 0,90 m nach Sueden
   fuer West. Gemeinsame Hauswand auf der unveraenderten, flaechengleichen Teilung.
+- Bei unveraenderter Lage hat die nordwestliche Ecke des Westhauses nur noch
+  ca. 2,96 m senkrechten Abstand zur Nordgrenze. Keine automatische Verschiebung;
+  Abstands-/Dachflaechen und Lage beduerfen fachlicher Pruefung.
 - FFB KG / EG / OG / DG: -2,45 / 0,00 / 2,97 / 5,94 m.
 - Lichte Hoehen KG 2,25 m, EG/OG 2,77 m; Geschossdecken 20 cm.
 - Dach 35 Grad, Innenknie 50 cm; DG-Decke bei 2,77 m, 24 cm stark.
   Aussen-/Trennwaende 30 cm, Innenwaende 12,5 cm und Dachpaket 24 cm sind Annahmen.
   Zentrale Querwaende an Treppe/Flur 20 cm; kein statischer Nachweis.
   DG-Innenwaende enden an der Unterkante der Spitzbodendecke.
-- EG: Kueche, Dusche, offene Diele und Wohnen/Essen, keine Speisekammer. OG: Bad, zwei
-  Kinderzimmer und drittes Zimmer. DG: Buero, Schlafen/Ankleide und Abstellraum.
-- EG-Revision: Bad, Eingang samt Aussenpodest und Dielenbereich rund 1,52 m
-  nach Norden verschoben. Kuechentuer samt suedlicher Kuechenwand und Tuer zum
-  Wohnen entfallen. Wohntrennwand nach Norden versetzt und auf 1,55 m gekuerzt,
-  passend zur 1,45 m breiten Garderobe; daneben 2,55 m offener Durchgang.
-  Treppe und Kuechenmoebel unveraendert. Tragwerk und Leitungsfuehrung ungeprueft.
-- Bestehende Kuechengeraete, Sideboard und Buecherregal behalten ihre Masse.
+- Treppe auf allen Geschossen 58,5 cm nach Norden verschoben, Kern z=3,50..5,50 m.
+  Form und Steigungen unveraendert; Physik-Tritttoleranz 22 cm fuer die 19,8-cm-
+  Steigungen plus Kollisionsabstand, keine Aenderung der modellierten Stufen.
+- EG: Gaestebad nordwestlich, Eingang nordoestlich, deckenhoher Putzschrank neben Dusche.
+  Kueche oestlich der Treppe, schraeger offener Uebergang zum Wohnen, Halbinsel
+  nach Sueden. Essplatz im Suedosten, Wohnecke im Suedwesten.
+- Fuenf H-Hochschraenke je 63 cm breit/60 cm tief, deckenhoch 277 cm.
+  Backofen im dritten, Kuehlgeraet im vierten Modul. Arbeitszeilen 92 cm hoch
+  und direkt an die Eckschraenke angeschlossen, keine zusaetzlichen Haengeschraenke.
+  Rechte offene Nische von 92 bis 152 cm mit fortgefuehrter Arbeitsplatte;
+  Toaster dort, Wassersprudler auf der Ostzeile noerdlich der Spuele.
+  Espresso und Cookit links; keine Kuechengeraete in der Diele.
+  Linke Eckfront erst ab 152 cm, blinde Unterbereiche ohne behauptete Bedienfront.
+  Halbinsel-Unterbau 40 cm von Sued und 35 cm von West zurueckgesetzt, echte
+  freie Knievolumen unter 3 cm Platte; Barhocker mit 65 cm Sitzhoehe.
+  Einzelne Frontoeffnungen geometrisch geprueft; gleichzeitige Oeffnungen,
+  Toaster-Waermeabstaende/Lueftung und Herstellerfreigaben bleiben offen.
+- Nordseitig im Eingang nur sieben Wandhaken auf flacher Leiste, ohne Schrank.
+  Gegenueber deckenhohe Garderobe 210 x 60 cm, westlich angeschlossen;
+  105 cm Freiraum zur oestlichen Eingangswand. Grosses Nordfenster dort
+  entfernt. Fliesen nur oestlich x=3,40 m bis zum kurzen Wandstueck, mindestens
+  1,25 m vor der Badtuerwand; restliche Diele mit Holzboden.
+- Normale Tueren einschliesslich Eingang/Kellerabschluss: 86 x 211 cm INKLUSIVE
+  Zarge. Modellprofil seitlich/oben 3 cm, Blatt 80 x 208 cm als Annahme, keine
+  Hersteller-/Rohbaumasse. Neue Kellertuer am noerdlichen Treppenzugang im EG.
+  DG-Abstellraum und Hebeschiebeanlage bleiben Sondermasse.
+- OG: Bad 9,28 m2, Kind Nord 16,88 m2, Spielzimmer 7,50 m2, Kind Sued 16,73 m2,
+  Flur 3,80 m2, Abstellraum 2,09 m2. Kinderzimmer mit Bett, Schreibtisch und Schrank;
+  Spielzimmer niedrig moebliert. KG behaelt Technik/Lager, Keller und Hobby;
+  DG Buero, Schlafen/Ankleide und Abstellraum. Moebel an neue Huelle angepasst.
+- Geschoss-/Raumhoehen, Dachneigung und Kniehoehe unveraendert. Der First wird
+  durch die geringere Haustiefe geometrisch niedriger, nicht durch geaenderte Hoehenparameter.
+- Sofa 250 x 170 cm: lange Seite Sued, Chaiselongue West; Stuehle zum Tisch gedreht.
+  Sideboard 180 x 45 x 60 cm erhalten; Regal auf 110 cm gekuerzt.
 - Fenster nach Aussenansichten geteilt: breite Fenster zwei einzeln nach innen
-  oeffnende Fluegel, hohe Fenster mit festem Unterlicht/Querholm bei 70 cm.
+  oeffnende Fluegel. Bereits bodentiefe EG-Fenster ohne Querholm; obere Geschosse
+  behalten ihre Unterlichter. Bad-/Kuechenbruestungen und Fensterpositionen unveraendert.
   Teilungshoehe und Profile angenaehert; keine Hersteller-/Absturzsicherungsfreigabe.
-  Garten-Festverglasung bleibt fest (Mittelpfosten); Gartentueren mit unterem
-  Querholm im beweglichen Fluegel. Oeffnungsgroessen unveraendert;
-  EG-Eingang und Badfenster mit dem Eingangs-/Badbereich nach Norden versetzt.
-- Fehlendes EG-Duschbadfenster an der Ostwand ergaenzt: einfluegelig,
-  80 x 105 cm, Bruestung 130 cm oberhalb der Vorwand, Nordkante jetzt z~0,38 m.
-  Masse aus dem unbemassten Planausschnitt angenaehert; neue Lage Entwurfsannahme.
-- Speisekammer samt Regalen entfernt; Angebotsflaeche bleibt im Vergleich sichtbar.
-  Kellertrennwand rechts vom Flur 30 cm nach Osten versetzt, mit 12,5 cm
-  Wandanschluss neben beiden Tueren; 0,60 m2 vom Kellerraum zum Flur verschoben.
+  Fensterlagen und -groessen aus der neuen Skizze angenaehert, Gartenzugang als
+  zweiteilige 3-m-Hebeschiebeanlage: innerer westlicher Fluegel 1,50 m beweglich,
+  aeusseres oestliches Feld 1,50 m fest. Kuechenfenster mit 105 cm Bruestung.
 - Kellerfenster 90 x 75 cm; oestliches Fenster 1,35 m von der suedlichen
-  Aussenkante entfernt, 90 cm weiter suedlich als zuvor. Beide Lichtschaechte
+  Aussenkante entfernt. Beide Lichtschaechte
   mittig, 130 x 50 cm im Grundriss (aus Zeichnung angenaehert, kein Herstellermass).
-- EG-Dusche nordwestlich, WC nordoestlich und Waschtisch suedoestlich mit
-  Unterputzarmaturen. Ost-Vorwand 20 cm tief/120 cm hoch; Dusch-Vorwand
-  96 cm breit/10 cm tief/220 cm hoch. Vorwandflaechen abgezogen; Leitungsplanung offen.
-- Kueche offen nach Sueden, Hochschraenke rechts, Arbeitszeile im Sueden.
-  Esstisch 180 x 90 cm an der Westwand. OG-Bad mit halbhohen Installationsvorwaenden.
+- EG-Dusche im Suedwesten des Bades, WC/Waschtisch im Norden; OG entsprechend
+  mit Wanne an der Ostseite. Nord-Vorwaende 8 cm tief/120 cm hoch sind Annahmen,
+  von der Raumflaeche abgezogen. Leitungen und Anschluesse nicht fachlich geplant.
 - DG-Abstellraumtuer 73 x 160 cm, rechteckig und ueber den Schwenkweg unter dem
   Dach geprueft. Kein aufrechter Durchgang; der Rundgang hat keine Duckfunktion.
-- Die Planungsannahmen zeigen fuer jeden Raum Modell- und Angebotsflaechen.
+- Die Planungsannahmen zeigen Modellflaechen und die Beschriftungen der neuen
+  EG-/OG-Vorlage. Keine erfundenen KG-/DG-Referenzflaechen. EG-Diele ca. 13,42 m2
+  statt 12,0 m2 der Skizze; Wandstaerken/Nische fuehren zu Abweichungen.
   Wohnflaechen: 3 % Abzug; im DG zusaetzlich Hoehengewichtung unter 1 / 2 m.
   Tuerlaibungen nicht eingerechnet. Kein WoFlV-Nachweis.
 - Treppenannahme: 1,90 x 2,00 m, 15 Steigungen, 30 cm gerade Auftritte,
+  DG-Grundrisspfeil korrigiert auf die Aufwaertsrichtung, 3D-Stufen unveraendert.
   nominell 85 cm Laufbreite und 20 cm modellierte Staerke. Begehbare Physik
   ersetzt keine Pruefung von Treppennorm, Kopffreiheit oder Tragwerk.
 - Lage und Fenstermasse sind aus Screenshots angenaehert, nicht vermessen.
@@ -76,7 +101,7 @@ Aktuelle Modellquelle: `src/providerPlan.ts`; gemeinsame Hoehen: `src/model.ts`.
 Fokussierte Pruefung des neuen Entwurfs:
 
 ```sh
-npx vitest run src/providerPlan.test.ts
+npx vitest run src/providerPlan.test.ts src/compactVariant.test.ts src/kitchenLayout.test.ts src/kitchenStorage.test.ts
 npx playwright test tests/provider-plan.spec.ts
 npm run build
 npm run lint

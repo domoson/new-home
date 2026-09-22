@@ -1,6 +1,112 @@
 import { expect, test } from '@playwright/test'
 import { PNG } from 'pngjs'
 
+test('Detailkorrekturen haben echte freie Volumen, Zargen und einen schließenden Kellerzugang', async ({ page }) => {
+  await page.goto('/')
+  const result = await page.evaluate(async () => {
+    const THREE = await import('/node_modules/.vite/deps/three.js')
+    const { buildScene } = await import('/src/scene.ts')
+    const { initializePhysics, createWalker } = await import('/src/walk.ts')
+    const model = buildScene('EG', true, false, true)
+    model.group.updateMatrixWorld(true)
+    const bounds = name => new THREE.Box3().setFromObject(model.group.getObjectByName(name))
+    const occupied = (east, height, south) => model.colliders.some(collider => {
+      const point = new THREE.Vector3(east, height, south).sub(collider.position).applyQuaternion(collider.rotation.clone().invert())
+      return Math.abs(point.x) < collider.size.x / 2 && Math.abs(point.y) < collider.size.y / 2 && Math.abs(point.z) < collider.size.z / 2
+    })
+    const free = [[6.3, 1.2, 2.88], [4.5, .55, 6.2], [5.9, .55, 6.3], [4, 1, .5]].map(point => !occupied(...point))
+    const coatHooks = model.group.children.filter(object => object.name.startsWith('entry-coats-hook-')).length
+    const wardrobeBounds = bounds('furniture-body-wardrobe')
+    const solid = [[6.3, 1.2, 2.51], [5, .55, 5.8], [4.5, .91, 6.2]].map(point => occupied(...point))
+    const stools = [0, 1].map(index => { const seat = bounds(`barstool-seat-kitchen-stool-${index}`); return [seat.min.y, seat.max.y] })
+    const sofaBack = bounds('sofa-back-sofa')
+    const chairBack = bounds('chair-back-dining-chair-0')
+    const towerTops = []
+    const tiles = []
+    model.group.traverse(object => {
+      if (object.name.startsWith('kitchen-front-') && object.name !== 'kitchen-front-kitchen-upper') towerTops.push(new THREE.Box3().setFromObject(object).max.y)
+      if (object.userData.floorRoom === 'hall' && object.userData.floorLevel === 'EG') tiles.push(new THREE.Box3().setFromObject(object).min.x)
+    })
+    const basement = model.doors.find(door => door.id === 'EG-basement-stair')
+    const frameParts = model.group.children.filter(object => object.name === 'EG-basement-stair-frame')
+    const frame = new THREE.Box3()
+    for (const part of frameParts) frame.union(new THREE.Box3().setFromObject(part))
+    const fixed = model.group.getObjectByName('EG-garden-fixed-fixed-0')
+    const fixedBefore = fixed.matrixWorld.clone()
+    const sliding = model.doors.find(door => door.id === 'EG-terrace')
+    let movingGlass = 0
+    sliding.pivot.traverse(object => { if (object.userData.glazing) movingGlass++ })
+    model.setOpening(sliding.id, 0); model.setOpening(sliding.id, 1)
+    const twoPane = movingGlass === 1 && fixedBefore.equals(fixed.matrixWorld) && !model.doors.some(door => door.id.includes('garden-fixed'))
+    const transoms = []
+    model.group.traverse(object => { if (object.name.startsWith('EG-') && object.name.includes('transom')) transoms.push(object.name) })
+    await initializePhysics()
+    const camera = new THREE.PerspectiveCamera(), walker = createWalker(model, camera, new THREE.Vector3(2.8, 0, 3.925))
+    const cross = amount => {
+      model.setOpening(basement.id, amount)
+      walker.teleport(new THREE.Vector3(2.8, 0, 3.925))
+      for (let frame = 0; frame < 150 && walker.position().x > 1.86; frame++) {
+        camera.lookAt(1.8, camera.position.y, 3.925)
+        walker.keys.add('KeyW'); walker.tick(); walker.keys.clear()
+      }
+      return walker.position().x
+    }
+    const closed = cross(0), opened = cross(1)
+    const result = { free, solid, coatHooks, wardrobeEast: wardrobeBounds.max.x, stools, sofaBack: sofaBack.min.z, chairBack: chairBack.max.x, towerTops, tiles, frameParts: frameParts.length, frameWidth: frame.max.z - frame.min.z, frameHeight: frame.max.y - frame.min.y, leafWidth: basement.size.x, leafHeight: basement.size.y, closed, opened, twoPane, transoms }
+    walker.dispose(); model.dispose()
+    return result
+  })
+  expect(result.free).toEqual([true, true, true, true])
+  expect(result.coatHooks).toBe(7)
+  expect(result.wardrobeEast).toBeCloseTo(5.65)
+  expect(result.solid).toEqual([true, true, true])
+  for (const [bottom, top] of result.stools) { expect(bottom).toBeCloseTo(.62); expect(top).toBeCloseTo(.68) }
+  expect(result.sofaBack).toBeCloseTo(10.07)
+  expect(result.chairBack).toBeCloseTo(4.615)
+  expect(result.towerTops).toHaveLength(5)
+  for (const top of result.towerTops) expect(top).toBeGreaterThan(2.71)
+  expect(result.tiles).toHaveLength(2)
+  for (const east of result.tiles) expect(east).toBeGreaterThanOrEqual(3.399)
+  expect(result.frameParts).toBe(3)
+  expect(result.frameWidth).toBeCloseTo(.86)
+  expect(result.frameHeight).toBeCloseTo(2.11)
+  expect(result.leafWidth).toBeCloseTo(.8)
+  expect(result.leafHeight).toBeCloseTo(2.08)
+  expect(result.closed).toBeGreaterThan(2.5)
+  expect(result.opened).toBeLessThan(1.86)
+  expect(result.twoPane).toBe(true)
+  expect(result.transoms).toEqual([])
+})
+
+test('Gartenschiebeflügel bleibt geschlossen und geöffnet innerhalb der drei Meter breiten Verglasung', async ({ page }) => {
+  await page.goto('/')
+  const result = await page.evaluate(async () => {
+    const THREE = await import('/node_modules/.vite/deps/three.js')
+    const { buildScene } = await import('/src/scene.ts')
+    const model = buildScene('EG', false, false, false)
+    const door = model.doors.find(door => door.id === 'EG-terrace')
+    const positions = []
+    for (const amount of [0, .5, 1]) {
+      model.setOpening(door.id, amount)
+      const bounds = new THREE.Box3().setFromObject(door.pivot)
+      positions.push({ min: bounds.min.x, max: bounds.max.x, rotation: door.pivot.rotation.y })
+    }
+    const fixed = model.group.getObjectByName('EG-garden-fixed-fixed-0')
+    const result = { sliding: door.sliding, width: door.size.x, fixed: !!fixed, positions }
+    model.dispose()
+    return result
+  })
+  expect(result.sliding).toBe(true)
+  expect(result.fixed).toBe(true)
+  expect(result.width).toBe(1.5)
+  for (const bounds of result.positions) {
+    expect(bounds.min).toBeGreaterThanOrEqual(3.69)
+    expect(bounds.max).toBeLessThanOrEqual(6.71)
+    expect(bounds.rotation).toBe(0)
+  }
+  expect(result.positions[2].min - result.positions[0].min).toBeCloseTo(1.5)
+})
+
 test('Fensterflügel öffnen einzeln nach innen und lassen Unterlichter stehen', async ({ page }) => {
   await page.goto('/')
   const result = await page.evaluate(async () => {
@@ -22,7 +128,7 @@ test('Fensterflügel öffnen einzeln nach innen und lassen Unterlichter stehen',
       if (opening.windowLayout.columns === 2) checks.push({ id, divided: !!secondary && !!model.group.getObjectByName(`${id}-mullion`) })
       if (opening.windowLayout.lowerFixed) checks.push({ id, lowerFixed: !!fixed && before.equals(fixed.matrixWorld) && !!model.group.getObjectByName(`${id}-transom-0`) })
     }
-    const mirrored = model.doors.find(door => door.id === 'west-EG-kitchen-window-secondary')
+    const mirrored = model.doors.find(door => door.id === 'west-EG-kitchen-east-window-secondary')
     checks.push({ id: 'west', mirrored: !!mirrored && model.setOpening(mirrored.id, .5) && mirrored.amount === .5 })
     model.dispose()
     return checks
@@ -42,9 +148,9 @@ test('Möbelfronten und Bettkopfteile haben getrennte Flächen', async ({ page }
     const model = buildScene('EG', true, false, true)
     const bounds = name => new THREE.Box3().setFromObject(model.group.getObjectByName(name))
     const result = []
-    for (const id of ['fridge', 'kitchen-tall']) result.push({ id, gap: bounds(`furniture-body-${id}`).min.x - bounds(`kitchen-front-${id}`).max.x })
-    result.push({ id: 'oven', gap: bounds('kitchen-front-kitchen-tall').min.x - bounds('kitchen-oven').max.x })
-    result.push({ id: 'wardrobe', gap: bounds('furniture-body-wardrobe').min.z - bounds('entry-wardrobe-front').max.z })
+    for (const id of ['fridge', 'kitchen-tall', 'kitchen-tall-storage-1', 'kitchen-tall-storage-2', 'kitchen-tall-storage-3']) result.push({ id, gap: bounds(`kitchen-front-${id}`).min.z - bounds(`furniture-body-${id}`).max.z })
+    result.push({ id: 'oven', gap: bounds('kitchen-oven').min.z - bounds('kitchen-front-kitchen-tall').max.z })
+    result.push({ id: 'wardrobe', gap: bounds('furniture-body-wardrobe').min.z - bounds('cabinet-front-wardrobe').max.z })
     for (const floor of ['OG', 'DG']) for (const bed of makeFloor(floor).furniture.filter(item => item.kind === 'bed')) {
       const head = bounds(`bed-head-${bed.id}`)
       for (const part of ['base', 'mattress']) {
@@ -55,7 +161,7 @@ test('Möbelfronten und Bettkopfteile haben getrennte Flächen', async ({ page }
     model.dispose()
     return result
   })
-  expect(gaps).toHaveLength(12)
+  expect(gaps).toHaveLength(13)
   for (const detail of gaps) expect(detail.gap, detail.id).toBeGreaterThan(.002)
 })
 
@@ -63,7 +169,7 @@ test('Bemaßung schaltet auch Raumlabels im Grundriss um', async ({ page }, test
   await page.goto('/')
   const plan = page.locator('svg.floor-plan')
   const toggle = page.getByRole('button', { name: 'Bemaßung', exact: true })
-  for (const [floor, count] of [['KG', 4], ['EG', 4], ['OG', 5], ['DG', 4]] as const) {
+  for (const [floor, count] of [['KG', 4], ['EG', 3], ['OG', 6], ['DG', 4]] as const) {
     await page.getByRole('button', { name: floor, exact: true }).click()
     await expect(plan.locator('[data-room-label]')).toHaveCount(count)
     await expect(plan.locator('[data-room-label] rect')).toHaveCount(count)
@@ -71,12 +177,12 @@ test('Bemaßung schaltet auch Raumlabels im Grundriss um', async ({ page }, test
     await toggle.click()
     await expect(plan.locator('[data-room-label]')).toHaveCount(0)
     await expect(plan).not.toContainText('m²')
-    await expect(plan).not.toContainText('11,40 m')
+    await expect(plan).not.toContainText('10,60 m')
     if (floor === 'DG') await page.screenshot({ path: `test-results/${testInfo.project.name}-provider-labels-hidden.png` })
     await toggle.click()
     await expect(plan.locator('[data-room-label]')).toHaveCount(count)
     await expect(plan).toContainText('m²')
-    await expect(plan).toContainText('11,40 m')
+    await expect(plan).toContainText('10,60 m')
   }
 })
 
@@ -87,17 +193,20 @@ test('Anbieterplaene, Flächenabgleich und bewegtes 3D-Modell', async ({ page },
   await page.goto('/')
   for (const floor of ['KG', 'EG', 'OG', 'DG']) {
     await page.getByRole('button', { name: floor, exact: true }).click()
-    await expect(page.locator('svg.floor-plan')).toContainText('11,40 m')
-    await expect(page.locator('svg.floor-plan')).toContainText('6,60 m')
-    await expect(page.locator('[data-window-mullion]')).toHaveCount(({ KG: 0, EG: 3, OG: 3, DG: 2 } as Record<string, number>)[floor])
+    await expect(page.locator('svg.floor-plan')).toContainText('10,60 m')
+    await expect(page.locator('svg.floor-plan')).toContainText('7,00 m')
+    await expect(page.locator('[data-window-mullion]')).toHaveCount(({ KG: 0, EG: 2, OG: 1, DG: 2 } as Record<string, number>)[floor])
     if (floor === 'KG') {
       const wells = page.locator('[data-light-well]')
       await expect(wells).toHaveCount(2)
-      expect(Number(await wells.nth(0).getAttribute('y'))).toBeCloseTo(8.95)
+      expect(Number(await wells.nth(0).getAttribute('y'))).toBeCloseTo(8.15)
       expect(Number(await wells.nth(0).getAttribute('height'))).toBeCloseTo(1.3)
       expect(Number(await wells.nth(1).getAttribute('width'))).toBeCloseTo(1.3)
     }
     if (floor === 'EG') {
+      await expect(page.locator('[data-coat-hooks]')).toHaveCount(1)
+      await expect(page.locator('[data-coat-hooks] path')).toHaveCount(7)
+      await expect(page.locator('[data-tall-cabinet]')).toHaveCount(5)
       await expect(page.locator('[data-concealed-fittings="true"]')).toHaveCount(3)
       const entranceCenter = await page.evaluate(async () => {
         const { makeFloor } = await import('/src/model.ts')
@@ -110,12 +219,12 @@ test('Anbieterplaene, Flächenabgleich und bewegtes 3D-Modell', async ({ page },
     await expect(page.locator('[data-stair-start]')).toHaveCount(1)
     await expect(page.locator('[data-step][data-hidden-step="true"]')).toHaveCount(7)
     const startSouth = Number(await page.locator('[data-stair-start]').getAttribute('cy'))
-    expect(startSouth).toBeCloseTo(floor === 'DG' ? 4.51 : 5.66)
+    expect(startSouth).toBeCloseTo(5.075)
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
     await page.screenshot({ path: `test-results/${testInfo.project.name}-provider-${floor}.png` })
   }
   await page.getByRole('button', { name: 'Planungsannahmen', exact: true }).click()
-  await expect(page.locator('.area-comparison tbody tr')).toHaveCount(18)
+  await expect(page.locator('.area-comparison tbody tr')).toHaveCount(17)
   expect(await page.locator('.modal').evaluate(element => element.scrollWidth <= element.clientWidth + 1)).toBe(true)
   await page.getByRole('dialog').getByRole('button', { name: 'Schließen', exact: true }).click()
   await page.getByRole('button', { name: 'Querschnitt', exact: true }).click()
@@ -151,7 +260,7 @@ test('Neue Treppe, Raumwege und niedrige Abstellraumtür berücksichtigen Kollis
     const THREE = await import('/node_modules/.vite/deps/three.js')
     const { buildScene } = await import('/src/scene.ts')
     const { stairWalkingLine } = await import('/src/winderStair.ts')
-    const { elevations, storeyRise, ceilingHeight, makeFloor, lightWells } = await import('/src/model.ts')
+    const { construction, elevations, storeyRise, ceilingHeight, makeFloor, lightWells } = await import('/src/model.ts')
     const { initializePhysics, createWalker } = await import('/src/walk.ts')
     await initializePhysics()
     const model = buildScene('EG', true, true, true)
@@ -177,23 +286,25 @@ test('Neue Treppe, Raumwege und niedrige Abstellraumtür berücksichtigen Kollis
       travel(`${id}-down`, elevations[id] + storeyRise(id), [...points].reverse(), elevations[id])
     }
     const routes = [
-      ['KG-tech', 'KG', [[2.85, 5.65], [3.05, 5.65], [3.05, 2.5]]],
-      ['KG-store', 'KG', [[2.85, 5.65], [2.85, 4.95], [4.6, 4.95]]],
-      ['KG-hobby', 'KG', [[2.85, 5.65], [3.05, 5.65], [3.05, 8]]],
-      ['EG-kitchen', 'EG', [[2.85, 5.65], [2.7, 5.65], [2.7, 3.2], [2.1, 2.4]]],
-      ['EG-open-kitchen-living', 'EG', [[2.1, 2.4], [2.7, 2.4], [2.7, 4.25], [4.2, 4.25], [4.2, 5.4], [3.45, 6.85]]],
-      ['EG-shower', 'EG', [[4.4, 3.35], [4.4, 1.6], [5.1, 1.6]]],
-      ['EG-living', 'EG', [[2.85, 5.65], [3.03, 5.65], [3.03, 6.85], [3.45, 6.85], [3.45, 9.4]]],
-      ['EG-entrance', 'EG', [[4.4, 3.35], [5.9, 3.25], [7.1, 3.25]]],
-      ['OG-bath', 'OG', [[2.8, 5.65], [2.7, 5.65], [2.7, 3.35], [1.7, 3.35]]],
-      ['OG-north', 'OG', [[2.8, 5.65], [2.8, 4.5], [4.4, 4.5], [4.4, 3.5]]],
-      ['OG-south', 'OG', [[2.8, 5.65], [2.8, 6.95], [4.6, 6.95], [4.6, 8]]],
-      ['OG-room', 'OG', [[2.8, 5.65], [2.8, 8], [1.7, 8]]],
-      ['DG-office', 'DG', [[2.85, 5.65], [2.85, 4.65], [4.6, 4.65], [4.6, 3]]],
-      ['DG-parents', 'DG', [[2.85, 5.65], [2.85, 7.2], [3.5, 7.2], [3.5, 8.5]]],
-      ['DG-store', 'DG', [[3.25, 7.2], [3.5, 8.38], [3.5, 9.05], [2.4, 9.05]]],
+      ['KG-tech', 'KG', [[2.85, 5.05], [3.05, 5.05], [3.05, 2.5]]],
+      ['KG-store', 'KG', [[2.85, 5.05], [2.85, 4.3], [4.6, 4.3]]],
+      ['KG-hobby', 'KG', [[2.85, 5.05], [3.05, 5.05], [3.05, 8]]],
+      ['EG-kitchen', 'EG', [[2.8, 5.075], [4.8, 5.075], [4.8, 3.8]]],
+      ['EG-open-kitchen-living', 'EG', [[4.8, 3.8], [4.8, 4.7], [3.7, 4.7], [3.7, 7.1]]],
+      ['EG-shower', 'EG', [[2.8, 3], [2.8, 1.35], [1.15, 1.35], [.8, 1.75], [.8, 2.5]]],
+      ['EG-living', 'EG', [[2.8, 5.075], [3.2, 6.85], [3.45, 9.4]]],
+      ['EG-entrance', 'EG', [[2.8, 1.25], [5.9, 1.25], [7.5, 1.25]]],
+      ['OG-bath', 'OG', [[2.8, 5.075], [2.85, 3.7], [2.85, 2.85], [1.7, 2.85]]],
+      ['OG-north', 'OG', [[2.8, 5.075], [2.8, 4.4], [4.4, 4.4], [5, 3.7]]],
+      ['OG-play', 'OG', [[2.8, 5.075], [2.8, 6.3], [4.1, 6.3], [4.1, 7.1]]],
+      ['OG-south', 'OG', [[2.8, 5.075], [2.85, 7.8], [2.1, 8.5]]],
+      ['OG-store', 'OG', [[2.8, 5.075], [2.8, 6.2], [1.25, 6.2]]],
+      ['DG-office', 'DG', [[2.85, 5.075], [2.85, 3.95], [4.6, 3.95], [4.6, 3]]],
+      ['DG-parents', 'DG', [[2.85, 5.075], [2.85, 6.7], [3.5, 6.7], [3.5, 8]]],
+      ['DG-store', 'DG', [[3.5, 7.2], [3.5, 8.2], [2.4, 8.2]]],
+      ['EG-garden', 'EG', [[3.45, 8.5], [4.1, 8.5], [4.1, 11.1]]],
     ]
-    for (const [name, id, points] of routes) travel(name, elevations[id], points)
+    for (const [name, id, points] of routes) travel(name, elevations[id], points, name === 'EG-garden' ? construction.terrain : elevations[id])
     const west = model.group.getObjectByName('house-west')
     let westFurniture = 0, terraces = 0
     west.traverse(object => { if (object.userData.furniture) westFurniture++ })
@@ -209,7 +320,7 @@ test('Neue Treppe, Raumwege und niedrige Abstellraumtür berücksichtigen Kollis
       if (object.name === 'attic-ceiling') { const bounds = new THREE.Box3().setFromObject(object); ceilings.push({ min: bounds.min.y, max: bounds.max.y }) }
       if (object.userData.lightCircuit || object.isSpotLight) fixtures.push(object.name)
       if (object.name.startsWith('DG-wall-') && !['DG-wall-west', 'DG-wall-east', 'DG-wall-north', 'DG-wall-south'].includes(object.name)) atticWalls.push(new THREE.Box3().setFromObject(object).max.y)
-      if (object.name === 'kitchen-front-fridge' || object.name === 'kitchen-front-kitchen-tall') kitchenFronts.push(object.getWorldPosition(new THREE.Vector3()).x)
+      if (object.name === 'kitchen-front-fridge' || object.name === 'kitchen-front-kitchen-tall') kitchenFronts.push(object.getWorldPosition(new THREE.Vector3()).z)
       if (object.name === 'light-well-base' && object.getWorldPosition(new THREE.Vector3()).x > 0) {
         const bounds = new THREE.Box3().setFromObject(object)
         wellBounds.push({ x: bounds.min.x, z: bounds.min.z, width: bounds.max.x - bounds.min.x, depth: bounds.max.z - bounds.min.z })
@@ -227,7 +338,7 @@ test('Neue Treppe, Raumwege und niedrige Abstellraumtür berücksichtigen Kollis
     }
     const { OBB } = await import('/node_modules/three/examples/jsm/math/OBB.js')
     const doorFurnitureCollisions = []
-    for (const [floorId, doorId] of [['EG', 'entrance'], ['EG', 'wc'], ['OG', 'child-north'], ['DG', 'attic-office'], ['DG', 'store']]) {
+    for (const [floorId, doorId] of [['EG', 'entrance'], ['EG', 'wc'], ['EG', 'basement-stair'], ['OG', 'bath'], ['OG', 'child-north'], ['OG', 'child-south'], ['OG', 'playroom'], ['OG', 'store'], ['DG', 'attic-office'], ['DG', 'store']]) {
       const door = model.doors.find(door => door.id === `${floorId}-${doorId}`)
       for (let sample = 0; sample <= 20; sample++) {
         model.setOpening(door.id, sample / 20)
@@ -256,18 +367,18 @@ test('Neue Treppe, Raumwege und niedrige Abstellraumtür berücksichtigen Kollis
   expect(result.atticWalls.length).toBeGreaterThan(0)
   for (const top of result.atticWalls) expect(top).toBeLessThanOrEqual(8.71001)
   expect(result.kitchenFronts).toHaveLength(2)
-  for (const front of result.kitchenFronts) expect(front).toBeLessThan(3.2)
+  for (const front of result.kitchenFronts) expect(front).toBeCloseTo(3.084)
   expect(result.gardenCrowns.map(tree => tree.x).sort((first, second) => first - second)).toEqual([-5.8, 5.6])
   expect(result.gardenCrowns.every(tree => tree.z < 0)).toBe(true)
   expect(result.neighborCrowns).toBe(48)
   expect(result.ceilings).toHaveLength(6)
   for (const ceiling of result.ceilings) { expect(ceiling.min).toBeCloseTo(8.71); expect(ceiling.max).toBeCloseTo(8.95) }
-  expect(result.entrancePivot.z).toBeCloseTo(5.33 - (3.28 / 2.35 + .125))
+  expect(result.entrancePivot.z).toBeCloseTo(1.55)
   expect(result.entranceTip.z).toBeCloseTo(result.entrancePivot.z)
   expect(result.entranceTip.x).toBeLessThan(result.entrancePivot.x)
   expect(result.bedHeads).toHaveLength(1)
   expect(result.bedHeads[0].side).toBe('south')
-  expect(result.bedHeads[0].south).toBeCloseTo(9.815)
+  expect(result.bedHeads[0].south).toBeCloseTo(9.015)
   expect(result.results.filter(route => route.blocked).map(route => route.name), JSON.stringify(result.results)).toEqual(['DG-store'])
   for (const route of result.results) {
     if (route.name === 'DG-store') { expect(route.blocked).not.toBeNull(); expect(route.blocked.position.x).toBeGreaterThan(3.075) }

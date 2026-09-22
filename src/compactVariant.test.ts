@@ -1,0 +1,81 @@
+import { describe, expect, it } from 'vitest'
+import { area, atticCeiling, ceilingHeight, construction, elevations, floorIds, floorSlabs, house, makeFloor, roomArea, stair, wallSolids } from './model'
+import { referenceAreas } from './providerPlan'
+import { contains } from './measure'
+import { kitchenModules } from './kitchenStorage'
+import { sectionSpan } from './section'
+
+describe('Variante 7,00 x 10,60 m', () => {
+  it('rekonstruiert die Räume und die neue Küche mit genau fünf Hochschränken', () => {
+    const ground = makeFloor('EG'), upper = makeFloor('OG')
+    expect(ground.rooms.map(room => room.id)).toEqual(['wc', 'hall', 'living'])
+    expect(upper.rooms.map(room => room.id).sort()).toEqual(['bath', 'child-north', 'child-south', 'hall', 'playroom', 'store'])
+    expect(ground.walls.find(wall => wall.id === 'east')!.openings.find(opening => opening.id === 'entrance')!.start).toBe(.72)
+    expect(ground.walls.find(wall => wall.id === 'living-diagonal')!.footprint).toHaveLength(4)
+    const tall = ground.furniture.filter(item => item.id === 'fridge' || item.id.startsWith('kitchen-tall'))
+    expect(tall).toHaveLength(5)
+    for (const [index, item] of tall.entries()) expect(item).toMatchObject({ x: 3.55 + index * .63, z: 2.5, width: .63, depth: .6, height: ground.height, angle: 0 })
+    expect(ground.furniture.some(item => item.id === 'kitchen-upper')).toBe(false)
+    for (const item of ground.furniture.filter(item => item.kind === 'counter')) expect(item.height).toBe(.92)
+    for (const [id, reference] of Object.entries(referenceAreas)) for (const room of makeFloor(id as 'EG' | 'OG').rooms) {
+      expect(Math.abs(roomArea(room, id as 'EG' | 'OG').floor - reference[room.id]), `${id}/${room.id}`).toBeLessThan(room.id === 'hall' && id === 'EG' ? 1.6 : .25)
+    }
+  })
+
+  it('hält alle Raumkonturen disjunkt, innerhalb der Hülle und außerhalb von Wänden', () => {
+    for (const id of floorIds) {
+      const floor = makeFloor(id), parts = floor.rooms.flatMap(room => room.parts.map(part => ({ ...part, room: room.id })))
+      for (const part of parts) {
+        expect(part.width, `${id}/${part.room}`).toBeGreaterThan(0)
+        expect(part.depth, `${id}/${part.room}`).toBeGreaterThan(0)
+        expect(part.x).toBeGreaterThanOrEqual(house.west)
+        expect(part.z).toBeGreaterThanOrEqual(house.north)
+        expect(part.x + part.width).toBeLessThanOrEqual(house.east + 1e-6)
+        expect(part.z + part.depth).toBeLessThanOrEqual(house.south + 1e-6)
+      }
+      for (let east = house.west + .031; east < house.east; east += .061) for (let south = house.north + .029; south < house.south; south += .059) {
+        const point = { x: east, z: south }, owners = parts.filter(part => contains(part, point))
+        expect(owners.length, `${id}/${east}/${south}`).toBeLessThanOrEqual(1)
+        if (owners.length) {
+          expect(floor.walls.some(wall => contains(wall, point)), `${id}/${owners[0].room}/${east}/${south}`).toBe(false)
+          if (id !== 'KG') expect(contains(stair, point), `${id}/${owners[0].room}`).toBe(false)
+        }
+      }
+    }
+  })
+
+  it('passt Möbel und Küchenmodule ein und hält die Dachschrägen frei', () => {
+    for (const id of floorIds) for (const item of makeFloor(id).furniture) {
+      expect(item.x, item.id).toBeGreaterThanOrEqual(house.west)
+      expect(item.z, item.id).toBeGreaterThanOrEqual(house.north)
+      expect(item.x + item.width, item.id).toBeLessThanOrEqual(house.east + 1e-6)
+      expect(item.z + item.depth, item.id).toBeLessThanOrEqual(house.south + 1e-6)
+      if (id === 'DG') expect(item.height + (item.bottom ?? 0), item.id).toBeLessThanOrEqual(Math.min(ceilingHeight(item.z), ceilingHeight(item.z + item.depth)))
+      for (const module of kitchenModules(item)) {
+        expect(module.width).toBeGreaterThan(0)
+        expect(module.depth).toBeGreaterThan(0)
+        expect(module.x).toBeGreaterThanOrEqual(item.x)
+        expect(module.z).toBeGreaterThanOrEqual(item.z)
+        expect(module.x + module.width).toBeLessThanOrEqual(item.x + item.width + 1e-6)
+        expect(module.z + module.depth).toBeLessThanOrEqual(item.z + item.depth + 1e-6)
+      }
+    }
+  })
+  it('verwendet die echte schräge Kontur für Flächen, Wände und Schnitte', () => {
+    const part = { x: 2, z: 4, width: 1, depth: 2, footprint: [[2, 6], [3, 4], [3, 6]] as [number, number][] }
+    expect(area([part])).toBe(1)
+    const solid = wallSolids({ ...part, id: 'diagonal', axis: 'z', openings: [] }, 2.77)[0]
+    expect(solid.footprint).toEqual(part.footprint)
+    expect(sectionSpan(solid, 'NS', 2.5)).toEqual([5, 6])
+  })
+  it('ändert Grundfläche und Treppenlage ohne die Geschosshöhen zu verändern', () => {
+    expect([house.width, house.depth]).toEqual([7, 10.6])
+    expect([stair.z, stair.end, stair.width, stair.depth]).toEqual([3.5, 5.5, 1.9, 2])
+    expect(elevations).toEqual({ KG: -2.45, EG: 0, OG: 2.97, DG: 5.94 })
+    expect([construction.clearHeight, construction.basementClearHeight, atticCeiling.height]).toEqual([2.77, 2.25, 2.77])
+    expect([house.pitch, house.knee]).toEqual([35, .5])
+    for (const id of floorIds.filter(id => id !== 'KG')) {
+      expect(floorSlabs(id).reduce((sum, part) => sum + part.width * part.depth, 0)).toBeCloseTo(7 * 10.6 - 1.9 * 2)
+    }
+  })
+})

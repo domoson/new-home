@@ -3,22 +3,40 @@ import type { StairPoint } from './winderStair'
 import { buildProviderFloor } from './providerPlan'
 
 export type FloorId = 'KG' | 'EG' | 'OG' | 'DG'
-export type Rect = { x: number; z: number; width: number; depth: number }
-export type Room = { id: string; name: string; parts: Rect[]; color: string; note: string; spawn: [number, number] }
-export type Opening = { start: number; width: number; sill: number; height: number; kind: 'door' | 'window' | 'passage'; id: string; hinge?: 'end'; swing?: 'reverse'; windowLayout?: { columns: 1 | 2; lowerFixed?: number } }
+export type Rect = { x: number; z: number; width: number; depth: number; footprint?: StairPoint[] }
+export type Room = { id: string; name: string; parts: Rect[]; color: string; note: string; spawn: [number, number]; tileParts?: Rect[] }
+export type Opening = { start: number; width: number; sill: number; height: number; kind: 'door' | 'window' | 'passage'; id: string; hinge?: 'end'; swing?: 'reverse'; frame?: number; windowLayout?: { columns: 1 | 2; lowerFixed?: number } }
 export type Wall = Rect & { id: string; axis: 'x' | 'z'; openings: Opening[]; height?: number }
-export type Furniture = Rect & { id: string; kind: 'bed' | 'sofa' | 'chaise' | 'bookcase' | 'table' | 'chair' | 'bench' | 'cabinet' | 'counter' | 'sink' | 'wc' | 'shower' | 'bath' | 'desk' | 'tv' | 'plant' | 'machine' | 'hob' | 'espresso'; height: number; bottom?: number; angle?: number; color?: string; concealedFittings?: boolean }
+export type Furniture = Rect & { id: string; kind: 'bed' | 'sofa' | 'chaise' | 'bookcase' | 'table' | 'chair' | 'bench' | 'cabinet' | 'coat-rack' | 'counter' | 'sink' | 'wc' | 'shower' | 'bath' | 'desk' | 'tv' | 'plant' | 'machine' | 'hob' | 'espresso'; height: number; bottom?: number; angle?: number; color?: string; concealedFittings?: boolean; seatHeight?: number; front?: 'north' | 'south' | 'east' | 'west'; frontBottom?: number; niche?: { bottom: number; height: number }; baseInset?: { west: number; south: number } }
 export type Floor = { id: FloorId; name: string; elevation: number; height: number; rooms: Room[]; walls: Wall[]; furniture: Furniture[] }
 export const construction = { exteriorWall: .3, clearHeight: 2.77, basementClearHeight: 2.25, timberFloor: .2, basementCeiling: .2, foundationPackage: .2, roofNormal: .24, ridgeCapAllowance: .07, terrain: -.2 }
-export const house = { width: 6.6, depth: 11.4, west: .3, east: 6.3, north: .3, south: 11.1, pitch: 35, knee: .5 }
+export const house = { width: 7, depth: 10.6, west: .3, east: 6.7, north: .3, south: 10.3, pitch: 35, knee: .5 }
 export const stair = winderCore
 export const interiorWallThickness = .125
+export const standardDoor = { width: .86, height: 2.11, frame: .03 }
 export const stairFor = () => stair
 export const floorIds: FloorId[] = ['KG', 'EG', 'OG', 'DG']
 export const elevations: Record<FloorId, number> = { KG: -(construction.basementClearHeight + construction.basementCeiling), EG: 0, OG: construction.clearHeight + construction.timberFloor, DG: 2 * (construction.clearHeight + construction.timberFloor) }
 export const slabThickness = (id: FloorId) => id === 'KG' ? construction.foundationPackage : id === 'EG' ? construction.basementCeiling : construction.timberFloor
 export const storeyRise = (id: FloorId) => id === 'KG' ? elevations.EG - elevations.KG : elevations.OG - elevations.EG
 export const rect = (x: number, z: number, width: number, depth: number): Rect => ({ x, z, width, depth })
+export function furnitureVolumes(item: Furniture): (Rect & { bottom: number; height: number })[] {
+  const { x, z, width, depth, height } = item
+  if (item.niche) {
+    const { bottom, height: nicheHeight } = item.niche
+    return [
+      { ...rect(x, z, width, depth), bottom: 0, height: bottom },
+      { ...rect(x, z, width, depth), bottom: bottom + nicheHeight, height: height - bottom - nicheHeight },
+      { ...rect(x, z, width, .025), bottom, height: nicheHeight },
+      { ...rect(x + width - .025, z, .025, depth), bottom, height: nicheHeight },
+    ]
+  }
+  if (item.baseInset) return [
+    { ...rect(x + item.baseInset.west, z, width - item.baseInset.west, depth - item.baseInset.south), bottom: 0, height: height - .03 },
+    { ...rect(x, z, width, depth), bottom: height - .03, height: .03 },
+  ]
+  return [{ ...rect(x, z, width, depth), bottom: 0, height }]
+}
 export const stairRecess = rect(stair.x + stair.turnSize, stair.z + stair.runWidth, stair.width - stair.turnSize, stair.depth - 2 * stair.runWidth)
 export const stairOpeningParts = [rect(stair.x, stair.z, stair.width, stair.depth)]
 export const basementWindow = { width: .9, height: .75, southGap: 1.35 }
@@ -29,7 +47,7 @@ export const roofWindows: (Rect & { id: string; name: string; length: number })[
 export function roofPanels(): Rect[] {
   return [rect(-.1, -.25, house.width + .35, house.depth / 2 + .25), rect(-.1, house.depth / 2, house.width + .35, house.depth / 2 + .25)]
 }
-export const area = (parts: Rect[]) => parts.reduce((sum, part) => sum + part.width * part.depth, 0)
+export const area = (parts: Rect[]) => parts.reduce((sum, part) => sum + (part.footprint ? Math.abs(part.footprint.reduce((value, point, index, points) => { const next = points[(index + 1) % points.length]; return value + point[0] * next[1] - next[0] * point[1] }, 0)) / 2 : part.width * part.depth), 0)
 export const roofHeight = (south: number) => house.knee + Math.min(south - house.north, house.south - south) * Math.tan(house.pitch * Math.PI / 180)
 export const roofVerticalThickness = construction.roofNormal / Math.cos(house.pitch * Math.PI / 180)
 export const roofInnerElevation = (south: number) => elevations.DG + roofHeight(south)
@@ -55,6 +73,11 @@ export function makeFloor(id: FloorId, houseSide: 'east' | 'west' = 'east'): Flo
 export type Solid = Rect & { bottom: number; height: number; kind: 'wall' | 'stair' | 'floor' | 'rail'; id: string; footprint?: StairPoint[] }
 export function wallSolids(wallData: Wall, height: number): Solid[] {
   height = Math.min(height, wallData.height ?? height)
+  if (wallData.footprint) {
+    const passage = wallData.openings.find(opening => opening.kind === 'passage' && opening.start === 0 && opening.width >= wallData.depth)
+    const bottom = passage?.height ?? 0
+    return bottom >= height ? [] : [{ ...wallData, bottom, height: height - bottom, kind: 'wall' }]
+  }
   const length = wallData.axis === 'x' ? wallData.width : wallData.depth
   const cuts = [0, length, ...wallData.openings.flatMap(open => [open.start, open.start + open.width])].sort((left, right) => left - right)
   const parts: Solid[] = []

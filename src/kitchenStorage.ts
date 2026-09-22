@@ -9,20 +9,16 @@ export function kitchenModules(item: Furniture): KitchenModule[] {
     { id: 'south-storage', x: x + .9, z, width: width - .9, depth: item.depth, front: 'north', use: 'cupboard' },
   ]
   if (item.id === 'peninsula') return [
-    { id: 'hob-drawers', x, z, width: 1, depth: .6, front: 'north', use: 'drawers' },
-    { id: 'prep-drawers', x: x + 1, z, width: 1, depth: .6, front: 'north', use: 'drawers' },
-    { id: 'rear-storage-west', x: x + .04, z: z + .65, width: 1, depth: .35, front: 'south', use: 'cupboard' },
-    { id: 'rear-storage-east', x: x + 1.04, z: z + .65, width: 1, depth: .35, front: 'south', use: 'cupboard' },
+    { id: 'prep-drawers', x: x + .35, z, width: .6, depth: .6, front: 'north', use: 'drawers' },
+    { id: 'hob-drawers', x: x + .95, z, width: .85, depth: .6, front: 'north', use: 'drawers' },
   ]
   if (item.id === 'kitchen') return [
-    { id: 'west-prep', x, z, width, depth: .8, front: 'east', use: 'drawers' },
-    { id: 'hob-drawers', x, z: z + .8, width, depth: item.depth - .8, front: 'east', use: 'drawers' },
+    { id: 'dishwasher', x, z, width, depth: .6, front: 'west', use: 'dishwasher' },
+    { id: 'sink-base', x, z: z + .6, width, depth: .8, front: 'west', use: 'sink' },
+    { id: 'east-prep', x, z: z + 1.4, width, depth: item.depth - 1.4, front: 'west', use: 'drawers' },
   ]
   if (item.id === 'coffee-counter') return [
-    { id: 'corner-storage', x, z, width: .65, depth: .65, front: 'south', use: 'cupboard' },
-    { id: 'dishwasher', x: x + .65, z, width: .6, depth: .65, front: 'south', use: 'dishwasher' },
-    { id: 'sink-base', x: x + 1.25, z, width: .8, depth: .65, front: 'south', use: 'sink' },
-    { id: 'coffee-storage', x: x + 2.05, z, width: width - 2.05, depth: .65, front: 'south', use: 'drawers' },
+    { id: 'coffee-storage', x, z, width, depth: item.depth, front: 'east', use: 'drawers' },
   ]
   return []
 }
