@@ -18,9 +18,9 @@ test('U kitchen has disjoint connected tops and a genuinely free prep rectangle'
 test('New kitchen has five towers, low counters, clear west access and east dining', () => {
   const floor = makeFloor('EG'), furniture = floor.furniture
   const island = furniture.find(item => item.id === 'peninsula')!
-  expect(island.x - 2.8).toBeCloseTo(1.5)
-  expect(furniture.find(item => item.id === 'dining-bench')!.z - island.z - island.depth).toBeCloseTo(1.3)
-  expect(furniture.find(item => item.id === 'dining')).toMatchObject({ x: 5.25, z: 7.8, width: .9, depth: 1.8 })
+  expect(island.x - 2.8).toBeCloseTo(1.4)
+  expect(furniture.find(item => item.id === 'dining-bench')!.z - island.z - island.depth).toBeCloseTo(1.25)
+  expect(furniture.find(item => item.id === 'dining')).toMatchObject({ x: 5.2, z: 7.75, width: .9, depth: 1.8 })
   expect(furniture.filter(item => item.id === 'fridge' || item.id.startsWith('kitchen-tall'))).toHaveLength(5)
   for (const id of ['fridge', 'kitchen-tall']) expect(furniture.find(item => item.id === id)!.height).toBe(floor.height)
   expect(furniture.some(item => item.id === 'kitchen-upper')).toBe(false)

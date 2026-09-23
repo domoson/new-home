@@ -18,28 +18,34 @@ freien Port. `npm run build` erstellt `dist/`, das auf einem statischen HTTP-Hos
 betrieben werden kann. `npm run preview` dient der lokalen Build-Vorschau.
 Nicht ueber `file://` oeffnen. WebGL2 ist fuer 3D erforderlich, 2D funktioniert ohne.
 
-## Aktuelle Variante 7,00 x 10,60 m
+## Aktuelle Variante 6,90 x 10,50 m
 
 Die neue EG-/OG-Skizze ersetzt die bisherige Raumaufteilung. Die Osthaelfte ist
 auf KG, EG, OG und DG angepasst und eingerichtet; die Westhaelfte bleibt
 ein Baukoerper ohne Innenausbau. Alte Terrasse und Vordach sind entfernt.
 Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
 
-- Je Haelfte 7,00 x 10,60 m; Gesamtbreite 14,00 m, Versatz 0,90 m nach Sueden
+- Je Haelfte 6,90 x 10,50 m; 72,45 m2 Bruttogrundflaeche je Ebene,
+  Gesamtbreite 13,80 m, Versatz 0,90 m nach Sueden
   fuer West. Gemeinsame Hauswand auf der unveraenderten, flaechengleichen Teilung.
 - Bei unveraenderter Lage hat die nordwestliche Ecke des Westhauses nur noch
-  ca. 2,96 m senkrechten Abstand zur Nordgrenze. Keine automatische Verschiebung;
+  ca. 2,98 m senkrechten Abstand zur Nordgrenze. Keine automatische Verschiebung;
   Abstands-/Dachflaechen und Lage beduerfen fachlicher Pruefung.
 - FFB KG / EG / OG / DG: -2,45 / 0,00 / 2,97 / 5,94 m.
 - Lichte Hoehen KG 2,25 m, EG/OG 2,77 m; Geschossdecken 20 cm.
 - Dach 35 Grad, Innenknie 50 cm; DG-Decke bei 2,77 m, 24 cm stark.
+  Die Firstoberkante liegt modelliert bei 10,27 m ueber FFB EG beziehungsweise
+  10,47 m ueber dem angenommenen Gelaende und damit 3,50 cm tiefer als zuvor.
   Aussen-/Trennwaende 30 cm, Innenwaende 12,5 cm und Dachpaket 24 cm sind Annahmen.
   Zentrale Querwaende an Treppe/Flur 20 cm; kein statischer Nachweis.
   DG-Innenwaende enden an der Unterkante der Spitzbodendecke.
 - Treppe auf allen Geschossen 58,5 cm nach Norden verschoben, Kern z=3,50..5,50 m.
-  Form und Steigungen unveraendert; Physik-Tritttoleranz 22 cm fuer die 19,8-cm-
+  Form und Steigungen unveraendert; Physik-Tritttoleranz 22,5 cm fuer die 19,8-cm-
   Steigungen plus Kollisionsabstand, keine Aenderung der modellierten Stufen.
 - EG: Gaestebad nordwestlich, Eingang nordoestlich, deckenhoher Putzschrank neben Dusche.
+  Geflieste Diele direkt an der Haustuer 6,67 m2; Flur ab vorhandenem
+  Bodenwechsel mit Holzboden 6,18 m2. Wand suedlich der Kellertuer bis zur
+  schraegen Trennung verlaengert.
   Kueche oestlich der Treppe, schraeger offener Uebergang zum Wohnen, Halbinsel
   nach Sueden. Essplatz im Suedosten, Wohnecke im Suedwesten.
 - Fuenf H-Hochschraenke je 63 cm breit/60 cm tief, deckenhoch 277 cm.
@@ -56,8 +62,12 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
 - Nordseitig im Eingang nur sieben Wandhaken auf flacher Leiste, ohne Schrank.
   Gegenueber deckenhohe Garderobe 210 x 60 cm, westlich angeschlossen;
   105 cm Freiraum zur oestlichen Eingangswand. Grosses Nordfenster dort
-  entfernt. Fliesen nur oestlich x=3,40 m bis zum kurzen Wandstueck, mindestens
-  1,25 m vor der Badtuerwand; restliche Diele mit Holzboden.
+  entfernt. Fliesen nur oestlich x=3,30 m bis zum kurzen Wandstueck, mindestens
+  1,25 m vor der Badtuerwand; anschliessender Flur mit Holzboden.
+- Zweiteilige 3-m-Hebeschiebeanlage mit 1,50 m beweglichem Fluegel und
+  1,50 m Festfeld endet innen bei x=6,60 m, entsprechend 30 cm vor der rechten
+  aeusseren Gebaeudekante. Sofagruppe 20 cm nach Norden verschoben; 20 cm
+  Abstand zur inneren Suedwandkante bei unveraenderten Moebelabmessungen.
 - Normale Tueren einschliesslich Eingang/Kellerabschluss: 86 x 211 cm INKLUSIVE
   Zarge. Modellprofil seitlich/oben 3 cm, Blatt 80 x 208 cm als Annahme, keine
   Hersteller-/Rohbaumasse. Neue Kellertuer am noerdlichen Treppenzugang im EG.

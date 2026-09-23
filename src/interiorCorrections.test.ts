@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest'
 import { floorIds, furnitureVolumes, makeFloor, standardDoor } from './model'
 
-describe('Detailkorrekturen der 7-m-Variante', () => {
+describe('Detailkorrekturen der 6,9-m-Variante', () => {
   it('führt fünf Hochschränke bis zur Decke und setzt den Backofen in das dritte Modul', () => {
     const floor = makeFloor('EG')
     const towers = floor.furniture.filter(item => item.id === 'fridge' || item.id.startsWith('kitchen-tall'))
     expect(towers).toHaveLength(5)
     for (const item of towers) expect(item.height).toBe(floor.height)
-    expect(towers.find(item => item.id === 'kitchen-tall')!.x).toBeCloseTo(3.55 + 2 * .63)
+    expect(towers.find(item => item.id === 'kitchen-tall')!.x).toBeCloseTo(3.45 + 2 * .63)
   })
   it('hält alle Küchengeräte in der Küche und öffnet die rechte Arbeitsnische wirklich', () => {
     const furniture = makeFloor('EG').furniture
@@ -27,15 +27,15 @@ describe('Detailkorrekturen der 7-m-Variante', () => {
     expect(top.height).toBeCloseTo(.03)
   })
   it('begrenzt die Fliesen vor dem Bad und ersetzt Dielengeräte durch deckenhohe Garderoben', () => {
-    const floor = makeFloor('EG'), hall = floor.rooms.find(room => room.id === 'hall')!
-    expect(hall.tileParts!.every(part => part.x >= 3.4)).toBe(true)
+    const floor = makeFloor('EG'), entry = floor.rooms.find(room => room.id === 'entry')!
+    expect(entry.tileParts!.every(part => part.x >= 3.3)).toBe(true)
     expect(floor.furniture.some(item => item.id === 'hall-counter')).toBe(false)
     for (const id of ['wardrobe', 'cleaning-storage']) expect(floor.furniture.find(item => item.id === id)!.height).toBe(floor.height)
     const hooks = floor.furniture.find(item => item.id === 'entry-coats')!
-    expect(hooks).toMatchObject({ kind: 'coat-rack', x: 3.55, z: .3, width: 2.1, depth: .1, bottom: 1.5 })
+    expect(hooks).toMatchObject({ kind: 'coat-rack', x: 3.45, z: .3, width: 2.1, depth: .1, bottom: 1.5 })
     const wardrobe = floor.furniture.find(item => item.id === 'wardrobe')!
-    expect(wardrobe).toMatchObject({ x: 3.55, width: 2.1, depth: .6, front: 'north' })
-    expect(6.7 - wardrobe.x - wardrobe.width).toBeCloseTo(1.05)
+    expect(wardrobe).toMatchObject({ x: 3.45, width: 2.1, depth: .6, front: 'north' })
+    expect(6.6 - wardrobe.x - wardrobe.width).toBeCloseTo(1.05)
     expect(floor.furniture.find(item => item.id === 'cleaning-storage')).toMatchObject({ x: 1.4, z: 1.975, width: .875, front: 'east' })
     expect(floor.walls.find(wall => wall.id === 'north')!.openings.some(opening => opening.id === 'kitchen-window')).toBe(false)
   })

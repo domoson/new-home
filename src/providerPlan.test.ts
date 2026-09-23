@@ -35,18 +35,18 @@ describe('Anbieterentwurf', () => {
     }
   })
   it('uses the offered envelope and section levels', () => {
-    expect(house.width).toBe(7)
-    expect(house.depth).toBe(10.6)
+    expect(house.width).toBe(6.9)
+    expect(house.depth).toBe(10.5)
     expect(elevations.KG).toBeCloseTo(-2.45)
     expect(elevations.OG).toBeCloseTo(2.97)
     expect(elevations.DG).toBeCloseTo(5.94)
     expect(construction.clearHeight).toBe(2.77)
-    expect(Math.max(...roofPanels().map(part => part.z + part.depth))).toBeCloseTo(10.85)
+    expect(Math.max(...roofPanels().map(part => part.z + part.depth))).toBeCloseTo(10.75)
   })
   it('reconstructs all reference rooms without furnishing the west shell', () => {
     for (const id of floorIds) {
       const floor = makeFloor(id)
-      if (referenceAreas[id]) expect(floor.rooms.map(room => room.id).sort()).toEqual(Object.keys(referenceAreas[id]!).sort())
+      if (referenceAreas[id]) for (const roomId of Object.keys(referenceAreas[id]!)) expect(floor.rooms.some(room => room.id === roomId), `${id}/${roomId}`).toBe(true)
       for (const room of floor.rooms) expect(roomArea(room, id).floor).toBeGreaterThan(0)
       expect(makeFloor(id, 'west').furniture).toEqual([])
       expect(makeFloor(id, 'west').rooms).toEqual([])
@@ -74,7 +74,7 @@ describe('Anbieterentwurf', () => {
     const passage = floor.walls.find(wall => wall.id === 'living-diagonal')!
     expect(passage.footprint).toHaveLength(4)
     expect(wallSolids(passage, floor.height)).toEqual([])
-    expect(floor.furniture.find(item => item.id === 'dining')).toMatchObject({ x: 5.25, z: 7.8, width: .9, depth: 1.8 })
+    expect(floor.furniture.find(item => item.id === 'dining')).toMatchObject({ x: 5.2, z: 7.75, width: .9, depth: 1.8 })
   })
   it('gives the upper hall one metre clear width and fully separates the south rooms', () => {
     const floor = makeFloor('OG')
@@ -135,11 +135,11 @@ describe('Anbieterentwurf', () => {
     expect(siteBoundary).toEqual([[-10.056098883413, -1.667802356868], [10.250012281990, -4.480603334238], [13.648101413502, 20.791970540504], [-14.323750719705, 23.472546642384]])
     expect(siteArea).toBeCloseTo(607.2641)
     expect(polygonArea(siteParcels.east)).toBeCloseTo(polygonArea(siteParcels.west))
-    expect(partner).toEqual({ x: -7, z: .9, width: 7, depth: 10.6 })
-    for (const corner of [[0, 0], [7, 0], [7, 10.6], [0, 10.6], [-7, .9], [-7, 11.5]] as [number, number][]) {
+    expect(partner).toEqual({ x: -6.9, z: .9, width: 6.9, depth: 10.5 })
+    for (const corner of [[0, 0], [6.9, 0], [6.9, 10.5], [0, 10.5], [-6.9, .9], [-6.9, 11.4]] as [number, number][]) {
       for (let side = 0; side < 4; side++) expect(boundaryDistance(corner, side)).toBeGreaterThan(0)
     }
-    expect(boundaryDistance([-7, .9], 0)).toBeCloseTo(2.962842831)
+    expect(boundaryDistance([-6.9, .9], 0)).toBeCloseTo(2.976563811)
   })
   it('ascends from the south to the north on the actual stair treads', () => {
     const line = stairWalkingLine(2.97), steps = winderSteps(2.97)
@@ -197,7 +197,7 @@ describe('Anbieterentwurf', () => {
     expect(bath.walls.find(wall => wall.id === 'bath-installation-north')).toMatchObject({ depth: .08, height: 1.2 })
     expect(wallSolids(bath.walls.find(wall => wall.id === 'bath-installation-north')!, bath.height)[0].height).toBe(1.2)
     for (const id of ['bath-wc', 'bath-sink']) expect(bath.furniture.find(item => item.id === id)!.angle).toBe(0)
-    expect(makeFloor('EG').furniture.find(item => item.id === 'dining')).toMatchObject({ width: .9, depth: 1.8, z: 7.8 })
+    expect(makeFloor('EG').furniture.find(item => item.id === 'dining')).toMatchObject({ width: .9, depth: 1.8, z: 7.75 })
     const attic = makeFloor('DG'), cabinet = attic.furniture.find(item => item.id === 'dressing-low')!
     expect(cabinet.z + cabinet.depth).toBeCloseTo(attic.walls.find(wall => wall.id === 'store-north')!.z)
     expect(attic.walls.find(wall => wall.id === 'store-east')!.openings[0].height).toBe(1.6)

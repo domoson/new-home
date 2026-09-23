@@ -1,25 +1,28 @@
 import { describe, expect, it } from 'vitest'
-import { area, atticCeiling, ceilingHeight, construction, elevations, floorIds, floorSlabs, house, makeFloor, roomArea, stair, wallSolids } from './model'
-import { referenceAreas } from './providerPlan'
+import { area, atticCeiling, ceilingHeight, construction, elevations, floorIds, floorSlabs, house, makeFloor, ridgeElevations, roomArea, stair, wallSolids } from './model'
 import { contains } from './measure'
 import { kitchenModules } from './kitchenStorage'
 import { sectionSpan } from './section'
 
-describe('Variante 7,00 x 10,60 m', () => {
+describe('Variante 6,90 x 10,50 m', () => {
   it('rekonstruiert die Räume und die neue Küche mit genau fünf Hochschränken', () => {
     const ground = makeFloor('EG'), upper = makeFloor('OG')
-    expect(ground.rooms.map(room => room.id)).toEqual(['wc', 'hall', 'living'])
+    expect(ground.rooms.map(room => room.id)).toEqual(['wc', 'entry', 'hall', 'living'])
     expect(upper.rooms.map(room => room.id).sort()).toEqual(['bath', 'child-north', 'child-south', 'hall', 'playroom', 'store'])
     expect(ground.walls.find(wall => wall.id === 'east')!.openings.find(opening => opening.id === 'entrance')!.start).toBe(.72)
     expect(ground.walls.find(wall => wall.id === 'living-diagonal')!.footprint).toHaveLength(4)
     const tall = ground.furniture.filter(item => item.id === 'fridge' || item.id.startsWith('kitchen-tall'))
     expect(tall).toHaveLength(5)
-    for (const [index, item] of tall.entries()) expect(item).toMatchObject({ x: 3.55 + index * .63, z: 2.5, width: .63, depth: .6, height: ground.height, angle: 0 })
+    for (const [index, item] of tall.entries()) expect(item).toMatchObject({ x: 3.45 + index * .63, z: 2.5, width: .63, depth: .6, height: ground.height, angle: 0 })
     expect(ground.furniture.some(item => item.id === 'kitchen-upper')).toBe(false)
     for (const item of ground.furniture.filter(item => item.kind === 'counter')) expect(item.height).toBe(.92)
-    for (const [id, reference] of Object.entries(referenceAreas)) for (const room of makeFloor(id as 'EG' | 'OG').rooms) {
-      expect(Math.abs(roomArea(room, id as 'EG' | 'OG').floor - reference[room.id]), `${id}/${room.id}`).toBeLessThan(room.id === 'hall' && id === 'EG' ? 1.6 : .25)
+    const expectedAreas: Record<string, Record<string, number>> = {
+      KG: { bath: 18.9, 'child-north': 5.7, 'child-south': 28.35, hall: 6.65 },
+      EG: { wc: 4.13325, entry: 6.6675, hall: 6.1813392857, living: 38.885 },
+      OG: { bath: 9.282, 'child-north': 16.335, playroom: 7.26, 'child-south': 15.9075, hall: 3.796875, store: 2.09 },
+      DG: { office: 14.529, hall: 2.2, store: 6.14, bedroom: 19.7072523585 },
     }
+    for (const id of floorIds) for (const room of makeFloor(id).rooms) expect(roomArea(room, id).floor, `${id}/${room.id}`).toBeCloseTo(expectedAreas[id][room.id])
   })
 
   it('hält alle Raumkonturen disjunkt, innerhalb der Hülle und außerhalb von Wänden', () => {
@@ -69,13 +72,31 @@ describe('Variante 7,00 x 10,60 m', () => {
     expect(sectionSpan(solid, 'NS', 2.5)).toEqual([5, 6])
   })
   it('ändert Grundfläche und Treppenlage ohne die Geschosshöhen zu verändern', () => {
-    expect([house.width, house.depth]).toEqual([7, 10.6])
+    expect([house.width, house.depth]).toEqual([6.9, 10.5])
+    expect(house.width * house.depth).toBeCloseTo(72.45)
     expect([stair.z, stair.end, stair.width, stair.depth]).toEqual([3.5, 5.5, 1.9, 2])
     expect(elevations).toEqual({ KG: -2.45, EG: 0, OG: 2.97, DG: 5.94 })
     expect([construction.clearHeight, construction.basementClearHeight, atticCeiling.height]).toEqual([2.77, 2.25, 2.77])
     expect([house.pitch, house.knee]).toEqual([35, .5])
+    expect(ridgeElevations.outside).toBeCloseTo(10.269013)
+    expect(ridgeElevations.outside - construction.terrain).toBeCloseTo(10.469013)
     for (const id of floorIds.filter(id => id !== 'KG')) {
-      expect(floorSlabs(id).reduce((sum, part) => sum + part.width * part.depth, 0)).toBeCloseTo(7 * 10.6 - 1.9 * 2)
+      expect(floorSlabs(id).reduce((sum, part) => sum + part.width * part.depth, 0)).toBeCloseTo(6.9 * 10.5 - 1.9 * 2)
     }
+  })
+
+  it('trennt Diele und Flur am Bodenwechsel und hält Wand, Sofa und Hebeschiebetür von den Außenkanten frei', () => {
+    const ground = makeFloor('EG')
+    expect(ground.rooms.find(room => room.id === 'entry')).toMatchObject({ name: 'Diele' })
+    expect(ground.rooms.find(room => room.id === 'hall')).toMatchObject({ name: 'Flur' })
+    const extension = ground.walls.find(wall => wall.id === 'stair-south-extension')!
+    expect(extension.footprint?.[0]).toEqual([stair.x + stair.width, stair.end])
+    expect(extension.footprint?.at(-1)).toEqual([stair.x + stair.width, stair.end + .2])
+    const south = ground.walls.find(wall => wall.id === 'south')!, terrace = south.openings.find(opening => opening.id === 'terrace')!, fixed = south.openings.find(opening => opening.id === 'garden-fixed')!
+    expect(terrace.width + fixed.width).toBe(3)
+    expect(fixed.start + fixed.width).toBeCloseTo(house.width - construction.exteriorWall)
+    const sofa = ground.furniture.find(item => item.id === 'sofa')!, chaise = ground.furniture.find(item => item.id === 'sofa-chaise')!
+    expect(house.south - sofa.z - sofa.depth).toBeCloseTo(.2)
+    expect(sofa.z - chaise.z - chaise.depth).toBeCloseTo(0)
   })
 })

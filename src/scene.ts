@@ -432,17 +432,17 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
       const floorMaterial = id === 'KG' ? stone : mat('#ffffff', .8, texture)
       const mesh = addBox(slab, base - slabThickness(id), slabThickness(id), [Math.abs(slab.x + slab.width - house.width) < .000001 ? facade : plaster, slab.x === 0 ? facade : plaster, floorMaterial, plaster, Math.abs(slab.z + slab.depth - house.depth) < .000001 ? facade : plaster, slab.z === 0 ? facade : plaster]); mesh.name = `${id}-slab`
     }
-    for (const room of floor.rooms.filter(room => ['wc', 'bath', 'hall', 'pantry'].includes(room.id))) for (const part of room.tileParts ?? room.parts) {
+    for (const room of floor.rooms.filter(room => ['wc', 'bath', 'entry', 'pantry'].includes(room.id) || room.id === 'hall' && id !== 'EG')) for (const part of room.tileParts ?? room.parts) {
       if (room.id === 'hall' && id !== 'EG') {
         const parquet = oak.clone(); parquet.repeat.set(part.width / 2, part.depth / 2); parquet.needsUpdate = true; textures.push(parquet)
         const mesh = addBox(part, base + .001, .008, mat('#ffffff', .8, parquet), false); mesh.userData.floorRoom = room.id; mesh.userData.floorLevel = id
       } else if (part.footprint) {
-        addStairSolid({ ...part, bottom: .001, height: .008, kind: 'floor', id: `${id}-${room.id}` }, base, room.id === 'hall' ? mat('#e7e4d9') : mat('#ced9d5'), false)
+        addStairSolid({ ...part, bottom: .001, height: .008, kind: 'floor', id: `${id}-${room.id}` }, base, ['hall', 'entry'].includes(room.id) ? mat('#e7e4d9') : mat('#ced9d5'), false)
       } else {
-        const mesh = addBox(part, base + .001, .008, room.id === 'hall' ? mat('#e7e4d9') : mat('#ced9d5'), false); mesh.userData.floorRoom = room.id; mesh.userData.floorLevel = id
+        const mesh = addBox(part, base + .001, .008, ['hall', 'entry'].includes(room.id) ? mat('#e7e4d9') : mat('#ced9d5'), false); mesh.userData.floorRoom = room.id; mesh.userData.floorLevel = id
       }
     }
-    if (id === 'EG') for (const part of floor.rooms.find(room => room.id === 'hall')?.tileParts ?? []) {
+    if (id === 'EG') for (const part of floor.rooms.find(room => room.id === 'entry')?.tileParts ?? []) {
       if (part.footprint) continue
       for (let east = part.x + .6; east < part.x + part.width; east += .6) addBox(rect(east, part.z, .008, part.depth), base + .009, .001, stone, false)
       for (let south = part.z + .6; south < part.z + part.depth; south += .6) addBox(rect(part.x, south, part.width, .008), base + .009, .001, stone, false)
