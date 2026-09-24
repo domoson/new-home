@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js'
 import { atticCeiling, atticCeilingPanels, construction, house, elevations, floorIds, floorSlabs, furnitureVolumes, lightWells, makeFloor, rect, ridgeElevations, roofHeight, roofInnerElevation, roofOuterElevation, roofPanels, roofVerticalThickness, roofWindows, slabThickness, stairFor, stairGuards, stairHandrails, stairSolids, storeyRise, wallSolids } from './model'
-import { windowFrame, windowGap, windowJoint, windowPanels } from './windowLayout'
+import { windowFrame, windowGap, windowJoint, windowMullionStart, windowPanels } from './windowLayout'
 import { kitchenModules, moduleFront } from './kitchenStorage'
 import { terraceFurniture, terraceParts, westTerraceFurniture } from './terrace'
 import { createPartyRoom } from './partyRoom'
@@ -499,9 +499,9 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
           for (const bottom of [0, openHeight - windowFrame]) fixedBox(windowFrame, bottom, glazing.width - 2 * windowFrame, windowFrame, frameMaterial)
           if (opening.cornerGlazing && wall.axis === 'z') addBox(rect(east - .04, south + glazing.width - .04, .08, .08), base + opening.sill, openHeight, frameMaterial).name = `${id}-glazing-corner-coupling`
           const columns = opening.windowLayout?.columns ?? 1, lowerFixed = opening.windowLayout?.lowerFixed
-          if (columns === 2) fixedBox(opening.width / 2 - windowJoint / 2, windowFrame, windowJoint, openHeight - 2 * windowFrame, frameMaterial).name = `${id}-${opening.id}-mullion`
+          if (columns === 2) fixedBox(windowMullionStart(glazing), windowFrame, windowJoint, openHeight - 2 * windowFrame, frameMaterial).name = `${id}-${opening.id}-mullion`
           for (const panel of windowPanels(glazing)) {
-            if (lowerFixed && panel.fixed) fixedBox(panel.start, lowerFixed - windowJoint / 2, panel.width, windowJoint, frameMaterial).name = `${id}-${opening.id}-transom-${panel.column}`
+            if (lowerFixed && panel.fixed && panel.bottom + panel.height < lowerFixed) fixedBox(panel.start, lowerFixed - windowJoint / 2, panel.width, windowJoint, frameMaterial).name = `${id}-${opening.id}-transom-${panel.column}`
             if (panel.fixed) {
               fixedBox(panel.start, panel.bottom, panel.width, panel.height, glass, .03).name = `${id}-${opening.id}-fixed-${panel.column}`
               continue

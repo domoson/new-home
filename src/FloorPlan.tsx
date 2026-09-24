@@ -9,6 +9,7 @@ import type { Measurable, PlanPoint } from './measure'
 import { terraceArea, terraceFurniture, terraceMain, terraceOutline } from './terrace'
 import { partyRoom } from './partyRoomData'
 import { kitchenModules, moduleFront } from './kitchenStorage'
+import { windowMullionStart } from './windowLayout'
 
 function Furnishing({ item }: { item: Furniture }) {
   const { x, z, width, depth, kind } = item
@@ -132,8 +133,8 @@ export default function FloorPlan({ floor, selected, onSelect, dimensions, furni
       return <g key={opening.id} data-corner-glazing={opening.id} stroke="#739d9e" strokeWidth=".04"><line x1={east} y1={south} x2={east + (wall.axis === 'x' ? length : 0)} y2={south + (wall.axis === 'z' ? length : 0)} />{wall.axis === 'z' && <rect data-corner-coupling="true" x={east - .04} y={south + length - .04} width=".08" height=".08" fill="#526963" stroke="none" />}</g>
     }))}
     {floor.walls.flatMap(wall => wall.openings.filter(opening => opening.kind === 'window' && opening.windowLayout?.columns === 2).map(opening => {
-      const east = wall.x + (wall.axis === 'x' ? opening.start + opening.width / 2 - .03 : wall.width / 2 - .04)
-      const south = wall.z + (wall.axis === 'z' ? opening.start + opening.width / 2 - .03 : wall.depth / 2 - .04)
+      const east = wall.x + (wall.axis === 'x' ? opening.start + windowMullionStart(opening) : wall.width / 2 - .04)
+      const south = wall.z + (wall.axis === 'z' ? opening.start + windowMullionStart(opening) : wall.depth / 2 - .04)
       return <rect key={`${wall.id}-${opening.id}`} data-window-mullion={opening.id} x={east} y={south} width={wall.axis === 'x' ? .06 : .08} height={wall.axis === 'x' ? .08 : .06} fill="#739d9e" />
     }))}
     {furnished && <g pointerEvents="none">{floor.furniture.map(item => <Furnishing key={item.id} item={item} />)}</g>}

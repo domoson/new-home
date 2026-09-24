@@ -75,7 +75,7 @@ test('Detailkorrekturen haben echte freie Volumen, Zargen und einen schließende
   expect(result.closed).toBeGreaterThan(2.5)
   expect(result.opened).toBeLessThan(1.86)
   expect(result.twoPane).toBe(true)
-  expect(result.transoms).toEqual([])
+  expect(result.transoms).toEqual(['EG-garden-west-transom-1', 'EG-garden-west-transom-1'])
 })
 
 test('Gartenschiebeflügel bleibt innerhalb der 2,80 Meter breiten Verglasung mit Eckkopplung', async ({ page }) => {
@@ -122,33 +122,49 @@ test('Gartenschiebeflügel bleibt innerhalb der 2,80 Meter breiten Verglasung mi
   expect(result.apertureEnd).toBeCloseTo(result.innerEast)
 })
 
-test('Fensterflügel öffnen einzeln nach innen und lassen Unterlichter stehen', async ({ page }) => {
+test('Fensterflügel öffnen einzeln nach innen und lassen Festfelder und Unterlichter stehen', async ({ page }) => {
   await page.goto('/')
   const result = await page.evaluate(async () => {
+    const THREE = await import('/node_modules/.vite/deps/three.js')
     const { buildScene } = await import('/src/scene.ts')
     const { floorIds, makeFloor } = await import('/src/model.ts')
+    const { windowPanels, windowGap, windowMullionStart, windowJoint } = await import('/src/windowLayout.ts')
     const model = buildScene('EG', true, true, false)
     const checks = []
     for (const floor of floorIds) for (const wall of makeFloor(floor).walls) for (const opening of wall.openings.filter(opening => opening.kind === 'window')) {
       const id = `${floor}-${opening.id}`, primary = model.doors.find(door => door.id === id), secondary = model.doors.find(door => door.id === `${id}-secondary`)
       if (opening.id.includes('fixed')) { checks.push({ id, fixed: !primary && !secondary }); continue }
-      const fixed = model.group.getObjectByName(`${id}-fixed-0`), before = fixed?.matrixWorld.clone()
-      const lowerPanels = opening.windowLayout.lowerFixed ? Array.from({ length: opening.windowLayout.columns }, (_, column) => {
-        const mesh = model.group.getObjectByName(`${id}-fixed-${column}`)
+      const panels = windowPanels(opening)
+      const ventilationColumn = opening.windowLayout.ventilationSide === 'start' ? 0 : 1
+      const ventilationLeaf = ventilationColumn ? secondary : primary
+      const fixedPanels = panels.filter(panel => panel.fixed).map(panel => {
+        const mesh = model.group.getObjectByName(`${id}-fixed-${panel.column}`)
         return { mesh, before: mesh?.matrixWorld.clone() }
-      }) : []
-      if (id === 'EG-living-east') checks.push({ id, livingWindow: !!primary && !!secondary && !fixed && primary.size.y > 1 && primary.size.y < 1.2 && opening.sill === 1.2 && opening.height === 1.2 && opening.start === 6.3 && opening.width === 1.5 })
-      if (floor === 'DG' && opening.id.startsWith('gable-')) checks.push({ id, atticSplit: opening.sill === 0 && opening.height === 2.1 && opening.windowLayout.lowerFixed === .6 && lowerPanels.length === 2 && !!primary && !!secondary && primary.size.y > 1.3 && primary.size.y < 1.5 && secondary.size.y === primary.size.y })
-      for (const door of [primary, secondary].filter(Boolean)) {
+      })
+      if (opening.windowLayout.ventilationWidth) checks.push({ id, narrowLeaf: !(ventilationColumn ? primary : secondary) && !!ventilationLeaf && fixedPanels.length >= 1 && ventilationLeaf.size.x < .6 })
+      for (const panel of panels.filter(panel => !panel.fixed)) {
+        const door = panel.column ? secondary : primary
+        if (!door) throw new Error(`Missing operable panel: ${id}/${panel.column}`)
         const closed = door.pivot.localToWorld(door.center.clone())
-        model.setOpening(door.id, 1)
+        for (const amount of [.25, .5, .75, 1]) {
+          model.setOpening(door.id, amount)
+          checks.push({ id: door.id, stationaryFixed: fixedPanels.every(panel => !!panel.mesh && panel.before.equals(panel.mesh.matrixWorld)) })
+          if (floor !== 'KG') {
+            const bounds = new THREE.Box3().setFromObject(door.pivot)
+            const furniture = makeFloor(floor).furniture
+            checks.push({ id: door.id, furnitureClear: furniture.every(item => !bounds.intersectsBox(new THREE.Box3(new THREE.Vector3(item.x, makeFloor(floor).elevation + (item.bottom ?? 0), item.z), new THREE.Vector3(item.x + item.width, makeFloor(floor).elevation + (item.bottom ?? 0) + item.height, item.z + item.depth)))) })
+          }
+        }
         const opened = door.pivot.localToWorld(door.center.clone())
-        if (lowerPanels.length) checks.push({ id: door.id, stationaryLower: lowerPanels.every(panel => !!panel.mesh && panel.before.equals(panel.mesh.matrixWorld)) })
-        checks.push({ id: door.id, inward: wall.id === 'north' ? opened.z > closed.z : wall.id === 'south' ? opened.z < closed.z : opened.x < closed.x, width: door.size.x, expectedWidth: (opening.width - .1 - (opening.windowLayout.columns - 1) * .06) / opening.windowLayout.columns - .008, independent: door === primary ? !secondary || secondary.amount === 0 : primary.amount === 0 })
+        checks.push({ id: door.id, inward: wall.id === 'north' ? opened.z > closed.z : wall.id === 'south' ? opened.z < closed.z : opened.x < closed.x, width: door.size.x, expectedWidth: panel.width - 2 * windowGap })
         model.setOpening(door.id, 0)
       }
-      if (opening.windowLayout.columns === 2) checks.push({ id, divided: !!secondary && !!model.group.getObjectByName(`${id}-mullion`) })
-      if (opening.windowLayout.lowerFixed) checks.push({ id, lowerFixed: !!fixed && before.equals(fixed.matrixWorld) && !!model.group.getObjectByName(`${id}-transom-0`) })
+      if (opening.windowLayout.columns === 2) {
+        const mullion = new THREE.Box3().setFromObject(model.group.getObjectByName(`${id}-mullion`)).getCenter(new THREE.Vector3())
+        checks.push({ id, divided: Math.abs((wall.axis === 'x' ? mullion.x - wall.x : mullion.z - wall.z) - opening.start - windowMullionStart(opening) - windowJoint / 2) < .001 })
+      }
+      if (opening.windowLayout.lowerFixed) checks.push({ id, lowerFixed: !!model.group.getObjectByName(`${id}-transom-${opening.windowLayout.ventilationWidth ? ventilationColumn : 0}`) })
+      if (opening.windowLayout.ventilationWidth) checks.push({ id, uninterrupted: !model.group.getObjectByName(`${id}-transom-${1 - ventilationColumn}`) })
     }
     const mirrored = model.doors.find(door => door.id === 'west-EG-kitchen-east-window')
     checks.push({ id: 'west', mirrored: !!mirrored && model.setOpening(mirrored.id, .5) && mirrored.amount === .5 })
@@ -156,7 +172,7 @@ test('Fensterflügel öffnen einzeln nach innen und lassen Unterlichter stehen',
     return checks
   })
   for (const check of result) {
-    for (const key of ['fixed', 'inward', 'independent', 'divided', 'lowerFixed', 'mirrored', 'livingWindow', 'atticSplit', 'stationaryLower']) if (key in check) expect(check[key], `${check.id} ${key}`).toBe(true)
+    for (const key of ['fixed', 'inward', 'divided', 'lowerFixed', 'mirrored', 'narrowLeaf', 'stationaryFixed', 'uninterrupted', 'furnitureClear']) if (key in check) expect(check[key], `${check.id} ${key}`).toBe(true)
     if ('width' in check) expect(check.width).toBeCloseTo(check.expectedWidth)
   }
 })

@@ -87,9 +87,11 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
   durch die geringere Haustiefe geometrisch niedriger, nicht durch geaenderte Hoehenparameter.
 - Sofa 250 x 170 cm: lange Seite Sued, Chaiselongue West; Stuehle zum Tisch gedreht.
   Sideboard 180 x 45 x 60 cm erhalten; Regal auf 110 cm gekuerzt.
-- Fenster nach Aussenansichten geteilt: breite Fenster zwei einzeln nach innen
-  oeffnende Fluegel. Bereits bodentiefe EG-Fenster ohne Querholm; obere Geschosse
-  behalten ihre Unterlichter. Oeffnungsbreiten, Fensterabstaende und Bruestungshoehen
+- Neue Fensterordnung: breite Fenster ab 150 cm mit durchgehendem Festfeld
+  und einem nominell 60 cm breiten Lueftungsbereich (bewegliches Blatt nach
+  Rahmen/Fugen etwa 51 cm breit). Nur unter dessen Fluegel liegt bei bodentiefen
+  Fenstern ein festes Unterlicht: OG-Ost und EG-Suedwest 90 cm, DG 60 cm.
+  Das grosse Festfeld bleibt ohne Querholm. Oeffnungsbreiten, Fensterabstaende und Bruestungshoehen
   der neuen EG-/OG-/DG-Fenster folgen dem 30-cm-Raster (ausgenommen bestehende
   Kellerfenster, Eingangsfestfeld und die 2,80 m breite Terrassenanlage mit
   1,25/1,55-m-Feldern sowie die dazu gleich hohe Eckverglasung). Rasterfugen sind schematisch.
@@ -97,18 +99,15 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
   Fensterlagen und -groessen aus der neuen Skizze angenaehert, Gartenzugang als
   zweiteilige 2,80-m-Hebeschiebeanlage mit Eckkopplung ohne Mauerstueck:
   innerer westlicher Fluegel 1,25 m beweglich, aeusseres oestliches Feld 1,55 m fest.
-  Kuechenfenster und Kind-Nord-Ostfenster bei z=3,30 m, jeweils 150 cm breit,
-  um 30 cm nach Norden erweitert bei gleicher Suedkante. EG zwischen Insel
-  und Esstisch: Fenster statt Terrassentuer, wie ueber der Spuele
-  150 x 120 cm mit 120 cm Bruestung und zwei oeffnenden Fluegeln.
-  Nordkante unveraendert bei z=6,30 m, nach Sueden bis z=7,80 m verbreitert.
-  Kueche unveraendert; das Fenster liegt nun oberhalb der 92 cm hohen Insel.
-  Spielzimmerfenster um 30 cm nach Norden auf z=6,30 m verschoben,
-  150 x 150 cm mit 90 cm Bruestung; Nordkante fluchtet mit EG und DG.
-  Kuechenfenster weiterhin 120 cm hoch bei 120 cm Bruestung. DG-Giebelfenster
-  beide bodentief 150 x 210 cm bei z=3,30 und 6,30 m. Horizontale Teilung
-  bei 60 cm: unten fest verglast, nur die beiden bisherigen oberen Fluegel
-  oeffnen nach innen. Oberkante bei 210 cm unveraendert.
+  Beide Ostachsen in EG/OG/DG beginnen bei z=3,30 und 5,70 m, jeweils
+  150 cm breit. Die suedliche Achse ist 60 cm nach Norden verschoben;
+  Oeffnungen und Teilungen sind symmetrisch zum First bei z=5,25 m.
+  Die schmalen Fluegel sitzen jeweils an der aeusseren Seite des Fensterpaars.
+  EG ueber Spuele und Insel weiterhin 150 x 120 cm mit 120 cm Bruestung;
+  Kueche und Moebel unveraendert. OG-Ostfenster jetzt bodentief 150 x 240 cm,
+  Oberkante weiterhin 240 cm. Das Spielzimmerregal steht vor dem Festfeld.
+  DG-Giebelfenster weiterhin bodentief 150 x 210 cm, ein oeffnender oberer
+  Fluegel je Fenster mit festem Unterlicht bei 60 cm. Oberkante bleibt 210 cm.
   DG-Buerofenster 60 cm nach Sueden verschoben, Trennwand zum Schlafzimmer
   30 cm nach Sueden auf z=5,10 m: Buero gewinnt 0,915 m2, Schlafzimmer
   entsprechend kleiner. Schraenke beidseits folgen der Wand; niedriger
@@ -122,14 +121,21 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
   Mauerecke unter dem Sturz entfernt; kein nachgewiesenes Tragwerk,
   keine Herstellerfreigabe. Die unveraenderte Sitzbank steht teilweise vor dem Festglas.
   Nordbadfenster im EG unveraendert 120 x 60 cm mit 180 cm Bruestung;
-  OG-Lichtband 240 x 90 cm mit schlankem Mittelpfosten, nach unten erweitert
-  auf 150 cm Bruestung bei unveraenderter Oberkante von 240 cm.
+  OG-Lichtband 240 x 90 cm mit grossem Festfeld und schmalem Lueftungsfluegel,
+  weiterhin 150 cm Bruestung bei Oberkante 240 cm.
   Suedwestliche EG-/OG-Fenster fluchten 60 cm von der Trennwand entfernt
   uebereinander. Die beiden Fenster von Kind Sued sind je 180 x 150 cm mit
-  90 cm Bruestung; das oestliche schliesst buendig mit der Ostkante der
-  Terrassenverglasung ab. Das Flurfenster ist 90 x 150 cm, der Schrank in Kind
+  90 cm Bruestung; das oestliche endet 30 cm vor der Ostkante der
+  Terrassenverglasung. Das Flurfenster ist quadratisch 90 x 90 cm mit
+  150 cm Bruestung, der Schrank in Kind
   Sued steht an der Nordwand. Das Ostfenster von Kind Nord beginnt wie das
   Kuechenfenster bei z=3,30 m und ist 150 cm breit.
+  Beide Haushaelften starten mit warmgrauen Rahmen und einer zusammenhaengenden
+  Holzfassung um Haustuer und Seitenteil (20 cm seitlich, 18 cm ueber dem Sturz).
+  Verglasung bleibt in der Wandmitte zurueckgesetzt. Kein Treppenlichtband in
+  der Haustrennwand; keine Raffstorekaesten konstruiert. Schmale Lueftungsfluegel
+  sind kein Nachweis eines Rettungsfensters. Rettungswege, Tageslicht,
+  Absturzsicherung, Beschattung und Waermebruecken benoetigen Fachplanung.
 - Kellerfenster 90 x 75 cm; oestliches Fenster 1,20 m von der suedlichen
   Aussenkante entfernt. Beide Lichtschaechte
   mittig, 130 x 50 cm im Grundriss (aus Zeichnung angenaehert, kein Herstellermass).
