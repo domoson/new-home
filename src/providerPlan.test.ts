@@ -199,9 +199,20 @@ describe('Anbieterentwurf', () => {
   it('models substantial cross walls, bathroom service walls and the requested furniture sizes', () => {
     for (const id of ['EG', 'OG', 'DG'] as const) for (const wallId of ['stair-north', 'stair-south']) expect(makeFloor(id).walls.find(wall => wall.id === wallId)!.depth).toBe(.2)
     const bath = makeFloor('OG')
-    expect(bath.walls.find(wall => wall.id === 'bath-installation-north')).toMatchObject({ depth: .08, height: 1.2 })
-    expect(wallSolids(bath.walls.find(wall => wall.id === 'bath-installation-north')!, bath.height)[0].height).toBe(1.2)
-    for (const id of ['bath-wc', 'bath-sink']) expect(bath.furniture.find(item => item.id === id)!.angle).toBe(0)
+    const near = (actual: Record<string, unknown>, expected: Record<string, number>) => { for (const [key, value] of Object.entries(expected)) expect(actual[key], key).toBeCloseTo(value) }
+    const bathWall = (id: string) => bath.walls.find(wall => wall.id === id)!, fixture = (id: string) => bath.furniture.find(item => item.id === id)!
+    near(bathWall('bath-installation'), { x: .3, z: 1.6, width: 1, depth: .15 })
+    near(bathWall('bath-screen'), { x: 1.3, z: 1.15, width: .15, depth: 1.3 })
+    expect(bath.walls.some(wall => wall.id === 'bath-installation-north')).toBe(false)
+    expect(fixture('bath-wc')).toMatchObject({ angle: 0, concealedFittings: true })
+    expect(fixture('bath-shower')).toMatchObject({ angle: Math.PI, concealedFittings: true })
+    near(fixture('bath-shower'), { x: .32, z: .32, width: .96, depth: 1.26 })
+    expect(fixture('bath-sink')).toMatchObject({ angle: -Math.PI / 2, concealedFittings: true })
+    near(fixture('bath-sink'), { x: 1.45, z: 1.5, width: .5, depth: .6 })
+    expect(bath.furniture.some(item => item.id.startsWith('bath-sink-'))).toBe(false)
+    expect(fixture('bath-vanity').front).toBe('east')
+    near(fixture('bath-vanity'), { x: 1.45, z: 1.15, width: .5, depth: 1.3 })
+    near(fixture('bath-tub'), { x: 2.65, width: .8, depth: 1.8 })
     expect(makeFloor('EG').furniture.find(item => item.id === 'dining')).toMatchObject({ width: .9, depth: 1.8, z: 7.75 })
     const attic = makeFloor('DG'), cabinet = attic.furniture.find(item => item.id === 'dressing-low')!
     expect(cabinet.z + cabinet.depth).toBeCloseTo(attic.walls.find(wall => wall.id === 'store-north')!.z)

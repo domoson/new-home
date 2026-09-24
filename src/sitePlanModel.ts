@@ -40,7 +40,7 @@ export const siteItems: SiteItem[] = [
       rectangle(`access-${side}`, `Tonnenzugang ${house}`, binAccess, '#dfe1d8', point),
       rectangle(`bins-${side}`, `Tonnen ${house}`, bins, '#b5c4bd', point),
       rectangle(`open-${side}`, `Stellplatz ${house}`, open, '#cbd6b5', point),
-      { ...rectangle(`carport-${side}`, `Carport ${house}`, carport, '#c4cdcb', point), details: '3,00 m × 6,00 m · Pultdach 5° · Holz / beschichtetes Profilblech' },
+      { ...rectangle(`carport-${side}`, `Carport ${house}`, carport, '#c4cdcb', point), details: '3,00 m × 6,00 m · Pultdach 3° · Holz / beschichtetes Profilblech · Lamellenwand 6/6 cm, 4 cm Fugen zur Gartenseite' },
     ]
   }),
 ]

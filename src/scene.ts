@@ -256,7 +256,7 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
       for (let index = 0; index < count; index++) {
         const bounds = moduleFront({ ...item, id: item.id, x: x + (alongX ? index * width / count : 0), z: z + (alongX ? 0 : index * depth / count), width: alongX ? width / count : width, depth: alongX ? depth : depth / count, front: item.front, use: 'cupboard' })
         box(bounds.x, bounds.z, bounds.width, bounds.depth, .04, height - .08, linen).name = `cabinet-front-${item.id}`
-        box(bounds.x + bounds.width / 2, bounds.z + bounds.depth / 2, alongX ? .018 : .006, alongX ? .006 : .018, 1, .18, dark)
+        box(bounds.x + bounds.width / 2, bounds.z + bounds.depth / 2, alongX ? .018 : .006, alongX ? .006 : .018, Math.min(1, height - .3), .18, dark)
       }
     } else if ((item.id === 'fridge' || item.id.startsWith('kitchen-tall')) && !item.angle) {
       box(x + .035, z + .045, width - .07, depth - .09, 0, .1, dark)
@@ -371,10 +371,13 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
       beam(new THREE.Vector3(x + width - .04, elevation + .28, facingSouth(z + .18)), new THREE.Vector3(x + width - .025, elevation + .1, facingSouth(z + .32)), .009, stone)
     } else if (kind === 'sink') {
       surface(height - .18, .18, ceramic, true); box(x + .07, z + .07, width - .14, depth - .14, height, .008, teal, true)
-      const tapX = item.angle === Math.PI / 2 ? x + width - .04 : x + .1, tapZ = item.angle === Math.PI / 2 ? z + depth / 2 : z + .08
+      const tapX = item.angle === Math.PI / 2 ? x + width - .04 : x + .1, tapZ = Math.abs(item.angle ?? 0) === Math.PI / 2 ? z + depth / 2 : z + .08
       if (item.concealedFittings && item.angle === Math.PI / 2) {
         box(x + width - .015, tapZ - .12, .02, .24, height + .15, .1, steel).name = `${item.id}-concealed-control`
         box(x + width - .2, tapZ - .015, .2, .03, height + .18, .025, steel).name = `${item.id}-wall-spout`
+      } else if (item.concealedFittings && item.angle === -Math.PI / 2) {
+        box(x - .005, tapZ - .12, .02, .24, height + .15, .1, steel).name = `${item.id}-concealed-control`
+        box(x, tapZ - .015, .2, .03, height + .18, .025, steel).name = `${item.id}-wall-spout`
       } else if (item.concealedFittings) {
         box(x + width / 2 - .12, z - .015, .24, .02, height + .15, .1, steel).name = `${item.id}-concealed-control`
         box(x + width / 2 - .015, z - .015, .03, .2, height + .18, .025, steel).name = `${item.id}-wall-spout`
@@ -394,8 +397,14 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
       surface(.03, height - .03, ceramic, true); box(x + .09, z + .09, width - .18, depth - .18, height, .008, stone, true)
       if (item.id === 'bath-tub') { box(x, z + depth / 2 - .12, .025, .24, .78, .1, stone); beam(new THREE.Vector3(x, elevation + .8, z + depth / 2), new THREE.Vector3(x + .15, elevation + .8, z + depth / 2), .014, dark) }
     } else if (kind === 'shower') {
-      surface(.015, .025, ceramic); box(x + width - .02, z, .015, depth * .65, .04, 1.95, glass)
-      if (item.concealedFittings) {
+      surface(.015, .025, ceramic)
+      // angle PI: walk-in shower backed by a south service wall, open toward the room without a glass screen
+      if (item.angle !== Math.PI) box(x + width - .02, z, .015, depth * .65, .04, 1.95, glass)
+      if (item.concealedFittings && item.angle === Math.PI) {
+        box(x + width / 2 - .08, z + depth - .01, .16, .02, 1.05, .22, steel).name = `${item.id}-concealed-control`
+        box(x + width / 2 - .015, z + depth - .31, .03, .32, 2.1, .03, steel)
+        box(x + width / 2 - .12, z + depth - .43, .24, .24, 2.08, .025, steel).name = `${item.id}-rain-head`
+      } else if (item.concealedFittings) {
         box(x + width / 2 - .08, z - .01, .16, .02, 1.05, .22, steel).name = `${item.id}-concealed-control`
         box(x + width / 2 - .015, z - .01, .03, .32, 2.1, .03, steel)
         box(x + width / 2 - .12, z + .19, .24, .24, 2.08, .025, steel).name = `${item.id}-rain-head`

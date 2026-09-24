@@ -74,7 +74,7 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
   Eingangsanlage insgesamt 140 cm breit. Normale Innentueren einschliesslich
   Kellerabschluss: 86 x 211 cm inklusive Zarge, Blatt 80 x 208 cm als Annahme.
   DG-Abstellraum und Hebeschiebeanlage bleiben weitere Sondermasse.
-- OG: Bad 9,28 m2, Kind Nord 16,88 m2, Spielzimmer 7,50 m2, Kind Sued 16,73 m2,
+- OG: Bad 9,11 m2, Kind Nord 16,88 m2, Spielzimmer 7,50 m2, Kind Sued 16,73 m2,
   Flur 3,80 m2, Abstellraum 2,09 m2. Kinderzimmer mit Bett, Schreibtisch und Schrank;
   Spielzimmer niedrig moebliert. KG behaelt Technik/Lager, Keller und Hobby;
   DG Buero, Schlafen/Ankleide und Abstellraum. Moebel an neue Huelle angepasst.
@@ -94,9 +94,17 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
 - Kellerfenster 90 x 75 cm; oestliches Fenster 1,20 m von der suedlichen
   Aussenkante entfernt. Beide Lichtschaechte
   mittig, 130 x 50 cm im Grundriss (aus Zeichnung angenaehert, kein Herstellermass).
-- EG-Dusche im Suedwesten des Bades, WC/Waschtisch im Norden; OG entsprechend
-  mit Wanne an der Ostseite. Nord-Vorwaende 8 cm tief/120 cm hoch sind Annahmen,
-  von der Raumflaeche abgezogen. Leitungen und Anschluesse nicht fachlich geplant.
+- EG-Dusche im Suedwesten des Bades, WC/Waschtisch im Norden; Nord-Vorwand 8 cm tief/120 cm hoch
+  ist Annahme, von der Raumflaeche abgezogen.
+- OG-Bad als T-Grundriss nach Vorlage: raumhohe Waschtisch-Vorwand 15 cm mittig
+  (x 1,30-1,45 m, 1,30 m lang) mit Waschtisch 130 x 50 cm nach Osten, ein Becken
+  60 cm mittig und je 35 cm Ablage beidseitig; dahinter westlich bodengleiche
+  Dusche 96 x 126 cm im Nordwesten (Nordfenster) und WC im Suedwesten, getrennt
+  durch eine 15-cm-Installationswand fuer Spuelkasten und Duscharmatur.
+  Durchgaenge je 85 cm statt 65 cm der Vorlage; Wanne 180 x 80 cm an der Ostwand
+  unter dem zweiten Nordfenster, 70 cm Gang zwischen Waschtisch und Wanne,
+  1,15 m freie Zone vor der Tuer.
+  Dusche ohne Glaswand (offener Durchgang wie Vorlage). Leitungen und Anschluesse nicht fachlich geplant.
 - DG-Abstellraumtuer 73 x 160 cm, rechteckig und ueber den Schwenkweg unter dem
   Dach geprueft. Kein aufrechter Durchgang; der Rundgang hat keine Duckfunktion.
 - Die Planungsannahmen zeigen Modellflaechen und die Beschriftungen der neuen
@@ -434,8 +442,11 @@ Die seitlichen Lichtschaechte bleiben frei. Grundriss, Messobjekte, Aussenplan,
 Je Haushaelfte zwei unabhaengig von An der Roeth erreichbare Stellplaetze:
 ein Holzcarport aussen im Suedosten bzw. Suedwesten und ein offener Platz
 daneben zur Gartenmitte. Keine hintereinander blockierten Stellplaetze.
-Carport-Aussenmass 3,25 x 6,00 m, vier 16-cm-Pfosten, lichte Breite 2,93 m;
+Carport-Aussenmass 3,00 x 6,00 m, vier 16-cm-Pfosten, lichte Breite 2,68 m;
 beide Stellflaechen jeweils mindestens 2,50 x 5,00 m frei von Pfosten.
+Die ueberdachte Stellflaeche liegt 0,125 m von der Zaunkante und 0,375 m von
+der Lamellenwand entfernt; der Wagen steht mittig darauf, also 0,125 m zur
+Zaunseite versetzt.
 Die Dachkante haelt genau 3,00 m kuerzesten senkrechten Abstand zur schraegen
 Suedgrenze. Dies war bereits fuer beide Carports erreicht; die Carport- und
 Tonnengruppen wurden deshalb nicht weiter zur Strasse verschoben.
@@ -448,14 +459,15 @@ jeweiligen aeusseren Zaunlinie gedreht; die aeussere Carportkante liegt
 jeweils 18 cm innerhalb der Grenze.
 Die aeusseren Nachbargrenzen bleiben unueberschritten; keine Bauteilueberstaende.
 
-Schlankes Pultdach mit 5 Grad Neigung, standardmaessig ohne Begruenung: anthrazitgraues,
+Schlankes Pultdach mit 3 Grad Neigung (rund 5,2 Prozent), standardmaessig ohne Begruenung: anthrazitgraues,
 beschichtetes Stahlprofilblech auf sichtbarem Holztragwerk, seitliche
-Abschlussbleche. Rund 52,5 cm Hoehenunterschied auf 6 m; niedrige Dachunterkante
-hinten bei Modellhoehe 2,50 m, hohe Einfahrt vorne bei 3,025 m (Gelaende -0,14 m).
+Abschlussbleche. Rund 31,5 cm Hoehenunterschied auf 6 m; niedrige Dachunterkante
+hinten bei Modellhoehe 2,50 m, hohe Einfahrt vorne bei 2,81 m (Gelaende -0,14 m).
 Rueckwaertige Rinne mit Fallrohr innerhalb der eigenen Grundflaeche;
 kein freier Wasserablauf zum Nachbarn oder auf die Strasse vorgesehen.
 Das ist ein preisbewusstes Materialkonzept, kein kalkuliertes Angebot oder
-Lebensdauerversprechen. Konkretes Profil fuer 5 Grad nach Herstellervorgaben
+Lebensdauerversprechen. 3 Grad ist eine uebliche Mindestneigung fuer Trapezblech
+ohne Querstoss; konkretes Profil, Ueberlappungen und Dichtungen nach Herstellervorgaben
 auswaehlen; Korrosionsschutz, Befestigung, Kondensatschutz/Belueftung,
 Schall bei Regen und Regenwasseranschluss sind noch auszuarbeiten.
 Alternativ lassen sich beide Carports gemeinsam auf ein bepflanztes Gruendach
@@ -465,8 +477,17 @@ Der Aufbau folgt derselben Dachneigung; die Blechprofilrippen sind dabei verdeck
 Schematische extensive Begruenung, kein gepruefter Systemaufbau: zusaetzliche
 Nasslast, Tragwerk, wurzelfeste Abdichtung, Drainage, Schubsicherung und
 Entwaesserungsanschluss muessen fachlich geplant werden.
-Offene Einfahrt und Gartenseite, kurzes Lamellenfeld zur aeusseren
-Nachbarseite, geschlossene Holzrueckwand.
+Offene Einfahrt, geschlossene Holzrueckwand, Zaunseite offen (dort steht die
+Nachbargarage). Zur Gartenseite eine durchgehende vertikale Lamellenwand zwischen
+den Pfosten: 6 x 6 cm Holzlamellen im 10-cm-Raster (4 cm Fugen), 6,5 cm ueber dem
+Belag beginnend und bis unter den geneigten Randtraeger reichend, im Holzton der
+Fassade. Frontal bleibt sie zu 40 Prozent offen und belueftet; ab etwa 34 Grad
+Schraegsicht schliessen sich die Fugen optisch, sodass vom Wohnzimmer und von der
+Terrasse aus das Auto verdeckt ist. Zwischen Karosserie und Lamellen bleiben rund
+0,67 m, zur Zaunseite rund 0,66 m bis zur Grenze: Tueren lassen sich bis zur ersten
+Raste oeffnen, ein volles Aufschwenken braeuchte einen breiteren Carport. Das
+fruehere kurze Lamellenfeld an der Zaunseite ist entfernt. Die Lamellenwand
+kollidiert im Rundgang als durchgehende Flaeche.
 Dahinter je eine Tonnenflaeche 2,25 x 0,90 m fuer Kompost, Restmuell und Papier:
 drei schematische 240-l-Tonnen mit je 60 x 75 cm Grundflaeche. Separate
 Bedienflaeche 0,90 m tief auf der Nordseite, ueber den Seitenweg erreichbar;
@@ -499,14 +520,14 @@ Genehmigungs- oder Stellplatzsatzungsnachweis.
 | DG | Eltern/Ankleide, Gaeste/Arbeit, Flur inkl. Nische | Bodenflaechen 19,5 / 14,4 / 2,5 m2; hoehengewichtet 16,4 / 11,6 / 2,5 m2 |
 | KG | Technik, Waschen/Lager, Kinderpartyraum, Flur inkl. Nische | Nutzflaechen 11,9 / 10,0 / 24,9 / 3,3 m2 |
 
-Im Ost-Carport steht ein grob modellierter grauer Seat Leon ST, mittig und
-vorwaerts eingeparkt: Front zur Rueckwand, Heck zur suedlichen Einfahrt.
+Im Ost-Carport steht ein grob modellierter grauer Seat Leon ST, mittig auf der
+markierten Stellflaeche und vorwaerts eingeparkt: Front zur Rueckwand, Heck zur suedlichen Einfahrt.
 Abmessungen aus der bereitgestellten Zeichnung:
 4,642 m Laenge, 1,799 m Karosseriebreite ohne Spiegel, 1,991 m mit Spiegeln,
 1,448 m Hoehe und 2,686 m Radstand. Form und Farbe orientieren sich schematisch
 am Fahrzeugfoto; Foto und Masszeichnung zeigen unterschiedliche Modellgenerationen.
-Zwischen Spiegeln und innerer Pfostenlinie bleiben mittig rund 47 cm je Seite;
-das ist kein Nachweis fuer geoeffnete Tueren. Ein Klick oder Antippen des Autos
+Zwischen Spiegeln und Lamellenwand bleiben rund 57 cm, zwischen Karosserie und
+Lamellen rund 67 cm; das ist kein Nachweis fuer voll geoeffnete Tueren. Ein Klick oder Antippen des Autos
 laesst es gerade rueckwaerts auf die suedliche Fahrbahn rollen; erneutes Anklicken
 faehrt es vorwaerts auf denselben Carportplatz zurueck. Waehrend der Fahrt kann
 die Richtung erneut umgekehrt werden. Raeder und Schatten bewegen sich mit.

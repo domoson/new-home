@@ -27,8 +27,23 @@ test('Carports: Abmessungen, Holztoene, freie Zugaenge und Pfostenkollision', as
       return local()
     }
     const placements = siteParking.map(placement => {
-      const { side, carport, covered, open, passage, bins, point, angle } = placement
+      const { side, carport, covered, open, passage, bins, gardenEdge, point, angle } = placement
       const structure = model.group.getObjectByName(`carport-${side}`)!
+      const screen = structure.getObjectByName('carport-slat-screen')! as THREE.InstancedMesh
+      const slatMatrix = new THREE.Matrix4(), slatPosition = new THREE.Vector3(), slatRotation = new THREE.Quaternion(), slatScale = new THREE.Vector3()
+      const slats: { x: number; z: number; top: number; width: number; depth: number }[] = []
+      for (let index = 0; index < screen.count; index++) {
+        screen.getMatrixAt(index, slatMatrix); slatMatrix.decompose(slatPosition, slatRotation, slatScale)
+        slats.push({ x: slatPosition.x, z: slatPosition.z, top: slatPosition.y + slatScale.y / 2, width: slatScale.z, depth: slatScale.x })
+      }
+      const beam = structure.getObjectByName('carport-beam')! as THREE.Mesh<THREE.BoxGeometry>
+      const beamVertices = beam.geometry.getAttribute('position')
+      let beamBottomSouth = Infinity, beamBottomNorth = Infinity
+      for (let index = 0; index < beamVertices.count; index++) {
+        const y = beamVertices.getY(index) + beam.position.y
+        if (beamVertices.getZ(index) > 0) beamBottomSouth = Math.min(beamBottomSouth, y); else beamBottomNorth = Math.min(beamBottomNorth, y)
+      }
+      const oldSlats = structure.children.filter(object => object.name === 'carport-slat').length
       const roof = structure.getObjectByName('carport-roof')! as THREE.Mesh<THREE.BoxGeometry>
       const vertices = roof.geometry.getAttribute('position')
       const north: number[] = [], south: number[] = []
@@ -49,7 +64,7 @@ test('Carports: Abmessungen, Holztoene, freie Zugaenge und Pfostenkollision', as
       const blocked = drive(placement, carport.x + .08, carport.z + carport.depth + 1, carport.z + carport.depth - 1)
       const rearBlocked = drive(placement, covered.x + covered.width / 2, carport.z + 1, carport.z - .5)
       const binCount = structure.children.filter(object => /^bin-(east|west)-\d$/.test(object.name)).length
-      return { side, width: roof.geometry.parameters.width, depth: roof.geometry.parameters.depth, roofCorrect, color, through, into, blocked, rearBlocked, binAccessDistance, binCount, carport, covered }
+      return { side, width: roof.geometry.parameters.width, depth: roof.geometry.parameters.depth, roofCorrect, color, through, into, blocked, rearBlocked, binAccessDistance, binCount, carport, covered, gardenEdge, slats, beamBottomNorth, beamBottomSouth, oldSlats }
     })
     const fence = model.group.getObjectByName('boundary-fence')! as THREE.InstancedMesh
     const matrix = new THREE.Matrix4(), position = new THREE.Vector3()
@@ -76,6 +91,23 @@ test('Carports: Abmessungen, Holztoene, freie Zugaenge und Pfostenkollision', as
     expect(placement.rearBlocked.z).toBeGreaterThan(placement.carport.z + .2)
     expect(placement.binCount).toBe(3)
     expect(placement.binAccessDistance).toBeLessThan(.12)
+    expect(placement.oldSlats).toBe(0)
+    expect(placement.slats.length).toBeGreaterThanOrEqual(50)
+    const sorted = [...placement.slats].sort((first, second) => first.z - second.z)
+    for (const [index, slat] of sorted.entries()) {
+      expect(Math.abs(slat.x - placement.gardenEdge)).toBeLessThanOrEqual(.03 + 1e-9)
+      expect(slat.z - slat.width / 2).toBeGreaterThanOrEqual(placement.carport.z + .16)
+      expect(slat.z + slat.width / 2).toBeLessThanOrEqual(placement.carport.z + placement.carport.depth - .16)
+      expect(slat.top).toBeLessThanOrEqual(placement.beamBottomSouth + 1e-6)
+      expect(slat.top).toBeGreaterThanOrEqual(placement.beamBottomNorth - 1e-6)
+      if (index > 0) {
+        expect(slat.z - sorted[index - 1].z).toBeCloseTo(.1)
+        expect(slat.z - slat.width / 2 - (sorted[index - 1].z + sorted[index - 1].width / 2)).toBeCloseTo(.04)
+        expect(slat.top).toBeGreaterThan(sorted[index - 1].top)
+      }
+    }
+    const carX = placement.covered.x + placement.covered.width / 2
+    expect(Math.abs(carX - placement.gardenEdge) - 1.799 / 2 - .06).toBeGreaterThan(.6)
   }
   expect(result.eastWood).toBe('514f48')
   expect(result.fenceBlocks).toBe(false)

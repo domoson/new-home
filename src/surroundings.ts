@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { boundaryX, boundaryZ, initialAppearance, partner, siteBoundary, woodTones } from './context'
 import { flatGeometry } from './geometry'
-import { carportRoof, parkingEntrance, rectCorners, siteParking } from './parking'
+import { carportRoof, carportScreen, parkingEntrance, rectCorners, siteParking } from './parking'
 import { neighbor8, neighbor8GarageLocalPoint, neighbor8GaragePoint, neighbor8Point } from './neighbor8'
 import { addDirectNeighbors } from './directNeighbors'
 import { createSeatLeon } from './seatLeon'
@@ -202,7 +202,7 @@ export function createSurroundings() {
   const removedGardenTreeRandomSamples = 6
   for (let sample = 0; sample < removedGardenTreeRandomSamples; sample++) random()
   for (const east of [-5.8, 5.6]) tree(garden, east, (boundaryZ(east, 0) + (east < 0 ? 1.2 : 0)) / 2, 3.6, 1)
-  for (const { side, carport, open, bins, binAccess, angle, origin, point, streetZ, passagePoints, approach } of siteParking) {
+  for (const { side, carport, covered, open, bins, binAccess, gardenEdge, angle, origin, point, streetZ, passagePoints, approach } of siteParking) {
     const parking = new THREE.Group(); parking.name = `parking-area-${side}`; parking.position.set(origin.x, 0, origin.z); parking.rotation.y = -angle; garden.add(parking)
     const structure = new THREE.Group(); structure.name = `carport-${side}`; parking.add(structure)
     const solid = (x: number, y: number, z: number, width: number, height: number, depth: number, finish: THREE.Material, name: string) => {
@@ -244,8 +244,18 @@ export function createSurroundings() {
     solid(carport.x + .16, 2.38, carport.z + .08, carport.width - .32, .1, .1, roofEdge, 'carport-gutter')
     const pipeX = side === 'east' ? carport.x + carport.width - .27 : carport.x + .18
     solid(pipeX, -.1, carport.z + .09, .08, 2.48, .08, roofEdge, 'carport-downpipe')
-    const screenX = side === 'east' ? carport.x + carport.width - .06 : carport.x
-    for (let offset = .22; offset < 2.4; offset += .14) solid(screenX, .28, carport.z + offset, .06, 1.8, .06, wood, 'carport-slat')
+    const screenX = side === 'east' ? gardenEdge : gardenEdge - carportScreen.depth
+    const beamBottom = (south: number) => 2.24 + (south - carport.z) * slope
+    const span = carport.depth - .32, slatCount = Math.floor((span - .08 - carportScreen.width) / carportScreen.pitch) + 1
+    const firstSlat = carport.z + .16 + (span - ((slatCount - 1) * carportScreen.pitch + carportScreen.width)) / 2
+    const screen = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), wood, slatCount)
+    for (let index = 0; index < slatCount; index++) {
+      const south = firstSlat + index * carportScreen.pitch + carportScreen.width / 2, height = beamBottom(south) - carportScreen.base
+      screen.setMatrixAt(index, new THREE.Matrix4().compose(new THREE.Vector3(screenX + carportScreen.depth / 2, carportScreen.base + height / 2, south), new THREE.Quaternion(), new THREE.Vector3(carportScreen.depth, height, carportScreen.width)))
+    }
+    screen.castShadow = true; screen.receiveShadow = true; screen.name = 'carport-slat-screen'; structure.add(screen)
+    const screenCenter = point(screenX + carportScreen.depth / 2, carport.z + .16 + span / 2), screenHeight = beamBottom(carport.z + carport.depth) - carportScreen.base
+    colliders.push({ position: new THREE.Vector3(screenCenter[0], carportScreen.base + screenHeight / 2, screenCenter[1]), size: new THREE.Vector3(carportScreen.depth, screenHeight, span), rotation: new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), -angle) })
     for (const [kind, rectangle] of [['covered', carport], ['open', open]] as const) {
       const stall = new THREE.Group(); stall.name = `parking-${side}-${kind}`; parking.add(stall)
       band(stall, [[rectangle.x, rectangle.z], [rectangle.x + rectangle.width, rectangle.z], [rectangle.x + rectangle.width, rectangle.z + rectangle.depth], [rectangle.x, rectangle.z + rectangle.depth]], -.119, grassPaving, 'grass-parking')
@@ -261,7 +271,7 @@ export function createSurroundings() {
     band(garden, approach, -.105, paving, 'entrance-path')
     if (side === 'east') {
       const car = createSeatLeon(materials)
-      car.position.set(carport.x + carport.width / 2, -.1, carport.z + carport.depth / 2)
+      car.position.set(covered.x + covered.width / 2, -.1, carport.z + carport.depth / 2)
       car.rotation.y = Math.PI
       parking.add(car)
       carParking = createCarParking(car, streetZ(car.position.x) + 3.9)

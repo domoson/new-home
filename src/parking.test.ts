@@ -21,6 +21,9 @@ test('Je Haushälfte zwei Mindeststellplätze, Carport mit 3 m Südabstand und f
       expect(stall.x >= passage.x + passage.width - 1e-9 || stall.x + stall.width <= passage.x + 1e-9).toBe(true)
       expect(parkingEntrance(point(stall.x + stall.width / 2, streetZ(stall.x + stall.width / 2))[0])).toBe(true)
     }
+    const gardenEdge = side === 'east' ? carport.x : carport.x + carport.width
+    expect(Math.abs(gardenEdge - (side === 'east' ? covered.x : covered.x + covered.width))).toBeCloseTo(.375)
+    expect(Math.abs(gardenEdge - siteParking.find(placement => placement.side === side)!.gardenEdge)).toBe(0)
     expect(passage.width).toBe(.9)
     expect(binAccess.depth).toBe(.9)
     expect(carport.x >= passage.x + passage.width - 1e-9 || carport.x + carport.width <= passage.x + 1e-9).toBe(true)

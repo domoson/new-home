@@ -19,7 +19,7 @@ describe('Variante 6,90 x 10,50 m', () => {
     const expectedAreas: Record<string, Record<string, number>> = {
       KG: { bath: 18.9, 'child-north': 5.7, 'child-south': 28.35, hall: 6.65 },
       EG: { wc: 4.13325, entry: 6.6675, hall: 6.1813392857, living: 38.885 },
-      OG: { bath: 9.282, 'child-north': 16.335, playroom: 7.26, 'child-south': 15.9075, hall: 3.796875, store: 2.09 },
+      OG: { bath: 9.105, 'child-north': 16.335, playroom: 7.26, 'child-south': 15.9075, hall: 3.796875, store: 2.09 },
       DG: { office: 14.529, hall: 2.2, store: 6.14, bedroom: 19.7072523585 },
     }
     for (const id of floorIds) for (const room of makeFloor(id).rooms) expect(roomArea(room, id).floor, `${id}/${room.id}`).toBeCloseTo(expectedAreas[id][room.id])

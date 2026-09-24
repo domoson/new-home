@@ -307,7 +307,8 @@ test('Neue Treppe, Raumwege und niedrige Abstellraumtür berücksichtigen Kollis
       ['EG-shower', 'EG', [[2.8, 3], [2.8, 1.35], [1.15, 1.35], [.8, 1.75], [.8, 2.5]]],
       ['EG-living', 'EG', [[2.8, 5.075], [3.2, 6.85], [3.45, 9.4]]],
       ['EG-entrance', 'EG', [[2.8, 1.25], [5.9, 1.25], [7.5, 1.25]]],
-      ['OG-bath', 'OG', [[2.8, 5.075], [2.85, 3.7], [2.85, 2.85], [1.7, 2.85]]],
+      ['OG-bath', 'OG', [[2.8, 5.075], [2.85, 3.7], [2.85, 2.85], [1.7, 2.85], [.85, 2.85]]],
+      ['OG-shower', 'OG', [[2.85, 2.85], [2.4, 2.85], [2.4, .75], [.85, .75]]],
       ['OG-north', 'OG', [[2.8, 5.075], [2.8, 4.4], [4.4, 4.4], [5, 3.7]]],
       ['OG-play', 'OG', [[2.8, 5.075], [2.8, 6.3], [4.1, 6.3], [4.1, 7.1]]],
       ['OG-south', 'OG', [[2.8, 5.075], [2.85, 7.8], [2.1, 8.5]]],
@@ -339,7 +340,7 @@ test('Neue Treppe, Raumwege und niedrige Abstellraumtür berücksichtigen Kollis
         wellBounds.push({ x: bounds.min.x, z: bounds.min.z, width: bounds.max.x - bounds.min.x, depth: bounds.max.z - bounds.min.z })
       }
     })
-    const sanitaryDetails = ['guest-sink-concealed-control', 'guest-sink-wall-spout', 'guest-wc-flush-plate', 'guest-shower-concealed-control', 'guest-shower-rain-head'].map(name => ({ name, present: !!model.group.getObjectByName(name) }))
+    const sanitaryDetails = ['guest-sink-concealed-control', 'guest-sink-wall-spout', 'guest-wc-flush-plate', 'guest-shower-concealed-control', 'guest-shower-rain-head', 'bath-sink-wall-spout', 'bath-sink-concealed-control', 'bath-wc-flush-plate', 'bath-shower-concealed-control', 'bath-shower-rain-head'].map(name => ({ name, present: !!model.group.getObjectByName(name) }))
     let storageRoofClearance = Infinity
     const storageDoor = model.doors.find(door => door.id === 'DG-store')
     for (let sample = 0; sample <= 20; sample++) {

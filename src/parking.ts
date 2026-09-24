@@ -2,7 +2,8 @@ import { boundaryDistance, boundaryX, siteBoundary } from './context'
 import { house } from './model'
 
 export type SiteRect = { x: number; z: number; width: number; depth: number }
-export const carportRoof = { pitch: 5, lowEdge: 2.5, thickness: .06 }
+export const carportRoof = { pitch: 3, lowEdge: 2.5, thickness: .06 }
+export const carportScreen = { depth: .06, width: .06, pitch: .1, base: -.04 }
 
 export const rectCorners = ({ x, z, width, depth }: SiteRect): [number, number][] => [[x, z], [x + width, z], [x + width, z + depth], [x, z + depth]]
 
@@ -27,14 +28,16 @@ export const siteParking = (['east', 'west'] as const).map(side => {
   const openX = side === 'east' ? -3.4 : 4.15
   const open = { x: openX, z: Math.min(streetZ(openX), streetZ(openX + 2.5)) - .45 - 5, width: 2.5, depth: 5 }
   const passage = { x: side === 'east' ? -.9 : carport.width, z: carport.z - 1.85, width: .9 }
-  const covered = { x: carport.x + .375, z: carport.z + .5, width: 2.5, depth: 5 }
+  const gardenEdge = side === 'east' ? carport.x : carport.x + carport.width
+  // Stall sits .125 m from the fence edge so the lamella side keeps .375 m for opening doors
+  const covered = { x: carport.x + (side === 'east' ? .375 : .125), z: carport.z + .5, width: 2.5, depth: 5 }
   const bins = { x: carport.x + .5, z: carport.z - .95, width: 2.25, depth: .9 }
   const binAccess = { x: carport.x, z: carport.z - 1.85, width: carport.width, depth: .9 }
   const passagePoints: [number, number][] = [[passage.x, passage.z], [passage.x + passage.width, passage.z], [passage.x + passage.width, streetZ(passage.x + passage.width)], [passage.x, streetZ(passage.x)]]
   const entrance: [number, number] = side === 'east' ? [house.width + 1, 1.1] : [-house.width - 1, 2.3]
   const join = point(passage.x + passage.width / 2, passage.z)
   const approach: [number, number][] = [[entrance[0] - .45, entrance[1]], [entrance[0] + .45, entrance[1]], [join[0] + .45, join[1]], [join[0] - .45, join[1]]]
-  return { side, carport, covered, open, passage, bins, binAccess, angle, origin, point, streetZ, passagePoints, approach }
+  return { side, carport, covered, open, passage, bins, binAccess, gardenEdge, angle, origin, point, streetZ, passagePoints, approach }
 })
 
 export function parkingEntrance(east: number) {
