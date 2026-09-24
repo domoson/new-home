@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { house, makeFloor, roofHeight, roomArea } from './model'
+import { windowFrame, windowJoint, windowPanels } from './windowLayout'
 
 const onGrid = (value: number) => expect(value / .3).toBeCloseTo(Math.round(value / .3), 6)
 
@@ -17,7 +18,7 @@ describe('Fassadenfenster', () => {
             expect(furniture.z + furniture.depth - opening.start).toBeCloseTo(.2)
             continue
           }
-          expect((furniture.bottom ?? 0) + furniture.height, `${floorId} ${furniture.id}`).toBeLessThan(opening.sill)
+          expect((furniture.bottom ?? 0) + furniture.height, `${floorId} ${furniture.id}`).toBeLessThan(opening.sill + (opening.windowLayout?.lowerFixed ?? 0))
         }
       }
     }
@@ -112,7 +113,20 @@ describe('Fassadenfenster', () => {
     expect(upper.walls.find(wall => wall.id === 'north')!.x + upperNorth[0].start + upperNorth[0].width).toBeLessThan(3.45)
     for (const id of ['gable-office', 'gable-parents']) {
       const window = makeFloor('DG').walls.find(wall => wall.id === 'east')!.openings.find(opening => opening.id === id)!
-      expect(window).toMatchObject({ width: 1.5, sill: .6, height: 1.5 })
+      expect(window).toMatchObject({ width: 1.5, sill: 0, height: 2.1, windowLayout: { columns: 2, lowerFixed: .6 } })
+      const panels = windowPanels(window)
+      const fixed = panels.filter(panel => panel.fixed)
+      const operable = panels.filter(panel => !panel.fixed)
+      expect(fixed).toHaveLength(2)
+      expect(operable).toHaveLength(2)
+      for (const panel of fixed) {
+        expect(panel.bottom).toBe(windowFrame)
+        expect(panel.bottom + panel.height).toBeCloseTo(.6 - windowJoint / 2)
+      }
+      for (const panel of operable) {
+        expect(panel.bottom).toBeCloseTo(.6 + windowJoint / 2)
+        expect(panel.bottom + panel.height).toBeCloseTo(2.1 - windowFrame)
+      }
       expect(window.width * window.height).toBeGreaterThan(2 * 1.2 * .9)
       expect(window.sill + window.height).toBeLessThan(roofHeight(window.start))
       expect(window.sill + window.height).toBeLessThan(roofHeight(window.start + window.width))

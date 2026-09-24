@@ -101,12 +101,15 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
   Spielzimmerfenster um 30 cm nach Norden auf z=6,30 m verschoben,
   150 x 150 cm mit 90 cm Bruestung; Nordkante fluchtet mit EG und DG.
   Kuechenfenster weiterhin 120 cm hoch bei 120 cm Bruestung. DG-Giebelfenster
-  beide 150 x 150 cm mit 60 cm Bruestung bei z=3,30 und 6,30 m.
+  beide bodentief 150 x 210 cm bei z=3,30 und 6,30 m. Horizontale Teilung
+  bei 60 cm: unten fest verglast, nur die beiden bisherigen oberen Fluegel
+  oeffnen nach innen. Oberkante bei 210 cm unveraendert.
   DG-Buerofenster 60 cm nach Sueden verschoben, Trennwand zum Schlafzimmer
   30 cm nach Sueden auf z=5,10 m: Buero gewinnt 0,915 m2, Schlafzimmer
   entsprechend kleiner. Schraenke beidseits folgen der Wand; niedriger
   Bueroschrank auf 120 cm gekuerzt, um den Fensterfluegel freizuhalten.
-  Niedrige Bruestung: Absturzsicherung und Beschlaege fachlich zu planen.
+  Festes Unterlicht allein ist kein Absturzsicherungsnachweis;
+  Verglasung, Absturzsicherung und Beschlaege fachlich zu planen.
   EG-Suedostecke wieder mit festem 60 x 252 cm Glasfeld bei z=9,60 m,
   gleiche Oberkante wie die Hebeschiebeanlage. Mauerecke bleibt erhalten;
   keine rahmenlose Glasecke oder statisch nachgewiesene Ausfuehrung.

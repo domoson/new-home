@@ -129,11 +129,17 @@ test('Fensterflügel öffnen einzeln nach innen und lassen Unterlichter stehen',
       const id = `${floor}-${opening.id}`, primary = model.doors.find(door => door.id === id), secondary = model.doors.find(door => door.id === `${id}-secondary`)
       if (opening.id.includes('fixed')) { checks.push({ id, fixed: !primary && !secondary }); continue }
       const fixed = model.group.getObjectByName(`${id}-fixed-0`), before = fixed?.matrixWorld.clone()
+      const lowerPanels = opening.windowLayout.lowerFixed ? Array.from({ length: opening.windowLayout.columns }, (_, column) => {
+        const mesh = model.group.getObjectByName(`${id}-fixed-${column}`)
+        return { mesh, before: mesh?.matrixWorld.clone() }
+      }) : []
       if (id === 'EG-living-east') checks.push({ id, terraceLeaf: !!primary && !secondary && !fixed && primary.size.y > 2.2 && opening.sill === 0 && opening.start === 6.3 && opening.width === .9 })
+      if (floor === 'DG' && opening.id.startsWith('gable-')) checks.push({ id, atticSplit: opening.sill === 0 && opening.height === 2.1 && opening.windowLayout.lowerFixed === .6 && lowerPanels.length === 2 && !!primary && !!secondary && primary.size.y > 1.3 && primary.size.y < 1.5 && secondary.size.y === primary.size.y })
       for (const door of [primary, secondary].filter(Boolean)) {
         const closed = door.pivot.localToWorld(door.center.clone())
         model.setOpening(door.id, 1)
         const opened = door.pivot.localToWorld(door.center.clone())
+        if (lowerPanels.length) checks.push({ id: door.id, stationaryLower: lowerPanels.every(panel => !!panel.mesh && panel.before.equals(panel.mesh.matrixWorld)) })
         checks.push({ id: door.id, inward: wall.id === 'north' ? opened.z > closed.z : wall.id === 'south' ? opened.z < closed.z : opened.x < closed.x, width: door.size.x, expectedWidth: (opening.width - .1 - (opening.windowLayout.columns - 1) * .06) / opening.windowLayout.columns - .008, independent: door === primary ? !secondary || secondary.amount === 0 : primary.amount === 0 })
         model.setOpening(door.id, 0)
       }
@@ -146,7 +152,7 @@ test('Fensterflügel öffnen einzeln nach innen und lassen Unterlichter stehen',
     return checks
   })
   for (const check of result) {
-    for (const key of ['fixed', 'inward', 'independent', 'divided', 'lowerFixed', 'mirrored', 'terraceLeaf']) if (key in check) expect(check[key], `${check.id} ${key}`).toBe(true)
+    for (const key of ['fixed', 'inward', 'independent', 'divided', 'lowerFixed', 'mirrored', 'terraceLeaf', 'atticSplit', 'stationaryLower']) if (key in check) expect(check[key], `${check.id} ${key}`).toBe(true)
     if ('width' in check) expect(check.width).toBeCloseTo(check.expectedWidth)
   }
 })
