@@ -53,7 +53,7 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
   Backofen im dritten, Kuehlgeraet im vierten Modul. Arbeitszeilen 92 cm hoch
   und direkt an die Eckschraenke angeschlossen, keine zusaetzlichen Haengeschraenke.
   Rechte offene Nische von 92 bis 152 cm mit fortgefuehrter Arbeitsplatte;
-  Toaster dort, Wassersprudler auf der Ostzeile noerdlich der Spuele.
+  Toaster dort, Wassersprudler auf der Ostzeile suedlich der Spuele, ausserhalb des Fensterbereichs.
   Espresso und Cookit links; keine Kuechengeraete in der Diele.
   Linke Eckfront erst ab 152 cm, blinde Unterbereiche ohne behauptete Bedienfront.
   Halbinsel-Unterbau 40 cm von Sued und 35 cm von West zurueckgesetzt, echte
@@ -65,8 +65,8 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
   105 cm Freiraum zur oestlichen Eingangswand. Grosses Nordfenster dort
   entfernt. Fliesen nur oestlich x=3,30 m bis zum kurzen Wandstueck, mindestens
   1,25 m vor der Badtuerwand; anschliessender Flur mit Holzboden.
-- Zweiteilige 3-m-Hebeschiebeanlage mit 1,50 m beweglichem Fluegel und
-  1,50 m Festfeld; ihre rechte Kante endet bei x=6,30 m und laesst ein
+- Zweiteilige 2,50-m-Hebeschiebeanlage mit 1,25 m beweglichem Fluegel und
+  1,25 m Festfeld; ihre rechte Kante endet bei x=6,30 m und laesst ein
   30-cm-Mauerstueck bis zur inneren Ostwandkante. Sofagruppe 20 cm nach Norden verschoben; 20 cm
   Abstand zur inneren Suedwandkante bei unveraenderten Moebelabmessungen.
 - Haustuer 110 x 252 cm inklusive 3-cm-Rahmen, nach innen oeffnend und
@@ -84,13 +84,41 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
   Sideboard 180 x 45 x 60 cm erhalten; Regal auf 110 cm gekuerzt.
 - Fenster nach Aussenansichten geteilt: breite Fenster zwei einzeln nach innen
   oeffnende Fluegel. Bereits bodentiefe EG-Fenster ohne Querholm; obere Geschosse
-  behalten ihre Unterlichter. Aussenfensterbreiten und Eckabstaende liegen im 30-cm-Raster;
-  Bad-/Kuechenbruestungen bleiben unveraendert. Rasterfugen sind schematisch.
+  behalten ihre Unterlichter. Oeffnungsbreiten, Fensterabstaende und Bruestungshoehen
+  der neuen EG-/OG-/DG-Fenster folgen dem 30-cm-Raster (ausgenommen bestehende
+  Kellerfenster, Eingangsfestfeld und die 2,50 m breite Terrassenanlage mit
+  zwei 1,25-m-Feldern sowie die dazu gleich hohe Eckverglasung). Rasterfugen sind schematisch.
   Teilungshoehe und Profile angenaehert; keine Hersteller-/Absturzsicherungsfreigabe.
   Fensterlagen und -groessen aus der neuen Skizze angenaehert, Gartenzugang als
-  zweiteilige 3-m-Hebeschiebeanlage mit 30 cm Mauerabstand zur Ostwandecke:
-  innerer westlicher Fluegel 1,50 m beweglich, aeusseres oestliches Feld 1,50 m fest.
-  Kuechenfenster mit 105 cm Bruestung.
+  zweiteilige 2,50-m-Hebeschiebeanlage mit 30 cm Mauerabstand zur Ostwandecke:
+  innerer westlicher Fluegel 1,25 m beweglich, aeusseres oestliches Feld 1,25 m fest.
+  Kuechenfenster und Kind-Nord-Ostfenster bei z=3,30 m, jeweils 150 cm breit,
+  um 30 cm nach Norden erweitert bei gleicher Suedkante. EG zwischen Insel
+  und Esstisch: bodentiefer, einfluegeliger Terrassenzugang 90 x 240 cm bei
+  z=6,30 m, ohne festes Unterlicht. Suedseitig 30 cm schmaler und insgesamt
+  30 cm nach Norden verschoben. Kueche bewusst unveraendert: Die Insel
+  ueberlappt die Oeffnung noch auf 20 cm Breite; Konflikt vorerst zurueckgestellt.
+  Spielzimmerfenster um 30 cm nach Norden auf z=6,30 m verschoben,
+  150 x 150 cm mit 90 cm Bruestung; Nordkante fluchtet mit EG und DG.
+  Kuechenfenster weiterhin 120 cm hoch bei 120 cm Bruestung. DG-Giebelfenster
+  beide 150 x 150 cm mit 60 cm Bruestung bei z=3,30 und 6,30 m.
+  DG-Buerofenster 60 cm nach Sueden verschoben, Trennwand zum Schlafzimmer
+  30 cm nach Sueden auf z=5,10 m: Buero gewinnt 0,915 m2, Schlafzimmer
+  entsprechend kleiner. Schraenke beidseits folgen der Wand; niedriger
+  Bueroschrank auf 120 cm gekuerzt, um den Fensterfluegel freizuhalten.
+  Niedrige Bruestung: Absturzsicherung und Beschlaege fachlich zu planen.
+  EG-Suedostecke wieder mit festem 60 x 252 cm Glasfeld bei z=9,60 m,
+  gleiche Oberkante wie die Hebeschiebeanlage. Mauerecke bleibt erhalten;
+  keine rahmenlose Glasecke oder statisch nachgewiesene Ausfuehrung.
+  Nordbadfenster im EG unveraendert 120 x 60 cm mit 180 cm Bruestung;
+  OG-Lichtband 240 x 90 cm mit schlankem Mittelpfosten, nach unten erweitert
+  auf 150 cm Bruestung bei unveraenderter Oberkante von 240 cm.
+  Suedwestliche EG-/OG-Fenster fluchten 60 cm von der Trennwand entfernt
+  uebereinander. Die beiden Fenster von Kind Sued sind je 180 x 150 cm mit
+  90 cm Bruestung; das oestliche schliesst buendig mit der Ostkante der
+  Terrassenverglasung ab. Das Flurfenster ist 90 x 150 cm, der Schrank in Kind
+  Sued steht an der Nordwand. Das Ostfenster von Kind Nord beginnt wie das
+  Kuechenfenster bei z=3,30 m und ist 150 cm breit.
 - Kellerfenster 90 x 75 cm; oestliches Fenster 1,20 m von der suedlichen
   Aussenkante entfernt. Beide Lichtschaechte
   mittig, 130 x 50 cm im Grundriss (aus Zeichnung angenaehert, kein Herstellermass).

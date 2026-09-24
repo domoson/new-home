@@ -4,7 +4,7 @@ export const kitchenPrep: Rect = { x: 4.6, z: 5.54, width: .55, depth: .52 }
 export const kitchenDeviceZones: Rect[] = [
   { x: 3.5, z: 3.13, width: .5, depth: .42 },
   { x: 6.05, z: 2.57, width: .3, depth: .22 },
-  { x: 6.1, z: 3.16, width: .22, depth: .26 },
+  { x: 6.1, z: 4.95, width: .22, depth: .26 },
   { x: 3.5, z: 3.6, width: .5, depth: .5 },
 ]
 
@@ -19,7 +19,7 @@ export function kitchenFurniture(ceiling: number): Furniture[] {
     item('induction', 'hob', 5.18, 5.54, .8, .52, .025, .92),
     item('espresso', 'espresso', 3.52, 3.14, .38, .4, .4, .92),
     item('toaster', 'machine', 6.05, 2.57, .3, .22, .22, .92),
-    item('sodastream', 'machine', 6.1, 3.16, .22, .26, .45, .92),
+    item('sodastream', 'machine', 6.1, 4.95, .22, .26, .45, .92),
     item('cookit', 'machine', 3.5, 3.6, .5, .5, .45, .92),
   ]
 }

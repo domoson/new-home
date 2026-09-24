@@ -16,7 +16,8 @@ describe('Detailkorrekturen der 6,9-m-Variante', () => {
     expect(corner.niche).toEqual({ bottom: .92, height: .6 })
     expect(furnitureVolumes(corner).some(part => part.x < 6.3 && part.x + part.width > 6.3 && part.z < 2.8 && part.z + part.depth > 2.8 && part.bottom < 1.2 && part.bottom + part.height > 1.2)).toBe(false)
     expect(furniture.find(item => item.id === 'toaster')!.x).toBeGreaterThan(6)
-    expect(furniture.find(item => item.id === 'sodastream')!.z).toBeLessThan(furniture.find(item => item.id === 'kitchen-sink')!.z)
+    const sink = furniture.find(item => item.id === 'kitchen-sink')!
+    expect(furniture.find(item => item.id === 'sodastream')!.z).toBeGreaterThan(sink.z + sink.depth)
   })
   it('lässt 35 cm seitlichen und 40 cm südlichen Beinraum unter der Halbinsel', () => {
     const island = makeFloor('EG').furniture.find(item => item.id === 'peninsula')!

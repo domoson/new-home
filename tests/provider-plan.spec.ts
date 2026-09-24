@@ -78,7 +78,7 @@ test('Detailkorrekturen haben echte freie Volumen, Zargen und einen schließende
   expect(result.transoms).toEqual([])
 })
 
-test('Gartenschiebeflügel bleibt geschlossen und geöffnet innerhalb der drei Meter breiten Verglasung', async ({ page }) => {
+test('Gartenschiebeflügel bleibt geschlossen und geöffnet innerhalb der 2,50 Meter breiten Verglasung', async ({ page }) => {
   await page.goto('/')
   const result = await page.evaluate(async () => {
     const THREE = await import('/node_modules/.vite/deps/three.js')
@@ -88,6 +88,8 @@ test('Gartenschiebeflügel bleibt geschlossen und geöffnet innerhalb der drei M
     const door = model.doors.find(door => door.id === 'EG-terrace')
     const south = makeFloor('EG').walls.find(wall => wall.id === 'south')
     const terrace = south.openings.find(opening => opening.id === 'terrace'), fixedOpening = south.openings.find(opening => opening.id === 'garden-fixed')
+    const corner = model.group.getObjectByName('EG-living-corner-fixed-fixed-0')
+    const cornerBefore = corner.matrixWorld.clone()
     const positions = []
     for (const amount of [0, .5, 1]) {
       model.setOpening(door.id, amount)
@@ -95,22 +97,24 @@ test('Gartenschiebeflügel bleibt geschlossen und geöffnet innerhalb der drei M
       positions.push({ min: bounds.min.x, max: bounds.max.x, rotation: door.pivot.rotation.y })
     }
     const fixed = model.group.getObjectByName('EG-garden-fixed-fixed-0')
-    const result = { sliding: door.sliding, width: door.size.x, fixed: !!fixed, positions, apertureStart: south.x + terrace.start, apertureEnd: south.x + fixedOpening.start + fixedOpening.width, innerEast: house.east - construction.exteriorWall }
+    const result = { sliding: door.sliding, width: door.size.x, fixed: !!fixed, cornerFixed: cornerBefore.equals(corner.matrixWorld) && !model.doors.some(door => door.id.includes('living-corner')), cornerTop: new THREE.Box3().setFromObject(corner).max.y, positions, apertureStart: south.x + terrace.start, apertureEnd: south.x + fixedOpening.start + fixedOpening.width, innerEast: house.east - construction.exteriorWall }
     model.dispose()
     return result
   })
   expect(result.sliding).toBe(true)
   expect(result.fixed).toBe(true)
-  expect(result.width).toBe(1.5)
+  expect(result.cornerFixed).toBe(true)
+  expect(result.cornerTop).toBeGreaterThan(2.4)
+  expect(result.width).toBe(1.25)
   for (const bounds of result.positions) {
-    expect(bounds.min).toBeGreaterThanOrEqual(3.09)
-    expect(bounds.max).toBeLessThanOrEqual(6.31)
+    expect(bounds.min).toBeGreaterThanOrEqual(result.apertureStart - .01)
+    expect(bounds.max).toBeLessThanOrEqual(result.apertureEnd + .01)
     expect(bounds.rotation).toBe(0)
   }
-  expect(result.positions[2].min - result.positions[0].min).toBeCloseTo(1.5)
-  expect(result.positions[0].min).toBeCloseTo(3.3)
-  expect(result.positions[2].max).toBeCloseTo(6.3)
-  expect(result.apertureEnd - result.apertureStart).toBeCloseTo(3)
+  expect(result.positions[2].min - result.positions[0].min).toBeCloseTo(1.25)
+  expect(result.positions[0].min).toBeCloseTo(result.apertureStart)
+  expect(result.positions[2].max).toBeCloseTo(result.apertureEnd)
+  expect(result.apertureEnd - result.apertureStart).toBeCloseTo(2.5)
   expect(result.apertureEnd).toBeCloseTo(result.innerEast)
 })
 
@@ -125,6 +129,7 @@ test('Fensterflügel öffnen einzeln nach innen und lassen Unterlichter stehen',
       const id = `${floor}-${opening.id}`, primary = model.doors.find(door => door.id === id), secondary = model.doors.find(door => door.id === `${id}-secondary`)
       if (opening.id.includes('fixed')) { checks.push({ id, fixed: !primary && !secondary }); continue }
       const fixed = model.group.getObjectByName(`${id}-fixed-0`), before = fixed?.matrixWorld.clone()
+      if (id === 'EG-living-east') checks.push({ id, terraceLeaf: !!primary && !secondary && !fixed && primary.size.y > 2.2 && opening.sill === 0 && opening.start === 6.3 && opening.width === .9 })
       for (const door of [primary, secondary].filter(Boolean)) {
         const closed = door.pivot.localToWorld(door.center.clone())
         model.setOpening(door.id, 1)
@@ -135,13 +140,13 @@ test('Fensterflügel öffnen einzeln nach innen und lassen Unterlichter stehen',
       if (opening.windowLayout.columns === 2) checks.push({ id, divided: !!secondary && !!model.group.getObjectByName(`${id}-mullion`) })
       if (opening.windowLayout.lowerFixed) checks.push({ id, lowerFixed: !!fixed && before.equals(fixed.matrixWorld) && !!model.group.getObjectByName(`${id}-transom-0`) })
     }
-    const mirrored = model.doors.find(door => door.id === 'west-EG-kitchen-east-window-secondary')
+    const mirrored = model.doors.find(door => door.id === 'west-EG-kitchen-east-window')
     checks.push({ id: 'west', mirrored: !!mirrored && model.setOpening(mirrored.id, .5) && mirrored.amount === .5 })
     model.dispose()
     return checks
   })
   for (const check of result) {
-    for (const key of ['fixed', 'inward', 'independent', 'divided', 'lowerFixed', 'mirrored']) if (key in check) expect(check[key], `${check.id} ${key}`).toBe(true)
+    for (const key of ['fixed', 'inward', 'independent', 'divided', 'lowerFixed', 'mirrored', 'terraceLeaf']) if (key in check) expect(check[key], `${check.id} ${key}`).toBe(true)
     if ('width' in check) expect(check.width).toBeCloseTo(check.expectedWidth)
   }
 })
@@ -202,7 +207,7 @@ test('Anbieterplaene, Flächenabgleich und bewegtes 3D-Modell', async ({ page },
     await page.getByRole('button', { name: floor, exact: true }).click()
     await expect(page.locator('svg.floor-plan')).toContainText('10,50 m')
     await expect(page.locator('svg.floor-plan')).toContainText('6,90 m')
-    await expect(page.locator('[data-window-mullion]')).toHaveCount(({ KG: 0, EG: 2, OG: 5, DG: 2 } as Record<string, number>)[floor])
+    await expect(page.locator('[data-window-mullion]')).toHaveCount(({ KG: 0, EG: 2, OG: 6, DG: 2 } as Record<string, number>)[floor])
     await expect(page.locator('[data-exterior-masonry]')).toHaveCount(4)
     await expect(page.locator('[data-exterior-masonry="west"] [data-masonry-joint]')).toHaveCount(34)
     expect(await page.locator('[data-masonry-joint]').count()).toBeGreaterThan(40)
