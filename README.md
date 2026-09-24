@@ -65,9 +65,10 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
   105 cm Freiraum zur oestlichen Eingangswand. Grosses Nordfenster dort
   entfernt. Fliesen nur oestlich x=3,30 m bis zum kurzen Wandstueck, mindestens
   1,25 m vor der Badtuerwand; anschliessender Flur mit Holzboden.
-- Zweiteilige 2,50-m-Hebeschiebeanlage mit 1,25 m beweglichem Fluegel und
-  1,25 m Festfeld; ihre rechte Kante endet bei x=6,30 m und laesst ein
-  30-cm-Mauerstueck bis zur inneren Ostwandkante. Sofagruppe 20 cm nach Norden verschoben; 20 cm
+- Zweiteilige 2,80-m-Hebeschiebeanlage bis zur inneren Ostwandkante bei x=6,60 m:
+  1,25 m beweglicher Fluegel und 1,55 m Festfeld, rechts 30 cm erweitert.
+  Festverglasung ueber Eck mit schlankem Kopplungsprofil statt Mauerecke;
+  Tragwerk und Eckanschluss ungeprueft. Sofagruppe 20 cm nach Norden verschoben; 20 cm
   Abstand zur inneren Suedwandkante bei unveraenderten Moebelabmessungen.
 - Haustuer 110 x 252 cm inklusive 3-cm-Rahmen, nach innen oeffnend und
   nordseitig angeschlagen. Daneben 30 cm breites, tuerhohes Festglas-Seitenteil;
@@ -86,12 +87,12 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
   oeffnende Fluegel. Bereits bodentiefe EG-Fenster ohne Querholm; obere Geschosse
   behalten ihre Unterlichter. Oeffnungsbreiten, Fensterabstaende und Bruestungshoehen
   der neuen EG-/OG-/DG-Fenster folgen dem 30-cm-Raster (ausgenommen bestehende
-  Kellerfenster, Eingangsfestfeld und die 2,50 m breite Terrassenanlage mit
-  zwei 1,25-m-Feldern sowie die dazu gleich hohe Eckverglasung). Rasterfugen sind schematisch.
+  Kellerfenster, Eingangsfestfeld und die 2,80 m breite Terrassenanlage mit
+  1,25/1,55-m-Feldern sowie die dazu gleich hohe Eckverglasung). Rasterfugen sind schematisch.
   Teilungshoehe und Profile angenaehert; keine Hersteller-/Absturzsicherungsfreigabe.
   Fensterlagen und -groessen aus der neuen Skizze angenaehert, Gartenzugang als
-  zweiteilige 2,50-m-Hebeschiebeanlage mit 30 cm Mauerabstand zur Ostwandecke:
-  innerer westlicher Fluegel 1,25 m beweglich, aeusseres oestliches Feld 1,25 m fest.
+  zweiteilige 2,80-m-Hebeschiebeanlage mit Eckkopplung ohne Mauerstueck:
+  innerer westlicher Fluegel 1,25 m beweglich, aeusseres oestliches Feld 1,55 m fest.
   Kuechenfenster und Kind-Nord-Ostfenster bei z=3,30 m, jeweils 150 cm breit,
   um 30 cm nach Norden erweitert bei gleicher Suedkante. EG zwischen Insel
   und Esstisch: bodentiefer, einfluegeliger Terrassenzugang 90 x 240 cm bei
@@ -110,9 +111,12 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
   Bueroschrank auf 120 cm gekuerzt, um den Fensterfluegel freizuhalten.
   Festes Unterlicht allein ist kein Absturzsicherungsnachweis;
   Verglasung, Absturzsicherung und Beschlaege fachlich zu planen.
-  EG-Suedostecke wieder mit festem 60 x 252 cm Glasfeld bei z=9,60 m,
-  gleiche Oberkante wie die Hebeschiebeanlage. Mauerecke bleibt erhalten;
-  keine rahmenlose Glasecke oder statisch nachgewiesene Ausfuehrung.
+  EG-Suedostecke fest verglast ab z=9,30 m, 30 cm nach Norden verlaengert:
+  90 cm bis zur inneren Suedwandkante plus 30 cm geoeffnete Wandtiefe.
+  Beide Glasflaechen treffen sich in der Wandmitte am 8-cm-Eckprofil bei
+  x=6,75/z=10,35 m, Oberkante 252 cm wie die Hebeschiebeanlage.
+  Mauerecke unter dem Sturz entfernt; kein nachgewiesenes Tragwerk,
+  keine Herstellerfreigabe. Die unveraenderte Sitzbank steht teilweise vor dem Festglas.
   Nordbadfenster im EG unveraendert 120 x 60 cm mit 180 cm Bruestung;
   OG-Lichtband 240 x 90 cm mit schlankem Mittelpfosten, nach unten erweitert
   auf 150 cm Bruestung bei unveraenderter Oberkante von 240 cm.

@@ -85,7 +85,7 @@ describe('Variante 6,90 x 10,50 m', () => {
     }
   })
 
-  it('trennt Diele und Flur am Bodenwechsel und hält Wand, Sofa und Hebeschiebetür von den Außenkanten frei', () => {
+  it('trennt Diele und Flur und führt die Hebeschiebeanlage bei unverändertem Sofa bis zur Ecke', () => {
     const ground = makeFloor('EG')
     expect(ground.rooms.find(room => room.id === 'entry')).toMatchObject({ name: 'Diele' })
     expect(ground.rooms.find(room => room.id === 'hall')).toMatchObject({ name: 'Flur' })
@@ -93,8 +93,8 @@ describe('Variante 6,90 x 10,50 m', () => {
     expect(extension.footprint?.[0]).toEqual([stair.x + stair.width, stair.end])
     expect(extension.footprint?.at(-1)).toEqual([stair.x + stair.width, stair.end + .2])
     const south = ground.walls.find(wall => wall.id === 'south')!, terrace = south.openings.find(opening => opening.id === 'terrace')!, fixed = south.openings.find(opening => opening.id === 'garden-fixed')!
-    expect(terrace.width + fixed.width).toBe(2.5)
-    expect(fixed.start + fixed.width).toBeCloseTo(house.east - house.west - construction.exteriorWall)
+    expect(terrace.width + fixed.width).toBeCloseTo(2.8)
+    expect(fixed.start + fixed.width).toBeCloseTo(house.east - house.west)
     const sofa = ground.furniture.find(item => item.id === 'sofa')!, chaise = ground.furniture.find(item => item.id === 'sofa-chaise')!
     expect(house.south - sofa.z - sofa.depth).toBeCloseTo(.2)
     expect(sofa.z - chaise.z - chaise.depth).toBeCloseTo(0)

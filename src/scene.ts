@@ -480,15 +480,17 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
         const openHeight = cut && opening.kind !== 'window' ? Math.min(opening.height, Math.max(0, 1.05 - opening.sill)) : opening.height
         if (opening.kind === 'window') {
           if (openHeight <= 0) continue
+          const glazing = opening.cornerGlazing ? { ...opening, width: opening.width + (wall.axis === 'x' ? construction.exteriorWall / 2 : -construction.exteriorWall / 2) } : opening
           const fixedBox = (start: number, bottom: number, width: number, height: number, material: THREE.Material, thickness = .08) => {
             const bounds = wall.axis === 'x' ? rect(east + start, south - thickness / 2, width, thickness) : rect(east - thickness / 2, south + start, thickness, width)
             return addBox(bounds, base + opening.sill + bottom, height, material)
           }
-          for (const start of [0, opening.width - windowFrame]) fixedBox(start, 0, windowFrame, openHeight, frameMaterial)
-          for (const bottom of [0, openHeight - windowFrame]) fixedBox(windowFrame, bottom, opening.width - 2 * windowFrame, windowFrame, frameMaterial)
+          for (const start of [0, glazing.width - windowFrame]) fixedBox(start, 0, windowFrame, openHeight, frameMaterial)
+          for (const bottom of [0, openHeight - windowFrame]) fixedBox(windowFrame, bottom, glazing.width - 2 * windowFrame, windowFrame, frameMaterial)
+          if (opening.cornerGlazing && wall.axis === 'z') addBox(rect(east - .04, south + glazing.width - .04, .08, .08), base + opening.sill, openHeight, frameMaterial).name = `${id}-glazing-corner-coupling`
           const columns = opening.windowLayout?.columns ?? 1, lowerFixed = opening.windowLayout?.lowerFixed
           if (columns === 2) fixedBox(opening.width / 2 - windowJoint / 2, windowFrame, windowJoint, openHeight - 2 * windowFrame, frameMaterial).name = `${id}-${opening.id}-mullion`
-          for (const panel of windowPanels(opening)) {
+          for (const panel of windowPanels(glazing)) {
             if (lowerFixed && panel.fixed) fixedBox(panel.start, lowerFixed - windowJoint / 2, panel.width, windowJoint, frameMaterial).name = `${id}-${opening.id}-transom-${panel.column}`
             if (panel.fixed) {
               fixedBox(panel.start, panel.bottom, panel.width, panel.height, glass, .03).name = `${id}-${opening.id}-fixed-${panel.column}`

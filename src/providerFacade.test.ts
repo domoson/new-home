@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { house, makeFloor, roofHeight, roomArea } from './model'
+import { house, makeFloor, roofHeight, roomArea, wallSolids } from './model'
 import { windowFrame, windowJoint, windowPanels } from './windowLayout'
 
 const onGrid = (value: number) => expect(value / .3).toBeCloseTo(Math.round(value / .3), 6)
@@ -84,9 +84,9 @@ describe('Fassadenfenster', () => {
     expect(upper.walls.find(wall => wall.id === 'east')!.openings.some(opening => opening.id === 'east-south')).toBe(false)
     expect(upperWindow).toMatchObject({ width: 1.8, sill: .9, height: 1.5 })
     expect(terrace.width).toBeCloseTo(1.25)
-    expect(fixed.width).toBeCloseTo(1.25)
+    expect(fixed.width).toBeCloseTo(1.55)
     expect(upperWindow.start - terrace.start).toBeCloseTo(.7)
-    expect(upperWindow.start + upperWindow.width).toBeCloseTo(fixed.start + fixed.width)
+    expect(fixed.start + fixed.width - upperWindow.start - upperWindow.width).toBeCloseTo(.3)
     expect(southUpper.find(opening => opening.id === 'south-west')!.sill).toBe(upperWindow.sill)
     expect(southUpper.find(opening => opening.id === 'south-west')!.height).toBe(upperWindow.height)
     const wardrobe = upper.furniture.find(item => item.id === 'wardrobe-south')!
@@ -100,9 +100,12 @@ describe('Fassadenfenster', () => {
     expect(childWindow).toMatchObject({ start: 3.3, width: 1.5, sill: .9, height: 1.5 })
     expect(kitchenWindow).toMatchObject({ start: childWindow.start, width: childWindow.width })
     const corner = ground.walls.find(wall => wall.id === 'east')!.openings.find(opening => opening.id === 'living-corner-fixed')!
-    expect(corner).toMatchObject({ start: 9.6, width: .6, sill: 0, height: terrace.height })
-    expect(ground.walls.find(wall => wall.id === 'east')!.depth - corner.start - corner.width).toBeCloseTo(.3)
-    expect(corner.start).toBeGreaterThan(ground.furniture.find(item => item.id === 'dining-bench')!.z + ground.furniture.find(item => item.id === 'dining-bench')!.depth)
+    expect(corner).toMatchObject({ start: 9.3, width: 1.2, sill: 0, height: terrace.height, cornerGlazing: true })
+    expect(ground.walls.find(wall => wall.id === 'east')!.depth - corner.start - corner.width).toBeCloseTo(0)
+    expect(house.south - corner.start).toBeCloseTo(.9)
+    expect(fixed.cornerGlazing).toBe(true)
+    const cornerSolids = ground.walls.filter(wall => ['east', 'south'].includes(wall.id)).flatMap(wall => wallSolids(wall, ground.height))
+    expect(cornerSolids.some(solid => solid.bottom < terrace.height && solid.x + solid.width > house.east - .01 && solid.z + solid.depth > house.south - .01)).toBe(false)
     const playWindow = upper.walls.find(wall => wall.id === 'east')!.openings.find(opening => opening.id === 'play-window')!
     expect(playWindow).toMatchObject({ start: 6.3, width: 1.5, sill: .9, height: 1.5 })
     expect(playWindow.width * playWindow.height).toBeCloseTo(2.25)
@@ -131,6 +134,6 @@ describe('Fassadenfenster', () => {
       expect(window.sill + window.height).toBeLessThan(roofHeight(window.start))
       expect(window.sill + window.height).toBeLessThan(roofHeight(window.start + window.width))
     }
-    expect(ground.walls.find(wall => wall.id === 'south')!.width - (southGround.at(-1)!.start + southGround.at(-1)!.width)).toBeCloseTo(.3)
+    expect(ground.walls.find(wall => wall.id === 'south')!.width - (southGround.at(-1)!.start + southGround.at(-1)!.width)).toBeCloseTo(0)
   })
 })

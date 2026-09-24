@@ -78,12 +78,12 @@ test('Detailkorrekturen haben echte freie Volumen, Zargen und einen schließende
   expect(result.transoms).toEqual([])
 })
 
-test('Gartenschiebeflügel bleibt geschlossen und geöffnet innerhalb der 2,50 Meter breiten Verglasung', async ({ page }) => {
+test('Gartenschiebeflügel bleibt innerhalb der 2,80 Meter breiten Verglasung mit Eckkopplung', async ({ page }) => {
   await page.goto('/')
   const result = await page.evaluate(async () => {
     const THREE = await import('/node_modules/.vite/deps/three.js')
     const { buildScene } = await import('/src/scene.ts')
-    const { construction, house, makeFloor } = await import('/src/model.ts')
+    const { house, makeFloor } = await import('/src/model.ts')
     const model = buildScene('EG', false, false, false)
     const door = model.doors.find(door => door.id === 'EG-terrace')
     const south = makeFloor('EG').walls.find(wall => wall.id === 'south')
@@ -97,13 +97,17 @@ test('Gartenschiebeflügel bleibt geschlossen und geöffnet innerhalb der 2,50 M
       positions.push({ min: bounds.min.x, max: bounds.max.x, rotation: door.pivot.rotation.y })
     }
     const fixed = model.group.getObjectByName('EG-garden-fixed-fixed-0')
-    const result = { sliding: door.sliding, width: door.size.x, fixed: !!fixed, cornerFixed: cornerBefore.equals(corner.matrixWorld) && !model.doors.some(door => door.id.includes('living-corner')), cornerTop: new THREE.Box3().setFromObject(corner).max.y, positions, apertureStart: south.x + terrace.start, apertureEnd: south.x + fixedOpening.start + fixedOpening.width, innerEast: house.east - construction.exteriorWall }
+    const coupling = model.group.getObjectByName('EG-glazing-corner-coupling')
+    const couplingBounds = new THREE.Box3().setFromObject(coupling)
+    const eastGlass = new THREE.Box3().setFromObject(corner), southGlass = new THREE.Box3().setFromObject(fixed)
+    const result = { sliding: door.sliding, width: door.size.x, fixed: !!fixed, cornerFixed: cornerBefore.equals(corner.matrixWorld) && !model.doors.some(door => door.id.includes('living-corner')), cornerTop: eastGlass.max.y, coupled: Math.abs(southGlass.max.x - couplingBounds.min.x) < .02 && Math.abs(eastGlass.max.z - couplingBounds.min.z) < .02 && Math.abs(eastGlass.min.x - couplingBounds.min.x) < .05 && Math.abs(southGlass.min.z - couplingBounds.min.z) < .05, positions, apertureStart: south.x + terrace.start, apertureEnd: south.x + fixedOpening.start + fixedOpening.width, innerEast: house.east }
     model.dispose()
     return result
   })
   expect(result.sliding).toBe(true)
   expect(result.fixed).toBe(true)
   expect(result.cornerFixed).toBe(true)
+  expect(result.coupled).toBe(true)
   expect(result.cornerTop).toBeGreaterThan(2.4)
   expect(result.width).toBe(1.25)
   for (const bounds of result.positions) {
@@ -113,8 +117,8 @@ test('Gartenschiebeflügel bleibt geschlossen und geöffnet innerhalb der 2,50 M
   }
   expect(result.positions[2].min - result.positions[0].min).toBeCloseTo(1.25)
   expect(result.positions[0].min).toBeCloseTo(result.apertureStart)
-  expect(result.positions[2].max).toBeCloseTo(result.apertureEnd)
-  expect(result.apertureEnd - result.apertureStart).toBeCloseTo(2.5)
+  expect(result.positions[2].max).toBeCloseTo(result.apertureEnd - .3)
+  expect(result.apertureEnd - result.apertureStart).toBeCloseTo(2.8)
   expect(result.apertureEnd).toBeCloseTo(result.innerEast)
 })
 
