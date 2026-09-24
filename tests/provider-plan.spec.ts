@@ -137,7 +137,7 @@ test('Fensterflügel öffnen einzeln nach innen und lassen Unterlichter stehen',
         const mesh = model.group.getObjectByName(`${id}-fixed-${column}`)
         return { mesh, before: mesh?.matrixWorld.clone() }
       }) : []
-      if (id === 'EG-living-east') checks.push({ id, terraceLeaf: !!primary && !secondary && !fixed && primary.size.y > 2.2 && opening.sill === 0 && opening.start === 6.3 && opening.width === .9 })
+      if (id === 'EG-living-east') checks.push({ id, livingWindow: !!primary && !!secondary && !fixed && primary.size.y > 1 && primary.size.y < 1.2 && opening.sill === 1.2 && opening.height === 1.2 && opening.start === 6.3 && opening.width === 1.5 })
       if (floor === 'DG' && opening.id.startsWith('gable-')) checks.push({ id, atticSplit: opening.sill === 0 && opening.height === 2.1 && opening.windowLayout.lowerFixed === .6 && lowerPanels.length === 2 && !!primary && !!secondary && primary.size.y > 1.3 && primary.size.y < 1.5 && secondary.size.y === primary.size.y })
       for (const door of [primary, secondary].filter(Boolean)) {
         const closed = door.pivot.localToWorld(door.center.clone())
@@ -156,7 +156,7 @@ test('Fensterflügel öffnen einzeln nach innen und lassen Unterlichter stehen',
     return checks
   })
   for (const check of result) {
-    for (const key of ['fixed', 'inward', 'independent', 'divided', 'lowerFixed', 'mirrored', 'terraceLeaf', 'atticSplit', 'stationaryLower']) if (key in check) expect(check[key], `${check.id} ${key}`).toBe(true)
+    for (const key of ['fixed', 'inward', 'independent', 'divided', 'lowerFixed', 'mirrored', 'livingWindow', 'atticSplit', 'stationaryLower']) if (key in check) expect(check[key], `${check.id} ${key}`).toBe(true)
     if ('width' in check) expect(check.width).toBeCloseTo(check.expectedWidth)
   }
 })
@@ -217,7 +217,7 @@ test('Anbieterplaene, Flächenabgleich und bewegtes 3D-Modell', async ({ page },
     await page.getByRole('button', { name: floor, exact: true }).click()
     await expect(page.locator('svg.floor-plan')).toContainText('10,50 m')
     await expect(page.locator('svg.floor-plan')).toContainText('6,90 m')
-    await expect(page.locator('[data-window-mullion]')).toHaveCount(({ KG: 0, EG: 2, OG: 6, DG: 2 } as Record<string, number>)[floor])
+    await expect(page.locator('[data-window-mullion]')).toHaveCount(({ KG: 0, EG: 3, OG: 6, DG: 2 } as Record<string, number>)[floor])
     await expect(page.locator('[data-exterior-masonry]')).toHaveCount(4)
     await expect(page.locator('[data-exterior-masonry="west"] [data-masonry-joint]')).toHaveCount(34)
     expect(await page.locator('[data-masonry-joint]').count()).toBeGreaterThan(40)

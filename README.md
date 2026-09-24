@@ -95,10 +95,10 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
   innerer westlicher Fluegel 1,25 m beweglich, aeusseres oestliches Feld 1,55 m fest.
   Kuechenfenster und Kind-Nord-Ostfenster bei z=3,30 m, jeweils 150 cm breit,
   um 30 cm nach Norden erweitert bei gleicher Suedkante. EG zwischen Insel
-  und Esstisch: bodentiefer, einfluegeliger Terrassenzugang 90 x 240 cm bei
-  z=6,30 m, ohne festes Unterlicht. Suedseitig 30 cm schmaler und insgesamt
-  30 cm nach Norden verschoben. Kueche bewusst unveraendert: Die Insel
-  ueberlappt die Oeffnung noch auf 20 cm Breite; Konflikt vorerst zurueckgestellt.
+  und Esstisch: Fenster statt Terrassentuer, wie ueber der Spuele
+  150 x 120 cm mit 120 cm Bruestung und zwei oeffnenden Fluegeln.
+  Nordkante unveraendert bei z=6,30 m, nach Sueden bis z=7,80 m verbreitert.
+  Kueche unveraendert; das Fenster liegt nun oberhalb der 92 cm hohen Insel.
   Spielzimmerfenster um 30 cm nach Norden auf z=6,30 m verschoben,
   150 x 150 cm mit 90 cm Bruestung; Nordkante fluchtet mit EG und DG.
   Kuechenfenster weiterhin 120 cm hoch bei 120 cm Bruestung. DG-Giebelfenster

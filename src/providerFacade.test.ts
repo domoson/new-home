@@ -5,30 +5,28 @@ import { windowFrame, windowJoint, windowPanels } from './windowLayout'
 const onGrid = (value: number) => expect(value / .3).toBeCloseTo(Math.round(value / .3), 6)
 
 describe('Fassadenfenster', () => {
-  it('keeps the requested east openings and furniture clearance except the deferred peninsula conflict', () => {
+  it('keeps the aligned east openings clear of furniture', () => {
     for (const floorId of ['EG', 'OG', 'DG'] as const) {
       const floor = makeFloor(floorId)
       const windows = floor.walls.find(wall => wall.id === 'east')!.openings.filter(opening => opening.kind === 'window' && !opening.id.includes('fixed'))
       expect(windows.map(opening => opening.start)).toEqual([3.3, 6.3])
-      expect(windows.map(opening => opening.width)).toEqual(floorId === 'EG' ? [1.5, .9] : [1.5, 1.5])
+      expect(windows.map(opening => opening.width)).toEqual([1.5, 1.5])
       for (const opening of windows) {
         expect(opening.sill + opening.height).toBeCloseTo(floorId === 'DG' ? 2.1 : 2.4)
         for (const furniture of floor.furniture.filter(item => item.x + item.width > 6.3 && item.z < opening.start + opening.width && item.z + item.depth > opening.start)) {
-          if (floorId === 'EG' && opening.id === 'living-east' && furniture.id === 'peninsula') {
-            expect(furniture.z + furniture.depth - opening.start).toBeCloseTo(.2)
-            continue
-          }
           expect((furniture.bottom ?? 0) + furniture.height, `${floorId} ${furniture.id}`).toBeLessThan(opening.sill + (opening.windowLayout?.lowerFixed ?? 0))
         }
       }
     }
   })
-  it('makes the east ground opening floor-height without changing the kitchen', () => {
+  it('matches the east living window to the sink window without changing the kitchen', () => {
     const ground = makeFloor('EG')
-    const door = ground.walls.find(wall => wall.id === 'east')!.openings.find(opening => opening.id === 'living-east')!
-    expect(door).toMatchObject({ start: 6.3, width: .9, sill: 0, height: 2.4, windowLayout: { columns: 1 } })
-    expect(door.windowLayout?.lowerFixed).toBeUndefined()
-    expect(door.start + door.width).toBeCloseTo(7.2)
+    const openings = ground.walls.find(wall => wall.id === 'east')!.openings
+    const living = openings.find(opening => opening.id === 'living-east')!
+    const kitchen = openings.find(opening => opening.id === 'kitchen-east-window')!
+    expect(living).toMatchObject({ start: 6.3, width: 1.5, sill: 1.2, height: 1.2, windowLayout: { columns: 2 } })
+    expect(living).toEqual({ ...kitchen, id: living.id, start: 6.3 })
+    expect(living.start + living.width).toBeCloseTo(7.8)
     expect(ground.furniture.find(item => item.id === 'peninsula')).toMatchObject({ x: 4.2, z: 5.5, width: 2.4, depth: 1 })
   })
 
