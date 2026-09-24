@@ -39,7 +39,7 @@ export function furnitureVolumes(item: Furniture): (Rect & { bottom: number; hei
 }
 export const stairRecess = rect(stair.x + stair.turnSize, stair.z + stair.runWidth, stair.width - stair.turnSize, stair.depth - 2 * stair.runWidth)
 export const stairOpeningParts = [rect(stair.x, stair.z, stair.width, stair.depth)]
-export const basementWindow = { width: .9, height: .75, southGap: 1.35 }
+export const basementWindow = { width: .9, height: .75, southGap: 1.2 }
 export const lightWellSize = { width: 1.3, depth: .5 }
 const wellOverhang = (lightWellSize.width - basementWindow.width) / 2
 export const lightWells = [rect(house.width, house.depth - basementWindow.southGap - basementWindow.width - wellOverhang, lightWellSize.depth, lightWellSize.width), rect(house.west + .9 - wellOverhang, -lightWellSize.depth, lightWellSize.width, lightWellSize.depth)]

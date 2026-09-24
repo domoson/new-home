@@ -25,6 +25,6 @@ test('New kitchen has five towers, low counters, clear west access and east dini
   for (const id of ['fridge', 'kitchen-tall']) expect(furniture.find(item => item.id === id)!.height).toBe(floor.height)
   expect(furniture.some(item => item.id === 'kitchen-upper')).toBe(false)
   const window = floor.walls.flatMap(wall => wall.openings).find(opening => opening.id === 'kitchen-east-window')!
-  expect(window).toMatchObject({ start: 3.5, sill: 1.05, width: 1.8 })
+  expect(window).toMatchObject({ start: 3.6, sill: 1.05, width: 1.8 })
   expect(furniture.some(item => item.id === 'pantry-cabinet')).toBe(false)
 })

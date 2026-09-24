@@ -19,13 +19,13 @@ describe('Anbieterentwurf', () => {
     expect(floor.rooms.find(room => room.id === 'hall')!.parts[0].width).toBeCloseTo(divider.x - house.west)
     expect(floor.rooms.find(room => room.id === 'child-north')!.parts[0].x).toBeCloseTo(divider.x + divider.width)
   })
-  it('places the cellar window 1.35 m from the south corner and centers larger light wells', () => {
+  it('places the cellar window 1.20 m from the south corner and centers larger light wells', () => {
     const floor = makeFloor('KG')
     for (const [index, wallId] of ['east', 'north'].entries()) {
       const wall = floor.walls.find(wall => wall.id === wallId)!, window = wall.openings[0], well = lightWells[index]
       expect(window).toMatchObject({ width: .9, height: .75 })
       if (wall.axis === 'z') {
-        expect(house.depth - window.start - window.width).toBeCloseTo(1.35)
+        expect(house.depth - window.start - window.width).toBeCloseTo(1.2)
         expect(well.z + well.depth / 2).toBeCloseTo(wall.z + window.start + window.width / 2)
         expect(well).toMatchObject({ width: .5, depth: 1.3 })
       } else {
@@ -71,9 +71,9 @@ describe('Anbieterentwurf', () => {
     const entranceWall = floor.walls.find(wall => wall.id === 'east')!
     const entrance = entranceWall.openings.find(opening => opening.id === 'entrance')!
     const sidelight = entranceWall.openings.find(opening => opening.id === 'entrance-fixed')!
-    expect(entrance).toMatchObject({ start: .72, width: 1.1, height: 2.52, frame: .03, swing: 'reverse' })
+    expect(entrance).toMatchObject({ start: .6, width: 1.1, height: 2.52, frame: .03, swing: 'reverse' })
     expect(entrance.hinge).toBeUndefined()
-    expect(sidelight).toMatchObject({ start: .37, width: .35, height: 2.52, sill: 0, kind: 'window' })
+    expect(sidelight).toMatchObject({ start: .3, width: .3, height: 2.52, sill: 0, kind: 'window' })
     expect(sidelight.start + sidelight.width).toBeCloseTo(entrance.start)
     expect(floor.walls.find(wall => wall.id === 'north')!.openings.some(opening => opening.id === 'wc-window')).toBe(true)
     const passage = floor.walls.find(wall => wall.id === 'living-diagonal')!

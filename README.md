@@ -36,7 +36,8 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
 - Dach 35 Grad, Innenknie 50 cm; DG-Decke bei 2,77 m, 24 cm stark.
   Die Firstoberkante liegt modelliert bei 10,27 m ueber FFB EG beziehungsweise
   10,47 m ueber dem angenommenen Gelaende und damit 3,50 cm tiefer als zuvor.
-  Aussen-/Trennwaende 30 cm, Innenwaende 12,5 cm und Dachpaket 24 cm sind Annahmen.
+  Aussenwaende und Haustrennwand 30 cm, Innenwaende 12,5 cm und Dachpaket 24 cm sind Annahmen.
+  Das Aussenwandmauerwerk ist im Grundriss schematisch im 30-cm-Raster dargestellt.
   Zentrale Querwaende an Treppe/Flur 20 cm; kein statischer Nachweis.
   DG-Innenwaende enden an der Unterkante der Spitzbodendecke.
 - Treppe auf allen Geschossen 58,5 cm nach Norden verschoben, Kern z=3,50..5,50 m.
@@ -65,12 +66,12 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
   entfernt. Fliesen nur oestlich x=3,30 m bis zum kurzen Wandstueck, mindestens
   1,25 m vor der Badtuerwand; anschliessender Flur mit Holzboden.
 - Zweiteilige 3-m-Hebeschiebeanlage mit 1,50 m beweglichem Fluegel und
-  1,50 m Festfeld endet innen bei x=6,60 m, entsprechend 30 cm vor der rechten
-  aeusseren Gebaeudekante. Sofagruppe 20 cm nach Norden verschoben; 20 cm
+  1,50 m Festfeld; ihre rechte Kante endet bei x=6,30 m und laesst ein
+  30-cm-Mauerstueck bis zur inneren Ostwandkante. Sofagruppe 20 cm nach Norden verschoben; 20 cm
   Abstand zur inneren Suedwandkante bei unveraenderten Moebelabmessungen.
 - Haustuer 110 x 252 cm inklusive 3-cm-Rahmen, nach innen oeffnend und
-  nordseitig angeschlagen. Daneben 35 cm breites, tuerhohes Festglas-Seitenteil;
-  Eingangsanlage insgesamt 145 cm breit. Normale Innentueren einschliesslich
+  nordseitig angeschlagen. Daneben 30 cm breites, tuerhohes Festglas-Seitenteil;
+  Eingangsanlage insgesamt 140 cm breit. Normale Innentueren einschliesslich
   Kellerabschluss: 86 x 211 cm inklusive Zarge, Blatt 80 x 208 cm als Annahme.
   DG-Abstellraum und Hebeschiebeanlage bleiben weitere Sondermasse.
 - OG: Bad 9,28 m2, Kind Nord 16,88 m2, Spielzimmer 7,50 m2, Kind Sued 16,73 m2,
@@ -83,12 +84,14 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
   Sideboard 180 x 45 x 60 cm erhalten; Regal auf 110 cm gekuerzt.
 - Fenster nach Aussenansichten geteilt: breite Fenster zwei einzeln nach innen
   oeffnende Fluegel. Bereits bodentiefe EG-Fenster ohne Querholm; obere Geschosse
-  behalten ihre Unterlichter. Bad-/Kuechenbruestungen und Fensterpositionen unveraendert.
+  behalten ihre Unterlichter. Aussenfensterbreiten und Eckabstaende liegen im 30-cm-Raster;
+  Bad-/Kuechenbruestungen bleiben unveraendert. Rasterfugen sind schematisch.
   Teilungshoehe und Profile angenaehert; keine Hersteller-/Absturzsicherungsfreigabe.
   Fensterlagen und -groessen aus der neuen Skizze angenaehert, Gartenzugang als
-  zweiteilige 3-m-Hebeschiebeanlage: innerer westlicher Fluegel 1,50 m beweglich,
-  aeusseres oestliches Feld 1,50 m fest. Kuechenfenster mit 105 cm Bruestung.
-- Kellerfenster 90 x 75 cm; oestliches Fenster 1,35 m von der suedlichen
+  zweiteilige 3-m-Hebeschiebeanlage mit 30 cm Mauerabstand zur Ostwandecke:
+  innerer westlicher Fluegel 1,50 m beweglich, aeusseres oestliches Feld 1,50 m fest.
+  Kuechenfenster mit 105 cm Bruestung.
+- Kellerfenster 90 x 75 cm; oestliches Fenster 1,20 m von der suedlichen
   Aussenkante entfernt. Beide Lichtschaechte
   mittig, 130 x 50 cm im Grundriss (aus Zeichnung angenaehert, kein Herstellermass).
 - EG-Dusche im Suedwesten des Bades, WC/Waschtisch im Norden; OG entsprechend

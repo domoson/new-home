@@ -9,7 +9,7 @@ describe('Variante 6,90 x 10,50 m', () => {
     const ground = makeFloor('EG'), upper = makeFloor('OG')
     expect(ground.rooms.map(room => room.id)).toEqual(['wc', 'entry', 'hall', 'living'])
     expect(upper.rooms.map(room => room.id).sort()).toEqual(['bath', 'child-north', 'child-south', 'hall', 'playroom', 'store'])
-    expect(ground.walls.find(wall => wall.id === 'east')!.openings.find(opening => opening.id === 'entrance')!.start).toBe(.72)
+    expect(ground.walls.find(wall => wall.id === 'east')!.openings.find(opening => opening.id === 'entrance')!.start).toBe(.6)
     expect(ground.walls.find(wall => wall.id === 'living-diagonal')!.footprint).toHaveLength(4)
     const tall = ground.furniture.filter(item => item.id === 'fridge' || item.id.startsWith('kitchen-tall'))
     expect(tall).toHaveLength(5)
@@ -94,7 +94,7 @@ describe('Variante 6,90 x 10,50 m', () => {
     expect(extension.footprint?.at(-1)).toEqual([stair.x + stair.width, stair.end + .2])
     const south = ground.walls.find(wall => wall.id === 'south')!, terrace = south.openings.find(opening => opening.id === 'terrace')!, fixed = south.openings.find(opening => opening.id === 'garden-fixed')!
     expect(terrace.width + fixed.width).toBe(3)
-    expect(fixed.start + fixed.width).toBeCloseTo(house.width - construction.exteriorWall)
+    expect(fixed.start + fixed.width).toBeCloseTo(house.east - house.west - construction.exteriorWall)
     const sofa = ground.furniture.find(item => item.id === 'sofa')!, chaise = ground.furniture.find(item => item.id === 'sofa-chaise')!
     expect(house.south - sofa.z - sofa.depth).toBeCloseTo(.2)
     expect(sofa.z - chaise.z - chaise.depth).toBeCloseTo(0)

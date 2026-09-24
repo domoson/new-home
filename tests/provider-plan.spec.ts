@@ -95,7 +95,7 @@ test('Gartenschiebeflügel bleibt geschlossen und geöffnet innerhalb der drei M
       positions.push({ min: bounds.min.x, max: bounds.max.x, rotation: door.pivot.rotation.y })
     }
     const fixed = model.group.getObjectByName('EG-garden-fixed-fixed-0')
-    const result = { sliding: door.sliding, width: door.size.x, fixed: !!fixed, positions, apertureStart: terrace.start, apertureEnd: fixedOpening.start + fixedOpening.width, innerEast: house.width - construction.exteriorWall }
+    const result = { sliding: door.sliding, width: door.size.x, fixed: !!fixed, positions, apertureStart: south.x + terrace.start, apertureEnd: south.x + fixedOpening.start + fixedOpening.width, innerEast: house.east - construction.exteriorWall }
     model.dispose()
     return result
   })
@@ -103,13 +103,13 @@ test('Gartenschiebeflügel bleibt geschlossen und geöffnet innerhalb der drei M
   expect(result.fixed).toBe(true)
   expect(result.width).toBe(1.5)
   for (const bounds of result.positions) {
-    expect(bounds.min).toBeGreaterThanOrEqual(3.69)
-    expect(bounds.max).toBeLessThanOrEqual(6.91)
+    expect(bounds.min).toBeGreaterThanOrEqual(3.09)
+    expect(bounds.max).toBeLessThanOrEqual(6.31)
     expect(bounds.rotation).toBe(0)
   }
   expect(result.positions[2].min - result.positions[0].min).toBeCloseTo(1.5)
-  expect(result.positions[0].min).toBeCloseTo(3.9)
-  expect(result.positions[2].max).toBeCloseTo(6.9)
+  expect(result.positions[0].min).toBeCloseTo(3.3)
+  expect(result.positions[2].max).toBeCloseTo(6.3)
   expect(result.apertureEnd - result.apertureStart).toBeCloseTo(3)
   expect(result.apertureEnd).toBeCloseTo(result.innerEast)
 })
@@ -202,11 +202,15 @@ test('Anbieterplaene, Flächenabgleich und bewegtes 3D-Modell', async ({ page },
     await page.getByRole('button', { name: floor, exact: true }).click()
     await expect(page.locator('svg.floor-plan')).toContainText('10,50 m')
     await expect(page.locator('svg.floor-plan')).toContainText('6,90 m')
-    await expect(page.locator('[data-window-mullion]')).toHaveCount(({ KG: 0, EG: 2, OG: 1, DG: 2 } as Record<string, number>)[floor])
+    await expect(page.locator('[data-window-mullion]')).toHaveCount(({ KG: 0, EG: 2, OG: 5, DG: 2 } as Record<string, number>)[floor])
+    await expect(page.locator('[data-exterior-masonry]')).toHaveCount(4)
+    await expect(page.locator('[data-exterior-masonry="west"] [data-masonry-joint]')).toHaveCount(34)
+    expect(await page.locator('[data-masonry-joint]').count()).toBeGreaterThan(40)
+    await expect(page.locator('[data-masonry-legend]')).toContainText('Steinraster 30 cm')
     if (floor === 'KG') {
       const wells = page.locator('[data-light-well]')
       await expect(wells).toHaveCount(2)
-      expect(Number(await wells.nth(0).getAttribute('y'))).toBeCloseTo(8.05)
+      expect(Number(await wells.nth(0).getAttribute('y'))).toBeCloseTo(8.2)
       expect(Number(await wells.nth(0).getAttribute('height'))).toBeCloseTo(1.3)
       expect(Number(await wells.nth(1).getAttribute('width'))).toBeCloseTo(1.3)
     }

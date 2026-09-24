@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import type { PointerEvent } from 'react'
 import { Ruler, Trash2, X } from 'lucide-react'
-import type { Floor, Furniture } from './model'
-import { house, format, heightLine, lightWells, roofWindows, roomArea, stairFor, stairOpeningParts, stairSolids, storeyRise } from './model'
+import type { Floor, Furniture, Wall } from './model'
+import { construction, house, format, heightLine, lightWells, roofWindows, roomArea, stairFor, stairOpeningParts, stairSolids, storeyRise } from './model'
 import { stairWalkingLine } from './winderStair'
 import { contains, distance, metres, planObjects, snapPoint } from './measure'
 import type { Measurable, PlanPoint } from './measure'
@@ -47,6 +47,18 @@ function Furnishing({ item }: { item: Furniture }) {
     {item.id === 'toaster' ? <g stroke="#384441" strokeWidth=".025"><path d={`M.045 .075 H${width - .045} M.045 .145 H${width - .045}`} /></g> : item.id === 'sodastream' ? <g fill="#93b8b8"><rect x=".04" y=".025" width={width - .08} height=".06" /><circle cx={width / 2} cy=".17" r=".045" /></g> : item.id === 'cookit' ? <g fill="#bfcaca"><circle cx=".29" cy={depth / 2} r=".145" /><circle cx=".29" cy={depth / 2} r=".06" fill="#53675f" /><rect x=".025" y=".16" width=".06" height=".18" fill="#53675f" /></g> : kind === 'machine' && <circle cx={width / 2} cy={depth / 2} r={Math.min(width, depth) * .3} fill="#c5d1d1" />}
   </g>
 }
+
+function MasonryJoints({ wall }: { wall: Wall }) {
+  if (wall.footprint || !['west', 'east', 'north', 'south'].includes(wall.id)) return null
+  const length = wall.axis === 'x' ? wall.width : wall.depth
+  const blockCount = Math.round(length / construction.exteriorWall)
+  const joints = Array.from({ length: Math.max(0, blockCount - 1) }, (_, index) => (index + 1) * construction.exteriorWall)
+    .filter(offset => !wall.openings.some(opening => offset >= opening.start - .000001 && offset <= opening.start + opening.width + .000001))
+  return <g data-exterior-masonry={wall.id} pointerEvents="none" fill="none" stroke="#899387" strokeWidth=".012">{joints.map((offset, index) => wall.axis === 'x'
+    ? <line key={index} data-masonry-joint="true" x1={wall.x + offset} y1={wall.z} x2={wall.x + offset} y2={wall.z + wall.depth} />
+    : <line key={index} data-masonry-joint="true" x1={wall.x} y1={wall.z + offset} x2={wall.x + wall.width} y2={wall.z + offset} />)}</g>
+}
+
 export default function FloorPlan({ floor, selected, onSelect, dimensions, furnished, zoom }: { floor: Floor; selected: string; onSelect: (id: string) => void; dimensions: boolean; furnished: boolean; zoom: number }) {
   const [pan, setPan] = useState({ x: 0, y: 0 })
   const [drag, setDrag] = useState<{ x: number; y: number; startX: number; startY: number } | null>(null)
@@ -109,6 +121,7 @@ export default function FloorPlan({ floor, selected, onSelect, dimensions, furni
       const jamb = opening.frame ?? 0, leafWidth = opening.width - 2 * jamb
       return <g key={opening.id} data-opening={opening.id} transform={`translate(${east} ${south}) ${wall.axis === 'z' ? 'rotate(90)' : ''}`}><rect x="0" y={wall.axis === 'z' ? -wall.width : 0} width={opening.width} height={wall.axis === 'z' ? wall.width : wall.depth} fill={opening.kind === 'window' ? '#dbe9e8' : '#f7f8f4'} />{!!jamb && [0, opening.width - jamb].map(start => <rect key={start} data-door-frame="true" x={start} y={wall.axis === 'z' ? -wall.width : 0} width={jamb} height={wall.axis === 'z' ? wall.width : wall.depth} fill="#a89b84" />)}{opening.kind === 'passage' ? null : opening.kind === 'window' ? <path d={`M0 ${wall.axis === 'z' ? -wall.width / 2 : wall.depth / 2} H${opening.width}`} stroke="#739d9e" strokeWidth=".025" /> : opening.id === 'terrace' ? <g data-sliding-pane="inner" stroke="#739d9e" strokeWidth=".025" fill="none"><path d={`M0 .06 H${opening.width * 2} M${opening.width} -.02 v.16 M.2 -.12 h.9 l-.15 -.08 m.15 .08 l-.15 .08`} /></g> : <g stroke="#7b8979" strokeWidth=".018" fill="none" transform={`${opening.hinge === 'end' ? `translate(${opening.width - jamb} 0) scale(-1 1)` : `translate(${jamb} 0)`} ${['store-north', 'parents-entry-south'].includes(wall.id) !== (opening.swing === 'reverse') ? 'scale(1 -1)' : ''}`}><path d={`M0 0 V${-leafWidth} A${leafWidth} ${leafWidth} 0 0 1 ${leafWidth} 0`} /></g>}</g>
     })}</g>)}
+    {floor.walls.map(wall => <MasonryJoints key={wall.id} wall={wall} />)}
     {floor.walls.flatMap(wall => wall.openings.filter(opening => opening.kind === 'window' && opening.windowLayout?.columns === 2).map(opening => {
       const east = wall.x + (wall.axis === 'x' ? opening.start + opening.width / 2 - .03 : wall.width / 2 - .04)
       const south = wall.z + (wall.axis === 'z' ? opening.start + opening.width / 2 - .03 : wall.depth / 2 - .04)
@@ -119,6 +132,7 @@ export default function FloorPlan({ floor, selected, onSelect, dimensions, furni
     {dimensions && floor.rooms.map(room => { const point = labels[room.id] ?? room.spawn; const compact = ['wc', 'entry', 'hall', 'pantry'].includes(room.id); const labelWidth = compact ? .82 : 1.9; return <g key={room.id} data-room-label={room.id} onClick={() => onSelect(room.id)} style={{ cursor: 'pointer' }}><rect x={point[0] - labelWidth / 2} y={point[1] - .25} width={labelWidth} height=".56" rx=".04" fill="#f9fbf6" opacity=".91" /><text x={point[0]} y={point[1] - .04} textAnchor="middle" fontSize={compact ? '.105' : '.145'} fontWeight="500" fill="#334b41">{room.name}</text><text x={point[0]} y={point[1] + .18} textAnchor="middle" fontSize=".155" fontWeight="600" fill="#294c40">{format(roomArea(room, floor.id).floor)} m²</text></g> })}
     {floor.id === 'EG' && entranceOpenings.length > 0 && <g data-entrance-marker="true" transform={`translate(0 ${(entranceStart + entranceEnd) / 2})`} fill="#6a867a"><path d={`M${house.width + .8} 0 H${house.width + .1} l.18 -.1 m-.18 .1 l.18 .1`} stroke="#6a867a" strokeWidth=".025" /><text x={house.width + .45} y="-.25" textAnchor="middle" fontSize=".13">EINGANG</text></g>}
     {dimensions && <g stroke="#8a9588" strokeWidth=".014" fill="#667262"><path d={`M0 -.25 V-.85 M${house.width} -.25 V-.85 M0 -.65 H${house.width} M${house.width + .3} 0 H${house.width + .95} M${house.width + .3} ${house.depth} H${house.width + .95} M${house.width + .7} 0 V${house.depth}`} /><text x={house.width / 2} y="-.79" textAnchor="middle" fontSize=".2" stroke="none">{house.width.toLocaleString('de-DE', { minimumFractionDigits: 2 })} m</text><text x={house.width + 1} y={house.depth / 2} textAnchor="middle" fontSize=".2" stroke="none" transform={`rotate(90 ${house.width + 1} ${house.depth / 2})`}>{house.depth.toLocaleString('de-DE', { minimumFractionDigits: 2 })} m</text><path d={`M${house.west} ${house.depth + .35} v.35 M${house.east} ${house.depth + .35} v.35 M${house.west} ${house.depth + .55} H${house.east}`} /><text x={house.width / 2} y={house.depth + .48} fontSize=".14" textAnchor="middle" stroke="none">{(house.east - house.west).toLocaleString('de-DE', { minimumFractionDigits: 3 })} m lichte Breite</text></g>}
+    <g data-masonry-legend="true" transform={`translate(${house.west} -1.28)`}><rect width={construction.exteriorWall} height={construction.exteriorWall} fill="#424a43" /><line x1={construction.exteriorWall} y1="0" x2={construction.exteriorWall} y2={construction.exteriorWall} stroke="#899387" strokeWidth=".012" /><text x={construction.exteriorWall + .1} y={construction.exteriorWall - .06} fontSize=".22" fill="#667262">Außenwand 30 cm · Steinraster 30 cm</text></g>
     {floor.id === 'KG' && furnished && floor.furniture.some(item => item.id === 'party-sofa') && <g data-party-room="true" pointerEvents="none"><circle cx={partyRoom.x} cy={partyRoom.z} r={partyRoom.radius} fill="#dce8e8" stroke="#697f85" strokeWidth=".025" /></g>}
     {floor.id === 'DG' && roofWindows.map(window => <rect key={window.id} x={window.x} y={window.z} width={window.width} height={window.depth} fill="#d6edee" fillOpacity=".35" stroke="#42858c" strokeDasharray=".06 .04" strokeWidth=".025" pointerEvents="none" />)}
     {hover && <g pointerEvents="none" stroke="#227d80" strokeWidth=".025" fill="none"><rect x={hover.object.x} y={hover.object.z} width={hover.object.width} height={hover.object.depth} /><path d={`M${hover.object.x} ${hover.object.z - .12} h${hover.object.width} M${hover.object.x - .12} ${hover.object.z} v${hover.object.depth}`} /><text x={hover.object.x + hover.object.width / 2} y={hover.object.z - .19} fill="#195c60" stroke="#fff" strokeWidth=".055" paintOrder="stroke" textAnchor="middle" fontSize=".16">{metres(hover.object.width)}</text><text x={hover.object.x - .2} y={hover.object.z + hover.object.depth / 2} fill="#195c60" stroke="#fff" strokeWidth=".055" paintOrder="stroke" textAnchor="end" fontSize=".16">{metres(hover.object.depth)}</text></g>}
