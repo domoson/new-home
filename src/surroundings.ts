@@ -36,11 +36,6 @@ export function createSurroundings() {
     const mesh = new THREE.Mesh(new THREE.BoxGeometry(width, height, depth), finish)
     mesh.position.set(x + width / 2, y + height / 2, z + depth / 2); mesh.castShadow = true; mesh.receiveShadow = true; parent.add(mesh); return mesh
   }
-  const tree = (parent: THREE.Group, x: number, z: number, height: number, radius: number) => {
-    const stem = new THREE.Mesh(new THREE.CylinderGeometry(.09, .16, height * .65, 7), trunk); stem.position.set(x, height * .325, z); stem.castShadow = true; parent.add(stem)
-    const crown = new THREE.Mesh(new THREE.IcosahedronGeometry(1, 2), foliage[Math.floor(random() * foliage.length)])
-    crown.position.set(x, height * .74, z); crown.scale.set(radius, height * .32, radius * .9); crown.rotation.y = random() * Math.PI; crown.castShadow = true; crown.receiveShadow = true; parent.add(crown)
-  }
   const groundShape = new THREE.Shape([new THREE.Vector2(-65, -48), new THREE.Vector2(65, -48), new THREE.Vector2(65, 64), new THREE.Vector2(-65, 64)])
   groundShape.holes.push(new THREE.Path(siteBoundary.map(([x, z]) => new THREE.Vector2(x, z))))
   const groundGeometry = new THREE.ShapeGeometry(groundShape); groundGeometry.rotateX(Math.PI / 2); groundGeometry.translate(0, -.18, 0)
@@ -199,9 +194,8 @@ export function createSurroundings() {
   }
   const gardenVegetationSeed = 793149848
   seed = gardenVegetationSeed
-  const removedGardenTreeRandomSamples = 6
+  const removedGardenTreeRandomSamples = 10
   for (let sample = 0; sample < removedGardenTreeRandomSamples; sample++) random()
-  for (const east of [-5.8, 5.6]) tree(garden, east, (boundaryZ(east, 0) + (east < 0 ? 1.2 : 0)) / 2, 3.6, 1)
   for (const { side, carport, covered, open, bins, binAccess, gardenEdge, angle, origin, point, streetZ, passagePoints, approach } of siteParking) {
     const parking = new THREE.Group(); parking.name = `parking-area-${side}`; parking.position.set(origin.x, 0, origin.z); parking.rotation.y = -angle; garden.add(parking)
     const structure = new THREE.Group(); structure.name = `carport-${side}`; parking.add(structure)

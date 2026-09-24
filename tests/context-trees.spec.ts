@@ -33,7 +33,7 @@ test('Luftbildbestand: Gesamtansicht von oben und aus Sueden', async ({ page }, 
   await page.evaluate(() => window.__neighborCleanup?.())
 })
 
-test('Umgebungsbaeume: gegliederte Kronen, unveraenderter Garten und sichtbares Laub', async ({ page }, testInfo) => {
+test('Umgebungsbaeume: gegliederte Kronen, keine Kugelbaeume im Garten und sichtbares Laub', async ({ page }, testInfo) => {
   await page.goto('/')
   const result = await page.evaluate(async () => {
     const THREE = await import('/node_modules/.vite/deps/three.js')
@@ -83,12 +83,12 @@ test('Umgebungsbaeume: gegliederte Kronen, unveraenderter Garten und sichtbares 
   expect(result.inside).toBe(0)
   expect(result.count).toBe(48)
   expect(result.placementErrors).toEqual([])
-  expect(result.gardenHeights).toEqual([3.4658554939189257, 3.4189951748098224, 2.664, 2.664])
-  expect(result.gardenColors).toEqual(['6c826c', '879879', '72856b', '72856b'])
+  expect(result.gardenHeights).toEqual([])
+  expect(result.gardenColors).toEqual([])
   expect(result.leaves).toBe(result.count)
   expect(result.instances).toBe(true)
   expect(result.framed).toBe(true)
-  expect(result.gardenCrowns).toBe(4)
+  expect(result.gardenCrowns).toBe(0)
   expect(result.gardenHasNewTrees).toBe(false)
   const preview = page.locator('[data-tree-preview]')
   const before = PNG.sync.read(await preview.screenshot({ path: `test-results/${testInfo.project.name}-context-trees.png` }))
