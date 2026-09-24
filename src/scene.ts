@@ -87,6 +87,7 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
     const { x, z, width, depth, height, kind } = item
     const box = (east: number, south: number, wide: number, deep: number, bottom: number, high: number, material: THREE.Material, round = false) => {
       if (kind === 'cabinet' && item.angle === -Math.PI) east = x + width - (east - x) - wide
+      if (kind === 'sofa' && item.angle === -Math.PI / 2) east = x + width - (east - x) - wide
       if (kind === 'espresso' && item.angle === Math.PI) south = z + depth - (south - z) - deep
       if (kind === 'sofa' && item.angle === Math.PI) {
         east = x + width - (east - x) - wide
@@ -127,9 +128,9 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
       for (let index = 0; index < count; index++) box(x + .1 + index * width / count, z + (headSouth ? depth - .45 : .13), width / count - .2, .32, .49, .1, linen, true)
       const head = box(x, z + (headSouth ? depth - .07 : 0), width, .07, .12, .68, timber, true)
       head.name = `bed-head-${item.id}`; head.userData.bedHead = headSouth ? 'south' : 'north'
-    } else if (kind === 'sofa' && item.angle === Math.PI / 2) {
-      surface(.1, .2, timber, true); box(x + width - .18, z, .18, depth, .28, .52, linen, true)
-      for (let index = 0; index < 3; index++) { box(x + .02, z + .1 + index * (depth - .2) / 3, width - .22, (depth - .25) / 3, .3, .18, linen, true); box(x + width - .36, z + .18 + index * .82, .16, .43, .47, .3, index === 1 ? sage : linen, true) }
+    } else if (kind === 'sofa' && Math.abs(item.angle ?? 0) === Math.PI / 2) {
+      surface(.1, .2, timber, true); box(x + width - .18, z, .18, depth, .28, .52, linen, true).name = `sofa-back-${item.id}`
+      for (let index = 0; index < 3; index++) { box(x + .02, z + .1 + index * (depth - .2) / 3, width - .22, (depth - .25) / 3, .3, .18, linen, true); box(x + width - .36, z + .1 + index * (depth - .2) / 3, .16, Math.min(.43, (depth - .25) / 3), .47, .3, index === 1 ? sage : linen, true) }
       box(x, z, width, .1, .3, .25, linen, true)
     } else if (kind === 'sofa') {
       surface(.1, .2, timber, true); box(x, z, width, .18, .28, .52, linen, true).name = `sofa-back-${item.id}`
@@ -175,8 +176,17 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
         }
       }
     } else if (kind === 'table' || kind === 'desk') {
-      surface(height - .06, .06, timber, true)
-      for (const east of [x + .08, x + width - .14]) for (const south of [z + .08, z + depth - .14]) box(east, south, .06, .06, .02, height - .08, timber)
+      const topMaterial = item.color ? mat(item.color) : timber
+      if (item.shape === 'round') {
+        cylinder(x + width / 2, z + depth / 2, height - .06, .06, width / 2, width / 2, topMaterial).name = `table-top-${item.id}`
+        for (let index = 0; index < 4; index++) {
+          const angle = Math.PI / 4 + index * Math.PI / 2
+          box(x + width / 2 + Math.cos(angle) * width * .3 - .03, z + depth / 2 + Math.sin(angle) * depth * .3 - .03, .06, .06, .02, height - .08, timber).name = `table-leg-${item.id}-${index}`
+        }
+      } else {
+        surface(height - .06, .06, topMaterial, true)
+        for (const east of [x + .08, x + width - .14]) for (const south of [z + .08, z + depth - .14]) box(east, south, .06, .06, .02, height - .08, timber)
+      }
       if (kind === 'desk') { box(x + width * .5, z + depth * .3, .06, depth * .4, height + .15, .32, dark); box(x + .18, z + depth * .4, .18, depth * .2, height, .02, teal) }
     } else if (kind === 'bench') {
       surface(.39, .06, timber, true); surface(.45, .06, sage, true)

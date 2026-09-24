@@ -68,8 +68,12 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
 - Zweiteilige 2,80-m-Hebeschiebeanlage bis zur inneren Ostwandkante bei x=6,60 m:
   1,25 m beweglicher Fluegel und 1,55 m Festfeld, rechts 30 cm erweitert.
   Festverglasung ueber Eck mit schlankem Kopplungsprofil statt Mauerecke;
-  Tragwerk und Eckanschluss ungeprueft. Sofagruppe 20 cm nach Norden verschoben; 20 cm
-  Abstand zur inneren Suedwandkante bei unveraenderten Moebelabmessungen.
+  Tragwerk und Eckanschluss ungeprueft. L-Sofa im EG auf 280 x 280 cm Gesamtmass
+  mit 95 cm Sitztiefe vergroessert, Ruecken an Sued- und Westseite. Weiterhin
+  20 cm Abstand zur inneren Suedwandkante. Linkes Regal und Sessel entfernt.
+  Couchtisch rund, Durchmesser 90 cm, Hoehe 35 cm, weisse Platte und vier
+  Holzbeine; Mittelpunkt x=1,95/z=8,50 m. Fernseher direkt an der Treppenwand,
+  Sideboard unveraendert.
 - Haustuer 110 x 252 cm inklusive 3-cm-Rahmen, nach innen oeffnend und
   nordseitig angeschlagen. Daneben 30 cm breites, tuerhohes Festglas-Seitenteil;
   Eingangsanlage insgesamt 140 cm breit. Normale Innentueren einschliesslich

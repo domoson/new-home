@@ -8,6 +8,33 @@ import { createRoomLighting, lightingCircuits } from './lighting'
 import { createIndirectLighting } from './indirectLighting'
 
 describe('Anbieterentwurf', () => {
+  it('places the EG television against the stair wall without moving the sideboard', () => {
+    const floor = makeFloor('EG')
+    const wall = floor.walls.find(wall => wall.id === 'stair-south')!
+    const television = floor.furniture.find(item => item.id === 'tv')!
+    expect(television.z).toBeCloseTo(wall.z + wall.depth)
+    expect(television).toMatchObject({ x: .77, width: 1.3, depth: .08, height: 1.45 })
+    expect(television.x + television.width).toBeLessThan(wall.x + wall.width)
+    expect(floor.furniture.find(item => item.id === 'sideboard')!.z).toBeCloseTo(wall.z + wall.depth + .2)
+  })
+  it('enlarges the EG corner sofa and removes the west bookshelf without overlapping nearby furniture', () => {
+    const floor = makeFloor('EG')
+    const sofa = floor.furniture.find(item => item.id === 'sofa')!
+    const returnSeat = floor.furniture.find(item => item.id === 'sofa-chaise')!
+    expect(floor.furniture.some(item => item.id === 'bookshelf')).toBe(false)
+    expect(sofa).toMatchObject({ x: .4, z: 9.05, width: 2.8, depth: .95, angle: Math.PI })
+    expect(returnSeat).toMatchObject({ kind: 'sofa', x: .4, z: 7.2, width: .95, depth: 1.85, angle: -Math.PI / 2 })
+    expect(returnSeat.z + returnSeat.depth).toBeCloseTo(sofa.z)
+    expect(sofa.z + sofa.depth - returnSeat.z).toBeCloseTo(2.8)
+    expect(house.south - sofa.z - sofa.depth).toBeCloseTo(.2)
+    expect(floor.furniture.find(item => item.id === 'coffee')).toMatchObject({ x: 1.5, z: 8.05, width: .9, depth: .9, height: .35, shape: 'round', color: '#ffffff' })
+    expect(floor.furniture.some(item => item.id === 'lounge-chair')).toBe(false)
+    for (const seat of [sofa, returnSeat]) for (const other of floor.furniture.filter(item => item !== seat)) {
+      const overlap = Math.min(seat.x + seat.width, other.x + other.width) - Math.max(seat.x, other.x) > .001
+        && Math.min(seat.z + seat.depth, other.z + other.depth) - Math.max(seat.z, other.z) > .001
+      expect(overlap, `${seat.id}/${other.id}`).toBe(false)
+    }
+  })
   it('removes pantry storage and keeps the cellar divider clear of both door openings', () => {
     expect(makeFloor('EG').furniture.filter(item => item.id.startsWith('pantry-'))).toEqual([])
     const floor = makeFloor('KG'), divider = floor.walls.find(wall => wall.id === 'east-divider')!

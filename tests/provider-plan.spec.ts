@@ -161,6 +161,46 @@ test('Fensterflügel öffnen einzeln nach innen und lassen Unterlichter stehen',
   }
 })
 
+test('EG Ecksofa mit rundem weissem Couchtisch ohne Sessel und linkes Regal', async ({ page }) => {
+  await page.goto('/')
+  const result = await page.evaluate(async () => {
+    const THREE = await import('/node_modules/.vite/deps/three.js')
+    const { buildScene } = await import('/src/scene.ts')
+    const model = buildScene('EG', false, false, true)
+    const sofa = new THREE.Box3(), returnSeat = new THREE.Box3()
+    let shelf = false
+    model.group.traverse(object => {
+      if (object.userData.furniture === 'sofa') sofa.union(new THREE.Box3().setFromObject(object))
+      if (object.userData.furniture === 'sofa-chaise') returnSeat.union(new THREE.Box3().setFromObject(object))
+      if (object.userData.furniture === 'bookshelf') shelf = true
+    })
+    const back = new THREE.Box3().setFromObject(model.group.getObjectByName('sofa-back-sofa-chaise'))
+    const top = model.group.getObjectByName('table-top-coffee')
+    const legs = [0, 1, 2, 3].map(index => model.group.getObjectByName(`table-leg-coffee-${index}`))
+    let chair = false
+    model.group.traverse(object => { if (object.userData.furniture === 'lounge-chair') chair = true })
+    const result = { shelf, chair, roundTop: top.geometry.type === 'CylinderGeometry', radius: top.geometry.parameters.radiusTop, topColor: top.material.color.getHexString(), woodenLegs: !top.material.map && legs.every(leg => !!leg && leg.material !== top.material && !!leg.material.map), width: sofa.max.x - sofa.min.x, depth: sofa.max.z - returnSeat.min.z, backWest: back.min.x, backEast: back.max.x, joint: sofa.min.z - returnSeat.max.z }
+    model.dispose()
+    return result
+  })
+  expect(result.shelf).toBe(false)
+  expect(result.chair).toBe(false)
+  expect(result.roundTop).toBe(true)
+  expect(result.radius).toBe(.45)
+  expect(result.topColor).toBe('ffffff')
+  expect(result.woodenLegs).toBe(true)
+  expect(result.width).toBeCloseTo(2.8)
+  expect(result.depth).toBeCloseTo(2.8)
+  expect(result.backWest).toBeCloseTo(.4)
+  expect(result.backEast).toBeCloseTo(.58)
+  expect(result.joint).toBeCloseTo(0)
+  await expect(page.locator('[data-furniture="bookshelf"]')).toHaveCount(0)
+  await expect(page.locator('[data-furniture="lounge-chair"]')).toHaveCount(0)
+  await expect(page.locator('circle[data-round-table="coffee"]')).toHaveAttribute('r', '0.45')
+  await expect(page.locator('[data-furniture="coffee"]')).toHaveAttribute('fill', '#ffffff')
+  await expect(page.locator('[data-furniture-part="sofa-chaise"]')).toHaveAttribute('transform', /rotate\(-90\)/)
+})
+
 test('Möbelfronten und Bettkopfteile haben getrennte Flächen', async ({ page }) => {
   await page.goto('/')
   const gaps = await page.evaluate(async () => {
