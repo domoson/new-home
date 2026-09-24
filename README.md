@@ -45,9 +45,9 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
   Steigungen plus Kollisionsabstand, keine Aenderung der modellierten Stufen.
 - EG: Gaestebad nordwestlich, Eingang nordoestlich, deckenhoher Putzschrank neben Dusche.
   Geflieste Diele direkt an der Haustuer 6,67 m2; Flur ab vorhandenem
-  Bodenwechsel mit Holzboden 6,18 m2. Wand suedlich der Kellertuer bis zur
-  schraegen Trennung verlaengert.
-  Kueche oestlich der Treppe, schraeger offener Uebergang zum Wohnen, Halbinsel
+  Bodenwechsel mit Holzboden 5,21 m2. Keine schraege Trennung zum Wohnen;
+  kurzer gerader Wandstummel suedlich der Treppe bis x=2,65 m.
+  Kueche oestlich der Treppe, offener rechtwinkliger Uebergang zum Wohnen, Halbinsel
   nach Sueden. Essplatz im Suedosten, Wohnecke im Suedwesten.
 - Fuenf H-Hochschraenke je 63 cm breit/60 cm tief, deckenhoch 277 cm.
   Backofen im dritten, Kuehlgeraet im vierten Modul. Arbeitszeilen 92 cm hoch

@@ -218,6 +218,7 @@ test('Anbieterplaene, Flächenabgleich und bewegtes 3D-Modell', async ({ page },
     await expect(page.locator('svg.floor-plan')).toContainText('10,50 m')
     await expect(page.locator('svg.floor-plan')).toContainText('6,90 m')
     await expect(page.locator('[data-window-mullion]')).toHaveCount(({ KG: 0, EG: 3, OG: 6, DG: 2 } as Record<string, number>)[floor])
+    if (floor === 'EG') await expect(page.locator('[data-angled-wall]')).toHaveCount(0)
     await expect(page.locator('[data-exterior-masonry]')).toHaveCount(4)
     await expect(page.locator('[data-exterior-masonry="west"] [data-masonry-joint]')).toHaveCount(34)
     expect(await page.locator('[data-masonry-joint]').count()).toBeGreaterThan(40)

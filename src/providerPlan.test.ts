@@ -64,7 +64,7 @@ describe('Anbieterentwurf', () => {
       }
     }
   })
-  it('places the guest bath northwest, entrance northeast and keeps the diagonal passage open', () => {
+  it('places the guest bath northwest and keeps the kitchen transition open without diagonal walls', () => {
     const floor = makeFloor('EG'), bathroom = floor.walls.find(wall => wall.id === 'wc-east')!
     expect(bathroom.x).toBe(2.15)
     expect(bathroom.z + bathroom.openings[0].start).toBeCloseTo(.9)
@@ -76,9 +76,17 @@ describe('Anbieterentwurf', () => {
     expect(sidelight).toMatchObject({ start: .3, width: .3, height: 2.52, sill: 0, kind: 'window' })
     expect(sidelight.start + sidelight.width).toBeCloseTo(entrance.start)
     expect(floor.walls.find(wall => wall.id === 'north')!.openings.some(opening => opening.id === 'wc-window')).toBe(true)
-    const passage = floor.walls.find(wall => wall.id === 'living-diagonal')!
-    expect(passage.footprint).toHaveLength(4)
-    expect(wallSolids(passage, floor.height)).toEqual([])
+    expect(floor.walls.some(wall => wall.id === 'living-diagonal')).toBe(false)
+    expect(floor.walls.every(wall => !wall.footprint)).toBe(true)
+    expect(floor.rooms.every(room => room.parts.every(part => !part.footprint))).toBe(true)
+    const extension = floor.walls.find(wall => wall.id === 'stair-south-extension')!
+    expect(extension.x).toBeCloseTo(winderCore.x + winderCore.width)
+    expect(extension.x + extension.width).toBeCloseTo(2.65)
+    expect(extension.depth).toBe(.2)
+    expect(floor.rooms.find(room => room.id === 'hall')!.parts.every(part => part.z + part.depth <= 4.3)).toBe(true)
+    expect(roomArea(floor.rooms.find(room => room.id === 'hall')!, 'EG').floor).toBeCloseTo(5.209375)
+    expect(roomArea(floor.rooms.find(room => room.id === 'living')!, 'EG').floor).toBeCloseTo(40.07625)
+    expect(floor.walls.find(wall => wall.id === 'kitchen-west')).toMatchObject({ x: 3.3, z: 1.7, depth: 2.6 })
     expect(floor.furniture.find(item => item.id === 'dining')).toMatchObject({ x: 5.2, z: 7.75, width: .9, depth: 1.8 })
   })
   it('gives the upper hall one metre clear width and fully separates the south rooms', () => {

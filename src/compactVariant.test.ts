@@ -10,7 +10,7 @@ describe('Variante 6,90 x 10,50 m', () => {
     expect(ground.rooms.map(room => room.id)).toEqual(['wc', 'entry', 'hall', 'living'])
     expect(upper.rooms.map(room => room.id).sort()).toEqual(['bath', 'child-north', 'child-south', 'hall', 'playroom', 'store'])
     expect(ground.walls.find(wall => wall.id === 'east')!.openings.find(opening => opening.id === 'entrance')!.start).toBe(.6)
-    expect(ground.walls.find(wall => wall.id === 'living-diagonal')!.footprint).toHaveLength(4)
+    expect(ground.walls.some(wall => wall.id === 'living-diagonal')).toBe(false)
     const tall = ground.furniture.filter(item => item.id === 'fridge' || item.id.startsWith('kitchen-tall'))
     expect(tall).toHaveLength(5)
     for (const [index, item] of tall.entries()) expect(item).toMatchObject({ x: 3.45 + index * .63, z: 2.5, width: .63, depth: .6, height: ground.height, angle: 0 })
@@ -18,7 +18,7 @@ describe('Variante 6,90 x 10,50 m', () => {
     for (const item of ground.furniture.filter(item => item.kind === 'counter')) expect(item.height).toBe(.92)
     const expectedAreas: Record<string, Record<string, number>> = {
       KG: { bath: 18.9, 'child-north': 5.7, 'child-south': 28.35, hall: 6.65 },
-      EG: { wc: 4.13325, entry: 6.6675, hall: 6.1813392857, living: 38.885 },
+      EG: { wc: 4.13325, entry: 6.6675, hall: 5.209375, living: 40.07625 },
       OG: { bath: 9.105, 'child-north': 16.335, playroom: 7.26, 'child-south': 15.9075, hall: 3.796875, store: 2.09 },
       DG: { office: 14.529, hall: 2.2, store: 6.14, bedroom: 19.7072523585 },
     }
@@ -90,8 +90,9 @@ describe('Variante 6,90 x 10,50 m', () => {
     expect(ground.rooms.find(room => room.id === 'entry')).toMatchObject({ name: 'Diele' })
     expect(ground.rooms.find(room => room.id === 'hall')).toMatchObject({ name: 'Flur' })
     const extension = ground.walls.find(wall => wall.id === 'stair-south-extension')!
-    expect(extension.footprint?.[0]).toEqual([stair.x + stair.width, stair.end])
-    expect(extension.footprint?.at(-1)).toEqual([stair.x + stair.width, stair.end + .2])
+    expect(extension.footprint).toBeUndefined()
+    expect(extension).toMatchObject({ x: stair.x + stair.width, z: stair.end, depth: .2 })
+    expect(extension.x + extension.width).toBeCloseTo(2.65)
     const south = ground.walls.find(wall => wall.id === 'south')!, terrace = south.openings.find(opening => opening.id === 'terrace')!, fixed = south.openings.find(opening => opening.id === 'garden-fixed')!
     expect(terrace.width + fixed.width).toBeCloseTo(2.8)
     expect(fixed.start + fixed.width).toBeCloseTo(house.east - house.west)
