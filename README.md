@@ -90,7 +90,7 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
 - Neue Fensterordnung: breite Fenster ab 150 cm mit durchgehendem Festfeld
   und einem nominell 60 cm breiten Lueftungsbereich (bewegliches Blatt nach
   Rahmen/Fugen etwa 51 cm breit). Nur unter dessen Fluegel liegt bei bodentiefen
-  Fenstern ein festes Unterlicht: OG-Ost und EG-Suedwest 90 cm, DG 60 cm.
+  Fenstern ein festes Unterlicht: EG-Suedwest 90 cm, DG 60 cm.
   Das grosse Festfeld bleibt ohne Querholm. Oeffnungsbreiten, Fensterabstaende und Bruestungshoehen
   der neuen EG-/OG-/DG-Fenster folgen dem 30-cm-Raster (ausgenommen bestehende
   Kellerfenster, Eingangsfestfeld und die 2,80 m breite Terrassenanlage mit
@@ -104,8 +104,11 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
   Oeffnungen und Teilungen sind symmetrisch zum First bei z=5,25 m.
   Die schmalen Fluegel sitzen jeweils an der aeusseren Seite des Fensterpaars.
   EG ueber Spuele und Insel weiterhin 150 x 120 cm mit 120 cm Bruestung;
-  Kueche und Moebel unveraendert. OG-Ostfenster jetzt bodentief 150 x 240 cm,
-  Oberkante weiterhin 240 cm. Das Spielzimmerregal steht vor dem Festfeld.
+  Kueche unveraendert. OG-Ostfenster 150 x 150 cm mit 90 cm Bruestung,
+  ohne Unterlicht: gleiche Hoehe und Bruestung wie die OG-Suedfenster,
+  aber 150 statt 180 cm breit fuer die durchgehenden Ostachsen.
+  Oberkante weiterhin 240 cm.
+  Das Spielzimmerregal steht vor dem Festfeld.
   DG-Giebelfenster weiterhin bodentief 150 x 210 cm, ein oeffnender oberer
   Fluegel je Fenster mit festem Unterlicht bei 60 cm. Oberkante bleibt 210 cm.
   DG-Buerofenster 60 cm nach Sueden verschoben, Trennwand zum Schlafzimmer
@@ -128,14 +131,32 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
   90 cm Bruestung; das oestliche endet 30 cm vor der Ostkante der
   Terrassenverglasung. Das Flurfenster ist quadratisch 90 x 90 cm mit
   150 cm Bruestung, der Schrank in Kind
-  Sued steht an der Nordwand. Das Ostfenster von Kind Nord beginnt wie das
-  Kuechenfenster bei z=3,30 m und ist 150 cm breit.
+  Sued steht an der Nordwand.
   Beide Haushaelften starten mit warmgrauen Rahmen und einer zusammenhaengenden
   Holzfassung um Haustuer und Seitenteil (20 cm seitlich, 18 cm ueber dem Sturz).
   Verglasung bleibt in der Wandmitte zurueckgesetzt. Kein Treppenlichtband in
-  der Haustrennwand; keine Raffstorekaesten konstruiert. Schmale Lueftungsfluegel
+  der Haustrennwand. Schmale Lueftungsfluegel
   sind kein Nachweis eines Rettungsfensters. Rettungswege, Tageslicht,
   Absturzsicherung, Beschattung und Waermebruecken benoetigen Fachplanung.
+- Raffstores als geometrischer Vorentwurf: verdeckte Kaesten 24 cm hoch und
+  16 cm tief in echten Aussparungen des aeusseren Sturzbereichs; putzgleiche
+  Fronten mit unterer Revisions-/Austrittsfuge, 25-mm-Fuehrungen und profilierte
+  80-mm-Lamellen in Rahmenfarbe. EG/OG/DG, ausgenommen Eingang und Keller.
+  Ein Suedbehang ueber Schiebefluegel und Festfeld, separater Ostbehang an der
+  Glasecke mit gemeinsamer Eckfuehrung. Grundriss: Kaesten gestrichelt oberhalb.
+  Im Szenenmenue Absenkung 0-100 % und Lamellenwinkel 0-75 Grad fuer beide
+  Haeuser; standardmaessig hochgefahren. Mechanische Visualisierung, keine
+  beweglichen Behang-Kollisionskoerper im Rundgang und keine Motor-/Windautomatik.
+  Verbleibender Wandquerschnitt, Sturztragwerk, Daemmung, Befestigung, Paketmass,
+  Revisionszugang und Rettungswege sind herstellerseitig/fachlich nachzuweisen.
+- OG: Spielzimmer-Suedwand 20 cm nach Norden auf z=8,025 m; Kind Sued hat
+  rechts unten 2,05 m lichte Nord-Sued-Raumtiefe (Schrank steht innerhalb davon).
+  Spielzimmer-Nordwand und Schrank von Kind Nord zusaetzlich 15 cm nach Norden,
+  damit das Ostfenster exakt ueber dem EG-Fenster sitzt und nicht die
+  Raumtrennwand schneidet. Spielzimmer 7,10875 m2; Tisch und Stuhl 20 cm nach Norden; Suedschrank folgt
+  der Wand. Abstellraum genau 2,00 m2, Wand zu Kind Sued nur 12,5 cm statt
+  20 cm, Kinderzimmertuer-Anschluss buendig. Regal passend gekuerzt;
+  Tueren und Zugaenge bleiben nutzbar. Tragende Funktion der Wand ungeprueft.
 - Kellerfenster 90 x 75 cm; oestliches Fenster 1,20 m von der suedlichen
   Aussenkante entfernt. Beide Lichtschaechte
   mittig, 130 x 50 cm im Grundriss (aus Zeichnung angenaehert, kein Herstellermass).

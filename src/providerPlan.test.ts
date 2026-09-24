@@ -120,9 +120,26 @@ describe('Anbieterentwurf', () => {
     const floor = makeFloor('OG')
     expect(floor.rooms.find(room => room.id === 'hall')!.parts[0].width).toBeCloseTo(1.125)
     const divider = floor.walls.find(wall => wall.id === 'east-divider')!
-    expect(divider.z + divider.depth).toBeCloseTo(8.35)
+    expect(divider.z + divider.depth).toBeCloseTo(8.15)
     const southWall = wallSolids(divider, floor.height).find(solid => solid.bottom === 0 && solid.z <= 8 && solid.z + solid.depth >= 8)!
-    expect(southWall.z + southWall.depth).toBeCloseTo(8.35)
+    expect(southWall.z + southWall.depth).toBeCloseTo(8.15)
+  })
+  it('gives Kind Sued at least two metres depth in the southeast and a two-square-metre store', () => {
+    const floor = makeFloor('OG')
+    const bedroom = floor.rooms.find(room => room.id === 'child-south')!
+    const corner = bedroom.parts.find(part => Math.abs(part.x + part.width - house.east) < .001)!
+    expect(corner.z).toBeCloseTo(8.15)
+    expect(corner.depth).toBeCloseTo(2.05)
+    expect(corner.z + corner.depth).toBeCloseTo(house.south)
+    expect(roomArea(floor.rooms.find(room => room.id === 'playroom')!, 'OG').floor).toBeCloseTo(7.10875)
+    expect(floor.walls.find(wall => wall.id === 'children-divider')!.z).toBeCloseTo(5.55)
+    expect(floor.furniture.find(item => item.id === 'wardrobe-north')!.z).toBeCloseTo(4.9)
+    expect(roomArea(floor.rooms.find(room => room.id === 'store')!, 'OG').floor).toBeCloseTo(2)
+    const storageWall = floor.walls.find(wall => wall.id === 'store-south')!
+    expect(storageWall.depth).toBe(.125)
+    const bedroomWall = floor.walls.find(wall => wall.id === 'bedroom-north')!
+    expect(storageWall.z + storageWall.depth).toBeCloseTo(bedroomWall.z + bedroomWall.depth)
+    expect(floor.furniture.find(item => item.id === 'wardrobe-south')!.z).toBeCloseTo(corner.z)
   })
   it('arranges the EG shower southwest and concealed WC and basin against the north service wall', () => {
     const floor = makeFloor('EG'), service = floor.walls.find(wall => wall.id === 'wc-installation-north')!

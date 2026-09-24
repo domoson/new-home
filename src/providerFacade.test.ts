@@ -99,8 +99,9 @@ describe('Fassadenfenster', () => {
     expect(groundNorth.find(opening => opening.id === 'hall-window')).toMatchObject({ start: 2.1, width: .9, sill: 1.5, height: .9 })
     const kitchenWindow = ground.walls.find(wall => wall.id === 'east')!.openings.find(opening => opening.id === 'kitchen-east-window')!
     const childWindow = upper.walls.find(wall => wall.id === 'east')!.openings.find(opening => opening.id === 'east-north')!
-    expect(childWindow).toMatchObject({ start: 3.3, width: 1.5, sill: 0, height: 2.4, windowLayout: { lowerFixed: .9 } })
-    expect(kitchenWindow).toMatchObject({ start: childWindow.start, width: childWindow.width })
+    expect(childWindow).toMatchObject({ start: 3.3, width: 1.5, sill: upperWindow.sill, height: upperWindow.height })
+    expect(childWindow.windowLayout?.lowerFixed).toBeUndefined()
+    expect(kitchenWindow).toMatchObject({ start: 3.3, width: 1.5 })
     const corner = ground.walls.find(wall => wall.id === 'east')!.openings.find(opening => opening.id === 'living-corner-fixed')!
     expect(corner).toMatchObject({ start: 9.3, width: 1.2, sill: 0, height: terrace.height, cornerGlazing: true })
     expect(ground.walls.find(wall => wall.id === 'east')!.depth - corner.start - corner.width).toBeCloseTo(0)
@@ -109,8 +110,10 @@ describe('Fassadenfenster', () => {
     const cornerSolids = ground.walls.filter(wall => ['east', 'south'].includes(wall.id)).flatMap(wall => wallSolids(wall, ground.height))
     expect(cornerSolids.some(solid => solid.bottom < terrace.height && solid.x + solid.width > house.east - .01 && solid.z + solid.depth > house.south - .01)).toBe(false)
     const playWindow = upper.walls.find(wall => wall.id === 'east')!.openings.find(opening => opening.id === 'play-window')!
-    expect(playWindow).toMatchObject({ start: 5.7, width: 1.5, sill: 0, height: 2.4, windowLayout: { lowerFixed: .9 } })
-    expect(playWindow.width * playWindow.height).toBeCloseTo(3.6)
+    expect(playWindow).toMatchObject({ start: 5.7, width: 1.5, sill: upperWindow.sill, height: upperWindow.height })
+    expect(playWindow.windowLayout?.lowerFixed).toBeUndefined()
+    expect(playWindow.width * playWindow.height).toBeCloseTo(2.25)
+    expect(playWindow.start).toBeGreaterThan(upper.walls.find(wall => wall.id === 'children-divider')!.z + .125)
     expect(playWindow.start + playWindow.width).toBeLessThan(upper.walls.find(wall => wall.id === 'playroom-south')!.z)
     expect(childWindow.start + childWindow.width).toBeLessThan(upper.furniture.find(item => item.id === 'wardrobe-north')!.z)
     expect(upperNorth.find(opening => opening.id === 'bath-window')).toMatchObject({ start: .3, width: 2.4, sill: 1.5, height: .9, windowLayout: { columns: 2 } })

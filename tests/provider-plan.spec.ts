@@ -1,6 +1,99 @@
 import { expect, test } from '@playwright/test'
 import { PNG } from 'pngjs'
 
+test('Raffstores fahren vor der Verglasung und die OG-Raumrevision bleibt bedienbar', async ({ page }, testInfo) => {
+  const errors: string[] = []
+  page.on('pageerror', error => errors.push(error.message))
+  await page.goto('/')
+  await page.getByRole('button', { name: 'OG', exact: true }).click()
+  await expect(page.locator('[data-raffstore]')).toHaveCount(6)
+  await page.screenshot({ path: `test-results/${testInfo.project.name}-raffstore-og-plan.png` })
+  const geometry = await page.evaluate(async () => {
+    const THREE = await import('/node_modules/.vite/deps/three.js')
+    const { buildScene } = await import('/src/scene.ts')
+    const { makeFloor, elevations, roomArea } = await import('/src/model.ts')
+    const { raffstores } = await import('/src/raffstore.ts')
+    const { initializePhysics, createWalker } = await import('/src/walk.ts')
+    const model = buildScene('OG', true, true, true)
+    const groups = []
+    model.group.traverse(object => { if (object.userData.raffstore) groups.push(object) })
+    model.setRaffstores(1, 75)
+    const bounds = (name: string) => new THREE.Box3().setFromObject(model.group.getObjectByName(name))
+    const east = bounds('EG-living-corner-fixed-raffstore-lamellas')
+    const south = bounds('EG-terrace-raffstore-lamellas')
+    const curtainStates = groups.map(group => ({ extension: group.userData.extension, tilt: group.userData.tilt }))
+    const raised = []
+    model.setRaffstores(0, 30)
+    for (const id of ['EG', 'OG', 'DG']) for (const blind of raffstores(makeFloor(id))) {
+      const packet = bounds(`${blind.id}-raffstore-lamellas`)
+      raised.push(packet.min.y >= elevations[id] + blind.box.bottom && packet.max.y < elevations[id] + blind.box.bottom + blind.box.height)
+    }
+    await initializePhysics()
+    for (const door of model.doors) model.setOpening(door.id, 1)
+    const camera = new THREE.PerspectiveCamera()
+    const walker = createWalker(model, camera, new THREE.Vector3(2.85, elevations.OG, 6.2))
+    const route = (points: number[][]) => {
+      walker.teleport(new THREE.Vector3(points[0][0], elevations.OG, points[0][1]))
+      for (const [east, south] of points.slice(1)) {
+        for (let step = 0; step < 350 && Math.hypot(walker.position().x - east, walker.position().z - south) > .07; step++) {
+          camera.lookAt(east, camera.position.y, south); walker.keys.add('KeyW'); walker.tick(); walker.keys.clear()
+        }
+        if (Math.hypot(walker.position().x - east, walker.position().z - south) > .1) return false
+      }
+      return true
+    }
+    const storageRoute = route([[2.85, 6.2], [1.25, 6.2]])
+    const bedroomRoute = route([[2.85, 6.2], [2.85, 8], [3.16, 8], [3.16, 8.48], [3.95, 8.48], [3.95, 9.25], [5.5, 9.25]])
+    const upper = makeFloor('OG')
+    const areas = Object.fromEntries(upper.rooms.map(room => [room.id, roomArea(room, 'OG').floor]))
+    walker.dispose(); model.dispose()
+    return { count: groups.length, curtainStates, cornerClear: !east.intersectsBox(south), raised, storageRoute, bedroomRoute, areas }
+  })
+  expect(geometry.count).toBe(30)
+  expect(geometry.curtainStates.every(state => state.extension === 1 && state.tilt === 75)).toBe(true)
+  expect(geometry.cornerClear).toBe(true)
+  expect(geometry.raised.every(Boolean)).toBe(true)
+  expect(geometry.storageRoute).toBe(true)
+  expect(geometry.bedroomRoute).toBe(true)
+  expect(geometry.areas.store).toBeCloseTo(2)
+  expect(geometry.areas.playroom).toBeCloseTo(7.10875)
+  await page.getByRole('button', { name: '3D', exact: true }).click()
+  await page.getByRole('button', { name: 'Dach', exact: true }).click()
+  await expect(page.locator('.scene-settings')).toBeVisible()
+  await page.locator('.scene-settings summary').click()
+  await page.getByRole('button', { name: 'Fassadenansicht', exact: true }).click()
+  await page.locator('.scene-settings summary').click()
+  const canvas = page.locator('canvas')
+  const before = PNG.sync.read(await canvas.screenshot())
+  await page.locator('.scene-settings summary').click()
+  const extension = page.locator('#raffstore-extension'), tilt = page.locator('#raffstore-tilt')
+  await extension.focus(); await extension.press('End')
+  await expect(extension).toHaveValue('1')
+  await tilt.focus(); await tilt.press('End')
+  await expect(tilt).toHaveValue('75')
+  expect(await page.locator('.settings-body').evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true)
+  await page.locator('.scene-settings summary').click()
+  const after = PNG.sync.read(await canvas.screenshot())
+  let changed = 0
+  const colors = new Set<string>()
+  for (let offset = 0; offset < after.data.length; offset += 4) {
+    colors.add(`${after.data[offset]},${after.data[offset + 1]},${after.data[offset + 2]}`)
+    if (Math.abs(after.data[offset] - before.data[offset]) + Math.abs(after.data[offset + 1] - before.data[offset + 1]) > 15) changed++
+  }
+  expect(colors.size).toBeGreaterThan(50)
+  expect(changed).toBeGreaterThan(300)
+  await page.screenshot({ path: `test-results/${testInfo.project.name}-raffstore-lowered.png` })
+  await page.locator('.scene-settings summary').click()
+  await extension.focus(); await extension.press('Home')
+  await page.locator('.scene-settings summary').click()
+  await page.getByRole('button', { name: '2D', exact: true }).click()
+  await page.getByRole('button', { name: '3D', exact: true }).click()
+  await page.locator('.scene-settings summary').click()
+  await expect(page.locator('#raffstore-extension')).toHaveValue('0')
+  await expect(page.locator('#raffstore-tilt')).toHaveValue('75')
+  expect(errors).toEqual([])
+})
+
 test('Detailkorrekturen haben echte freie Volumen, Zargen und einen schließenden Kellerzugang', async ({ page }) => {
   await page.goto('/')
   const result = await page.evaluate(async () => {

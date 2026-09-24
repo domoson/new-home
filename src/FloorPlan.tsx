@@ -10,6 +10,7 @@ import { terraceArea, terraceFurniture, terraceMain, terraceOutline } from './te
 import { partyRoom } from './partyRoomData'
 import { kitchenModules, moduleFront } from './kitchenStorage'
 import { windowMullionStart } from './windowLayout'
+import { raffstores } from './raffstore'
 
 function Furnishing({ item }: { item: Furniture }) {
   const { x, z, width, depth, kind } = item
@@ -137,6 +138,7 @@ export default function FloorPlan({ floor, selected, onSelect, dimensions, furni
       const south = wall.z + (wall.axis === 'z' ? opening.start + windowMullionStart(opening) : wall.depth / 2 - .04)
       return <rect key={`${wall.id}-${opening.id}`} data-window-mullion={opening.id} x={east} y={south} width={wall.axis === 'x' ? .06 : .08} height={wall.axis === 'x' ? .08 : .06} fill="#739d9e" />
     }))}
+    <g pointerEvents="none" fill="none" stroke="#756f65" strokeWidth=".016">{raffstores(floor).map(blind => <g key={blind.id} data-raffstore={blind.id}><rect data-raffstore-box="true" x={blind.box.x} y={blind.box.z} width={blind.box.width} height={blind.box.depth} strokeDasharray=".05 .035" /><path d={`M${blind.x} ${blind.z} ${blind.axis === 'x' ? `h${blind.width}` : `v${blind.width}`}`} /></g>)}</g>
     {furnished && <g pointerEvents="none">{floor.furniture.map(item => <Furnishing key={item.id} item={item} />)}</g>}
     {floor.id === 'DG' && <g pointerEvents="none">{[1, 2].flatMap(height => [heightLine(height), house.depth - heightLine(height)].map(south => <g key={`${height}-${south}`}><line x1={house.west} x2={house.east} y1={south} y2={south} stroke="#608c94" strokeDasharray=".09 .06" strokeWidth=".022" /><text x={house.width - .25} y={south + .04} fontSize=".13" fill="#60818c">{height} m</text></g>))}<line x1={house.west} x2={house.east} y1={house.depth / 2} y2={house.depth / 2} stroke="#a4aaa1" strokeWidth=".012" strokeDasharray=".25 .05" /></g>}
     {dimensions && floor.rooms.map(room => { const point = labels[room.id] ?? room.spawn; const compact = ['wc', 'entry', 'hall', 'pantry'].includes(room.id); const labelWidth = compact ? .82 : 1.9; return <g key={room.id} data-room-label={room.id} onClick={() => onSelect(room.id)} style={{ cursor: 'pointer' }}><rect x={point[0] - labelWidth / 2} y={point[1] - .25} width={labelWidth} height=".56" rx=".04" fill="#f9fbf6" opacity=".91" /><text x={point[0]} y={point[1] - .04} textAnchor="middle" fontSize={compact ? '.105' : '.145'} fontWeight="500" fill="#334b41">{room.name}</text><text x={point[0]} y={point[1] + .18} textAnchor="middle" fontSize=".155" fontWeight="600" fill="#294c40">{format(roomArea(room, floor.id).floor)} m²</text></g> })}
