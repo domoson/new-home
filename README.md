@@ -68,10 +68,11 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
   1,50 m Festfeld endet innen bei x=6,60 m, entsprechend 30 cm vor der rechten
   aeusseren Gebaeudekante. Sofagruppe 20 cm nach Norden verschoben; 20 cm
   Abstand zur inneren Suedwandkante bei unveraenderten Moebelabmessungen.
-- Normale Tueren einschliesslich Eingang/Kellerabschluss: 86 x 211 cm INKLUSIVE
-  Zarge. Modellprofil seitlich/oben 3 cm, Blatt 80 x 208 cm als Annahme, keine
-  Hersteller-/Rohbaumasse. Neue Kellertuer am noerdlichen Treppenzugang im EG.
-  DG-Abstellraum und Hebeschiebeanlage bleiben Sondermasse.
+- Haustuer 110 x 252 cm inklusive 3-cm-Rahmen, nach innen oeffnend und
+  nordseitig angeschlagen. Daneben 35 cm breites, tuerhohes Festglas-Seitenteil;
+  Eingangsanlage insgesamt 145 cm breit. Normale Innentueren einschliesslich
+  Kellerabschluss: 86 x 211 cm inklusive Zarge, Blatt 80 x 208 cm als Annahme.
+  DG-Abstellraum und Hebeschiebeanlage bleiben weitere Sondermasse.
 - OG: Bad 9,28 m2, Kind Nord 16,88 m2, Spielzimmer 7,50 m2, Kind Sued 16,73 m2,
   Flur 3,80 m2, Abstellraum 2,09 m2. Kinderzimmer mit Bett, Schreibtisch und Schrank;
   Spielzimmer niedrig moebliert. KG behaelt Technik/Lager, Keller und Hobby;

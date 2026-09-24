@@ -217,8 +217,10 @@ test('Anbieterplaene, Flächenabgleich und bewegtes 3D-Modell', async ({ page },
       await expect(page.locator('[data-concealed-fittings="true"]')).toHaveCount(3)
       const entranceCenter = await page.evaluate(async () => {
         const { makeFloor } = await import('/src/model.ts')
-        const entrance = makeFloor('EG').walls.find(wall => wall.id === 'east').openings.find(opening => opening.id === 'entrance')
-        return entrance.start + entrance.width / 2
+        const openings = makeFloor('EG').walls.find(wall => wall.id === 'east').openings.filter(opening => ['entrance', 'entrance-fixed'].includes(opening.id))
+        const start = Math.min(...openings.map(opening => opening.start))
+        const end = Math.max(...openings.map(opening => opening.start + opening.width))
+        return (start + end) / 2
       })
       await expect(page.locator('[data-entrance-marker]')).toHaveAttribute('transform', `translate(0 ${entranceCenter})`)
     }
@@ -380,7 +382,7 @@ test('Neue Treppe, Raumwege und niedrige Abstellraumtür berücksichtigen Kollis
   expect(result.neighborCrowns).toBe(48)
   expect(result.ceilings).toHaveLength(6)
   for (const ceiling of result.ceilings) { expect(ceiling.min).toBeCloseTo(8.71); expect(ceiling.max).toBeCloseTo(8.95) }
-  expect(result.entrancePivot.z).toBeCloseTo(1.55)
+  expect(result.entrancePivot.z).toBeCloseTo(.75)
   expect(result.entranceTip.z).toBeCloseTo(result.entrancePivot.z)
   expect(result.entranceTip.x).toBeLessThan(result.entrancePivot.x)
   expect(result.bedHeads).toHaveLength(1)

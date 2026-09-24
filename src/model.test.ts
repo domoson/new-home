@@ -88,7 +88,7 @@ describe('Maßhaltiger Vorentwurf', () => {
     expect(bench.z).toBeLessThan(table.z)
     expect(floor.furniture.filter(item => item.id.startsWith('dining-chair')).every(item => item.z > bench.z)).toBe(true)
     const opening = floor.walls.flatMap(wall => wall.openings).find(opening => opening.id === 'entrance-fixed')!
-    expect([opening.width, opening.height, opening.sill]).toEqual([.35, 2.1, 0])
+    expect([opening.width, opening.height, opening.sill]).toEqual([.35, 2.52, 0])
   })
   it('bildet einen durchgehenden U-Lauf mit gleichmaessigen Steigungen', () => {
     const core = stairFor()

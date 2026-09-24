@@ -68,8 +68,13 @@ describe('Anbieterentwurf', () => {
     const floor = makeFloor('EG'), bathroom = floor.walls.find(wall => wall.id === 'wc-east')!
     expect(bathroom.x).toBe(2.15)
     expect(bathroom.z + bathroom.openings[0].start).toBeCloseTo(.9)
-    const entrance = floor.walls.find(wall => wall.id === 'east')!.openings.find(opening => opening.id === 'entrance')!
-    expect(entrance).toMatchObject({ start: .72, width: .86, height: 2.11, frame: .03, hinge: 'end', swing: 'reverse' })
+    const entranceWall = floor.walls.find(wall => wall.id === 'east')!
+    const entrance = entranceWall.openings.find(opening => opening.id === 'entrance')!
+    const sidelight = entranceWall.openings.find(opening => opening.id === 'entrance-fixed')!
+    expect(entrance).toMatchObject({ start: .72, width: 1.1, height: 2.52, frame: .03, swing: 'reverse' })
+    expect(entrance.hinge).toBeUndefined()
+    expect(sidelight).toMatchObject({ start: .37, width: .35, height: 2.52, sill: 0, kind: 'window' })
+    expect(sidelight.start + sidelight.width).toBeCloseTo(entrance.start)
     expect(floor.walls.find(wall => wall.id === 'north')!.openings.some(opening => opening.id === 'wc-window')).toBe(true)
     const passage = floor.walls.find(wall => wall.id === 'living-diagonal')!
     expect(passage.footprint).toHaveLength(4)

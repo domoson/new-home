@@ -607,8 +607,10 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
     const deckTexture = oak.clone(); deckTexture.repeat.set(.125, 1); deckTexture.needsUpdate = true; textures.push(deckTexture)
     const deckMaterial = mat('#ffffff', .85, deckTexture)
     for (const part of terraceParts) for (let offset = 0; offset < part.width - .006; offset += .15) { const mesh = addBox(rect(part.x + offset, part.z, Math.min(.144, part.width - offset), part.depth), -.04, .04, deckMaterial); mesh.name = 'terrace-board'; mesh.castShadow = false }
-    const entrance = makeFloor('EG', includeSite ? 'east' : 'west').walls.find(wall => wall.id === 'east')!.openings.find(opening => opening.id === 'entrance')!
-    addBox(rect(house.width, entrance.start - .1, .9, entrance.width + .27), -.2, .2, stone).name = 'entry-step'
+    const entranceOpenings = makeFloor('EG', includeSite ? 'east' : 'west').walls.find(wall => wall.id === 'east')!.openings.filter(opening => ['entrance', 'entrance-fixed'].includes(opening.id))
+    const entranceStart = Math.min(...entranceOpenings.map(opening => opening.start))
+    const entranceEnd = Math.max(...entranceOpenings.map(opening => opening.start + opening.width))
+    addBox(rect(house.width, entranceStart - .1, .9, entranceEnd - entranceStart + .2), -.2, .2, stone).name = 'entry-step'
     if (furnished) for (const item of includeSite ? terraceFurniture : westTerraceFurniture) addFurniture(item, 0)
   }
   if (walk || showRoof || floorId === 'KG') {
