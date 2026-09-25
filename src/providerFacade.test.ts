@@ -156,7 +156,7 @@ describe('Fassadenfenster', () => {
     expect(upper.walls.find(wall => wall.id === 'north')!.x + upperNorth[0].start + upperNorth[0].width).toBeLessThan(3.45)
     for (const id of ['gable-office', 'gable-parents']) {
       const window = makeFloor('DG').walls.find(wall => wall.id === 'east')!.openings.find(opening => opening.id === id)!
-      expect(window).toMatchObject({ width: 1.5, sill: 0, height: 2.1, windowLayout: { columns: 2, lowerFixed: .6 } })
+      expect(window).toMatchObject({ width: 1.5, sill: 0, height: 2.1, windowLayout: { columns: 2, lowerFixed: .9 } })
       const panels = windowPanels(window)
       const fixed = panels.filter(panel => panel.fixed)
       const operable = panels.filter(panel => !panel.fixed)
@@ -164,10 +164,10 @@ describe('Fassadenfenster', () => {
       expect(operable).toHaveLength(1)
       for (const panel of fixed) {
         expect(panel.bottom).toBe(windowFrame)
-        expect(panel.bottom + panel.height).toBeCloseTo(panel.column === operable[0].column ? .6 - windowJoint / 2 : 2.1 - windowFrame)
+        expect(panel.bottom + panel.height).toBeCloseTo(panel.column === operable[0].column ? .9 - windowJoint / 2 : 2.1 - windowFrame)
       }
       for (const panel of operable) {
-        expect(panel.bottom).toBeCloseTo(.6 + windowJoint / 2)
+        expect(panel.bottom).toBeCloseTo(.9 + windowJoint / 2)
         expect(panel.bottom + panel.height).toBeCloseTo(2.1 - windowFrame)
       }
       expect(window.width * window.height).toBeGreaterThan(2 * 1.2 * .9)

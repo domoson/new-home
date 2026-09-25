@@ -134,7 +134,7 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
 - Neue Fensterordnung: breite Fenster ab 150 cm mit durchgehendem Festfeld
   und einem nominell 60 cm breiten Lueftungsbereich (bewegliches Blatt nach
   Rahmen/Fugen etwa 51 cm breit). Nur unter dessen Fluegel liegt bei bodentiefen
-  Fenstern ein festes Unterlicht: EG-Suedwest 90 cm, DG 60 cm.
+  Fenstern ein festes Unterlicht: EG-Suedwest und DG jeweils 90 cm.
   Das grosse Festfeld bleibt ohne Querholm. Oeffnungsbreiten, Fensterabstaende und Bruestungshoehen
   der neuen EG-/OG-/DG-Fenster folgen dem 30-cm-Raster (ausgenommen das hohe EG-Kuechenband,
   Kellerfenster, Eingangsfestfeld und die 2,80 m breite Terrassenanlage mit
@@ -160,7 +160,7 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
   Oberkante weiterhin 240 cm.
   Das Spielzimmerregal steht vor dem Festfeld.
   DG-Giebelfenster weiterhin bodentief 150 x 210 cm, ein oeffnender oberer
-  Fluegel je Fenster mit festem Unterlicht bei 60 cm. Oberkante bleibt 210 cm.
+  Fluegel je Fenster mit festem Unterlicht bei 90 cm. Oberkante bleibt 210 cm.
   DG-Buerofenster 60 cm nach Sueden verschoben, Trennwand zum Schlafzimmer
   30 cm nach Sueden auf z=5,10 m: Buero gewinnt 0,915 m2, Schlafzimmer
   entsprechend kleiner. Schraenke beidseits folgen der Wand; niedriger
