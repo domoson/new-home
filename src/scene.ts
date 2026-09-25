@@ -438,7 +438,10 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
       }
     } else if (kind === 'bath') {
       surface(.03, height - .03, ceramic, true); box(x + .09, z + .09, width - .18, depth - .18, height, .008, stone, true)
-      if (item.id === 'bath-tub') { box(x, z + depth / 2 - .12, .025, .24, .78, .1, stone); beam(new THREE.Vector3(x, elevation + .8, z + depth / 2), new THREE.Vector3(x + .15, elevation + .8, z + depth / 2), .014, dark) }
+      if (item.id === 'bath-tub') {
+        box(x + width - .015, z + depth / 2 - .12, .03, .24, .7, .18, stone).name = 'bath-tub-control'
+        box(x + width - .23, z + depth / 2 - .015, .24, .03, .8, .025, steel).name = 'bath-tub-spout'
+      }
     } else if (kind === 'shower') {
       surface(.015, .025, ceramic)
       if (item.angle !== Math.PI && item.id !== 'bath-shower') box(x + width - .02, z, .015, depth * .65, .04, 1.95, glass)

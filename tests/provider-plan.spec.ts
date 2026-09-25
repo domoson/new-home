@@ -1,6 +1,29 @@
 import { expect, test } from '@playwright/test'
 import { PNG } from 'pngjs'
 
+test('Badewannenarmatur sitzt an der Ostwand und ragt ueber die Wanne', async ({ page }) => {
+  await page.goto('/')
+  const placement = await page.evaluate(async () => {
+    const THREE = await import('/node_modules/.vite/deps/three.js')
+    const { buildScene } = await import('/src/scene.ts')
+    const { makeFloor, elevations } = await import('/src/model.ts')
+    const model = buildScene('OG', true, true, true)
+    const floor = makeFloor('OG')
+    const tub = floor.furniture.find(item => item.id === 'bath-tub')
+    const eastWall = floor.walls.find(wall => wall.id === 'east-divider')
+    const bounds = (name: string) => new THREE.Box3().setFromObject(model.group.getObjectByName(name))
+    const control = bounds('bath-tub-control'), spout = bounds('bath-tub-spout')
+    model.dispose()
+    return {
+      attached: control.min.x < eastWall.x && control.max.x > eastWall.x,
+      overTub: spout.min.x > tub.x && spout.min.x < tub.x + tub.width - .09 && spout.max.x > tub.x + tub.width,
+      centered: control.min.z > tub.z && control.max.z < tub.z + tub.depth,
+      aboveRim: spout.min.y > elevations.OG + tub.height,
+    }
+  })
+  expect(placement).toEqual({ attached: true, overTub: true, centered: true, aboveRim: true })
+})
+
 test('Raffstores fahren vor der Verglasung und die OG-Raumrevision bleibt bedienbar', async ({ page }, testInfo) => {
   const errors: string[] = []
   page.on('pageerror', error => errors.push(error.message))
