@@ -6,7 +6,6 @@ import { neighbor8, neighbor8GarageLocalPoint, neighbor8GaragePoint, neighbor8Po
 import { addDirectNeighbors } from './directNeighbors'
 import { createSeatLeon } from './seatLeon'
 import { createCarParking } from './carParking'
-import { createGreenRoof } from './greenRoof'
 import { createContextTree } from './contextTree'
 import { contextVegetation, frontGardenBeds } from './contextVegetation'
 import { contextAnnexes, contextBuildings, contextRoofRise, drivewayEnd, footprintPlacement, mapPolygon, neighborhoodParcels, neighborhoodRoads, placementMatrix, polylineZ, reshapePlanMesh } from './neighborhoodLayout'
@@ -249,9 +248,6 @@ export function createSurroundings() {
     for (const east of [carport.x, carport.x + carport.width - .16]) sloped(east, 2.24, carport.z, .16, .26, carport.depth, wood, 'carport-beam')
     for (let offset = .16; offset < carport.depth - .08; offset += .6) sloped(carport.x + .16, 2.34, carport.z + offset, carport.width - .32, .16, .08, wood, 'carport-rafter')
     sloped(carport.x, carportRoof.lowEdge, carport.z, carport.width, carportRoof.thickness, carport.depth, roofMetal, 'carport-roof')
-    const plantedRoof = createGreenRoof(carport.width, carport.depth, materials)
-    plantedRoof.matrix.setPosition(carport.x, carportRoof.lowEdge + carportRoof.thickness, carport.z)
-    structure.add(plantedRoof)
     for (let offset = .12; offset < carport.width - .06; offset += .25) sloped(carport.x + offset, carportRoof.lowEdge + carportRoof.thickness, carport.z + .08, .045, .025, carport.depth - .08, roofEdge, 'carport-roof-rib')
     for (const east of [carport.x - .02, carport.x + carport.width]) sloped(east, 2.43, carport.z, .02, .16, carport.depth, roofEdge, 'carport-roof-flashing')
     solid(carport.x + .16, 2.38, carport.z + .08, carport.width - .32, .1, .1, roofEdge, 'carport-gutter')
@@ -314,12 +310,5 @@ export function createSurroundings() {
   }
   const posts = new THREE.InstancedMesh(new THREE.BoxGeometry(1, 1, 1), fence, fenceMatrices.length)
   fenceMatrices.forEach((matrix, index) => posts.setMatrixAt(index, matrix)); posts.castShadow = true; posts.receiveShadow = true; posts.name = 'boundary-fence'; garden.add(posts)
-  return { neighborhood, garden, colliders, activateVehicle(object: THREE.Object3D) { return carParking?.activate(object) ?? false }, updateVehicle(delta: number, reducedMotion: boolean) { return carParking?.update(delta, reducedMotion) ?? false }, setWoodTone(side: 'east' | 'west', tone: number) { carportWood[side].color.set(woodTones[tone].color) }, setCarportRoof(type: 'metal' | 'green') {
-    for (const side of ['east', 'west'] as const) {
-      const structure = garden.getObjectByName(`carport-${side}`)
-      if (!structure) continue
-      structure.getObjectByName('carport-green-roof')!.visible = type === 'green'
-      for (const object of structure.children) if (object.name === 'carport-roof-rib') object.visible = type === 'metal'
-    }
-  }, dispose() { for (const group of [neighborhood, garden]) group.traverse(object => { if (object instanceof THREE.Mesh) { object.geometry.dispose(); if (object instanceof THREE.InstancedMesh) object.dispose() } }); materials.forEach(material => material.dispose()); textures.forEach(texture => texture.dispose()) } }
+  return { neighborhood, garden, colliders, activateVehicle(object: THREE.Object3D) { return carParking?.activate(object) ?? false }, updateVehicle(delta: number, reducedMotion: boolean) { return carParking?.update(delta, reducedMotion) ?? false }, setWoodTone(side: 'east' | 'west', tone: number) { carportWood[side].color.set(woodTones[tone].color) }, dispose() { for (const group of [neighborhood, garden]) group.traverse(object => { if (object instanceof THREE.Mesh) { object.geometry.dispose(); if (object instanceof THREE.InstancedMesh) object.dispose() } }); materials.forEach(material => material.dispose()); textures.forEach(texture => texture.dispose()) } }
 }
