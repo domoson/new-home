@@ -4,6 +4,7 @@ import { MapPinned, Ruler, Trash2 } from 'lucide-react'
 import { boundaryDistance, boundaryZ, partner, siteBoundary, siteDivision, siteParcels } from './context'
 import { house } from './model'
 import { houseSetbacks } from './setbacks'
+import { usePlanGestures } from './planGestures'
 import { distance, metres } from './measure'
 import type { PlanPoint } from './measure'
 import { parkingEntrance, rectCorners, siteParking } from './parking'
@@ -38,16 +39,16 @@ function Dimension({ start, end, offset = 0, label, labelSize = .34 }: { start: 
   </g>
 }
 
-export default function SitePlan({ dimensions, zoom, selected, onSelect }: { dimensions: boolean; zoom: number; selected: string; onSelect: (item: SiteItem) => void }) {
+export default function SitePlan({ dimensions, zoom, selected, onSelect, onZoom }: { dimensions: boolean; zoom: number; selected: string; onSelect: (item: SiteItem) => void; onZoom: (zoom: number) => void }) {
   const svgRef = useRef<SVGSVGElement>(null)
   const [setbackLabelSize, setSetbackLabelSize] = useState(.34)
   const [pan, setPan] = useState({ x: 0, z: 0 })
   const [overview, setOverview] = useState(false)
-  const [drag, setDrag] = useState<{ clientX: number; clientY: number; pan: PlanPoint } | null>(null)
   const [measuring, setMeasuring] = useState(false)
   const [origin, setOrigin] = useState<PlanPoint | null>(null)
   const [cursor, setCursor] = useState<PlanPoint | null>(null)
   const [lines, setLines] = useState<{ start: PlanPoint; end: PlanPoint }[]>([])
+  const gestures = usePlanGestures(zoom, onZoom, { x: 0, y: 10 }, { x: pan.x, y: pan.z }, point => setPan({ x: point.x, z: point.y }), !measuring)
   const selectedHouse = selected === 'house-east' ? 'east' : selected === 'house-west' ? 'west' : null
   const setbacks = selectedHouse ? houseSetbacks(selectedHouse) : null
   const location = (event: PointerEvent<SVGSVGElement>) => {
@@ -78,9 +79,8 @@ export default function SitePlan({ dimensions, zoom, selected, onSelect }: { dim
     <svg ref={svgRef} xmlns="http://www.w3.org/2000/svg" className="floor-plan site-plan" role="img" aria-label="Außenanlagenplan" tabIndex={0} viewBox={`${-width / 2 - pan.x} ${10 - height / 2 - pan.z} ${width} ${height}`} style={{ fontFamily: 'IBM Plex Sans, sans-serif', touchAction: 'none', cursor: measuring ? 'crosshair' : 'grab' }} onPointerDown={event => {
       event.currentTarget.focus()
       if (measuring) { const point = location(event); if (origin) { if (distance(origin, point) > .01) setLines([...lines, { start: origin, end: point }]); setOrigin(null) } else setOrigin(point); return }
-      if (event.target instanceof Element && event.target.closest('[role="button"]')) return
-      event.currentTarget.setPointerCapture(event.pointerId); setDrag({ clientX: event.clientX, clientY: event.clientY, pan })
-    }} onPointerMove={event => { setCursor(location(event)); if (drag && !measuring) { const scale = event.currentTarget.getScreenCTM()!.a; setPan({ x: drag.pan.x + (event.clientX - drag.clientX) / scale, z: drag.pan.z + (event.clientY - drag.clientY) / scale }) } }} onPointerUp={() => setDrag(null)} onPointerCancel={() => setDrag(null)} onKeyDown={event => { if (event.key === 'Escape') setOrigin(null); if (event.key === 'Delete') { setLines([]); setOrigin(null) } }}>
+      gestures.pointerDown(event)
+    }} onPointerMove={event => { if (!gestures.pointerMove(event)) setCursor(location(event)) }} onClickCapture={event => { if (measuring) event.stopPropagation(); else gestures.clickCapture(event) }} onPointerUp={gestures.pointerUp} onPointerCancel={gestures.pointerUp} onKeyDown={event => { if (event.key === 'Escape') setOrigin(null); if (event.key === 'Delete') { setLines([]); setOrigin(null) } }}>
       <defs><pattern id="site-grass" width=".6" height=".6" patternUnits="userSpaceOnUse"><rect width=".6" height=".6" fill="#edf2e5" /><circle cx=".3" cy=".3" r=".018" fill="#aabb9a" /></pattern></defs>
       <g data-neighborhood-plan="true">
         {neighborhoodParcels.map(parcel => <polygon key={parcel.id} points={parcel.points.map(point => point.join(',')).join(' ')} fill="#e6ebdf" stroke="#a1ad9b" strokeWidth=".07" />)}

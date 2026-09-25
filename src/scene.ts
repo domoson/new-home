@@ -42,11 +42,36 @@ function oakTexture() {
   return texture
 }
 
+function floorTexture() {
+  const canvas = document.createElement('canvas'); canvas.width = 512; canvas.height = 512
+  const context = canvas.getContext('2d')!
+  let seed = 9182
+  const random = () => { seed = (seed * 16807) % 2147483647; return seed / 2147483647 }
+  context.fillStyle = '#c2a47a'; context.fillRect(0, 0, 512, 512)
+  const boardWidth = 64
+  for (let board = 0; board < 8; board++) {
+    const lightness = 65 + random() * 7
+    context.fillStyle = `hsl(35 31% ${lightness}%)`; context.fillRect(board * boardWidth + 1, 0, boardWidth - 2, 512)
+    for (let grain = 0; grain < 34; grain++) {
+      const across = board * boardWidth + 3 + random() * (boardWidth - 6)
+      context.strokeStyle = `rgba(105, 75, 43, ${.025 + random() * .05})`; context.lineWidth = .3 + random() * .55
+      context.beginPath(); context.moveTo(across, 0); context.bezierCurveTo(across + random() * 9 - 4, 155, across + random() * 9 - 4, 350, across + random() * 6 - 3, 512); context.stroke()
+    }
+    for (let joint = (board * 47) % 110 - 16; joint < 512; joint += 148 + random() * 22) {
+      context.fillStyle = `rgba(105, 75, 43, ${.06 + random() * .05})`; context.fillRect(board * boardWidth, joint, boardWidth, .8)
+      context.fillStyle = 'rgba(247, 225, 187, .12)'; context.fillRect(board * boardWidth + 2, joint + 1, boardWidth - 4, .7)
+    }
+    context.fillStyle = 'rgba(105, 75, 43, .12)'; context.fillRect(board * boardWidth, 0, 1, 512)
+  }
+  const texture = new THREE.CanvasTexture(canvas); texture.wrapS = texture.wrapT = THREE.RepeatWrapping; texture.colorSpace = THREE.SRGBColorSpace; texture.anisotropy = 8
+  return texture
+}
+
 export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, furnished: boolean, cutWalls = false, includeSite = true): SceneModel {
   const group = new THREE.Group(), colliders: ColliderShape[] = [], triangles: SceneModel['triangles'] = [], doors: DoorModel[] = []
   const textures: THREE.Texture[] = [], materials: THREE.Material[] = []
   const mat = (color: string, roughness = .8, map?: THREE.Texture) => { const result = new THREE.MeshStandardMaterial({ color, roughness, map: map ?? null }); materials.push(result); return result }
-  const oak = oakTexture(); textures.push(oak)
+  const oak = oakTexture(), floorMap = floorTexture(); textures.push(oak, floorMap)
   const coordinates = includeSite ? new THREE.Matrix4() : new THREE.Matrix4().makeScale(-1, 1, 1).setPosition(0, 0, -partner.z)
   const facadeFinish = createFacadeMaterial(oak, false, coordinates), facade = facadeFinish.material; materials.push(facade)
   const canopyFinish = createFacadeMaterial(oak, true, coordinates); materials.push(canopyFinish.material)
@@ -356,7 +381,6 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
       }
       
       if (item.id === 'kitchen-tall') {
-        const ovenWidth = Math.min(.52, width - .08), ovenX = x + (width - ovenWidth) / 2
         const oven = box(ovenX, z + depth + .002, ovenWidth, .018, .85, .55, dark)
         oven.name = 'kitchen-oven'
         box(ovenX + .05, z + depth + .025, ovenWidth - .1, .025, 1.32, .025, stone)
@@ -458,13 +482,13 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
     }
     const cut = cutWalls && !walk && !showRoof
     for (const slab of includeSite ? floorSlabs(id) : [rect(0, 0, house.width, house.depth)]) {
-      const texture = oak.clone(); texture.repeat.set(slab.width / 2, slab.depth / 2); texture.needsUpdate = true; textures.push(texture)
+      const texture = floorMap.clone(); texture.repeat.set(slab.width / 2, slab.depth / 2); texture.needsUpdate = true; textures.push(texture)
       const floorMaterial = id === 'KG' ? stone : mat('#ffffff', .8, texture)
       const mesh = addBox(slab, base - slabThickness(id), slabThickness(id), [Math.abs(slab.x + slab.width - house.width) < .000001 ? facade : plaster, slab.x === 0 ? facade : plaster, floorMaterial, plaster, Math.abs(slab.z + slab.depth - house.depth) < .000001 ? facade : plaster, slab.z === 0 ? facade : plaster]); mesh.name = `${id}-slab`
     }
     for (const room of floor.rooms.filter(room => ['wc', 'bath', 'entry', 'pantry'].includes(room.id) || room.id === 'hall' && id !== 'EG')) for (const part of room.tileParts ?? room.parts) {
       if (room.id === 'hall' && id !== 'EG') {
-        const parquet = oak.clone(); parquet.repeat.set(part.width / 2, part.depth / 2); parquet.needsUpdate = true; textures.push(parquet)
+        const parquet = floorMap.clone(); parquet.repeat.set(part.width / 2, part.depth / 2); parquet.needsUpdate = true; textures.push(parquet)
         const mesh = addBox(part, base + .001, .008, mat('#ffffff', .8, parquet), false); mesh.userData.floorRoom = room.id; mesh.userData.floorLevel = id
       } else if (part.footprint) {
         addStairSolid({ ...part, bottom: .001, height: .008, kind: 'floor', id: `${id}-${room.id}` }, base, ['hall', 'entry'].includes(room.id) ? mat('#e7e4d9') : mat('#ced9d5'), false)

@@ -11,6 +11,8 @@ import { partyRoom } from './partyRoomData'
 import { kitchenModules, moduleFront } from './kitchenStorage'
 import { windowMullionStart } from './windowLayout'
 import { raffstores } from './raffstore'
+import { openingDimensions } from './openingDimensions'
+import { usePlanGestures } from './planGestures'
 
 function Furnishing({ item }: { item: Furniture }) {
   const { x, z, width, depth, kind } = item
@@ -64,14 +66,38 @@ function MasonryJoints({ wall }: { wall: Wall }) {
     : <line key={index} data-masonry-joint="true" x1={wall.x} y1={wall.z + offset} x2={wall.x + wall.width} y2={wall.z + offset} />)}</g>
 }
 
-export default function FloorPlan({ floor, selected, onSelect, dimensions, furnished, zoom }: { floor: Floor; selected: string; onSelect: (id: string) => void; dimensions: boolean; furnished: boolean; zoom: number }) {
+function OpeningDimensionChain({ wall }: { wall: Wall }) {
+  if (!wall.openings.length) return null
+  const segments = openingDimensions(wall)
+  const length = wall.axis === 'x' ? wall.width : wall.depth
+  const north = wall.id === 'north'
+  const south = wall.id === 'south'
+  const transform = north ? `translate(${wall.x} -.3)` : south ? `translate(${wall.x} ${wall.z + wall.depth + .25})` : `translate(${wall.x + wall.width + .3} ${wall.z}) rotate(90)`
+  const wallEdge = north ? .3 : south ? -.25 : -.3
+  const metre = (value: number) => value.toFixed(2)
+  return <g data-opening-dimensions={wall.id} transform={transform} pointerEvents="none" stroke="#667262" strokeWidth=".013" fill="#43554b">
+    <path d={`M0 ${wallEdge} V0 H${length} V${wallEdge}`} fill="none" />
+    {[0, ...segments.map(segment => segment.end)].map((point, index) => <path key={index} data-dimension-tick="true" d={`M${point - .045} .045 l.09 -.09`} fill="none" strokeWidth=".02" />)}
+    {segments.map((segment, index) => {
+      const width = segment.end - segment.start
+      const fontSize = width < .4 ? .105 : width < .6 ? .12 : .145
+      const center = (segment.start + segment.end) / 2
+      return <g key={index} data-dimension-segment={segment.kind}>
+        <text x={center} y="-.055" fontSize={fontSize} textAnchor="middle" stroke="#f9fbf6" strokeWidth=".035" paintOrder="stroke">{metre(width)}</text>
+        {segment.kind === 'opening' && <text x={center} y=".15" fontSize={fontSize} textAnchor="middle" stroke="#f9fbf6" strokeWidth=".035" paintOrder="stroke">{metre(segment.height)}</text>}
+      </g>
+    })}
+  </g>
+}
+
+export default function FloorPlan({ floor, selected, onSelect, dimensions, furnished, zoom, onZoom }: { floor: Floor; selected: string; onSelect: (id: string) => void; dimensions: boolean; furnished: boolean; zoom: number; onZoom: (zoom: number) => void }) {
   const [pan, setPan] = useState({ x: 0, y: 0 })
-  const [drag, setDrag] = useState<{ x: number; y: number; startX: number; startY: number } | null>(null)
   const [measuring, setMeasuring] = useState(false)
   const [origin, setOrigin] = useState<PlanPoint | null>(null)
   const [cursor, setCursor] = useState<PlanPoint | null>(null)
   const [lines, setLines] = useState<{ start: PlanPoint; end: PlanPoint }[]>([])
   const [hover, setHover] = useState<{ object: Measurable; left: number; top: number } | null>(null)
+  const gestures = usePlanGestures(zoom, onZoom, { x: house.width / 2, y: house.depth / 2 }, pan, setPan, !measuring)
   const objects = planObjects(floor, furnished)
   const location = (event: PointerEvent<SVGSVGElement>) => {
     const matrix = event.currentTarget.getScreenCTM()!
@@ -80,7 +106,7 @@ export default function FloorPlan({ floor, selected, onSelect, dimensions, furni
   }
   const move = (event: PointerEvent<SVGSVGElement>) => {
     const point = location(event); setCursor(point)
-    if (drag && zoom > 1 && !measuring) { const matrix = event.currentTarget.getScreenCTM()!; setPan({ x: drag.startX + (event.clientX - drag.x) / matrix.a, y: drag.startY + (event.clientY - drag.y) / matrix.d }); setHover(null); return }
+    if (gestures.pointerMove(event)) { setHover(null); return }
     const object = objects.findLast(object => contains(object, point))
     setHover(!measuring && object ? { object, left: Math.max(8, Math.min(event.clientX + 16, window.innerWidth - 276)), top: Math.max(8, Math.min(event.clientY + 18, window.innerHeight - 126)) } : null)
   }
@@ -96,12 +122,12 @@ export default function FloorPlan({ floor, selected, onSelect, dimensions, furni
   const beyondPlanCut = (height: number) => floor.id === 'DG' ? height < storeyRise(floor.id) / 2 : height > storeyRise(floor.id) / 2
   const arrowEnd = walkingLine.at(-1)!, arrowBefore = walkingLine.at(-2)!
   const arrowAngle = Math.atan2(arrowEnd[2] - arrowBefore[2], arrowEnd[0] - arrowBefore[0]) * 180 / Math.PI
-  return <><div className="measure-tools"><button className={`icon-button ${measuring ? 'on' : ''}`} aria-label="Maßband" title="Maßband: zwei Punkte setzen; Shift für waagerecht/senkrecht" aria-pressed={measuring} onClick={() => { setMeasuring(!measuring); setOrigin(null); setHover(null) }}><Ruler size={19} /></button><button className="icon-button" aria-label="Messungen löschen" title="Messungen löschen" disabled={!lines.length && !origin} onClick={() => { setLines([]); setOrigin(null) }}><Trash2 size={18} /></button>{origin && <button className="icon-button" aria-label="Messung abbrechen" title="Messung abbrechen (Escape)" onClick={() => setOrigin(null)}><X size={18} /></button>}</div><svg xmlns="http://www.w3.org/2000/svg" className="floor-plan" role="img" tabIndex={0} aria-label={`Grundriss ${floor.name}`} viewBox={`${house.width / 2 - viewWidth / 2 - (zoom === 1 ? 0 : pan.x)} ${house.depth / 2 - viewHeight / 2 - (zoom === 1 ? 0 : pan.y)} ${viewWidth} ${viewHeight}`} onPointerDown={event => {
+  return <><div className="measure-tools"><button className={`icon-button ${measuring ? 'on' : ''}`} aria-label="Maßband" title="Maßband: zwei Punkte setzen; Shift für waagerecht/senkrecht" aria-pressed={measuring} onClick={() => { setMeasuring(!measuring); setOrigin(null); setHover(null) }}><Ruler size={19} /></button><button className="icon-button" aria-label="Messungen löschen" title="Messungen löschen" disabled={!lines.length && !origin} onClick={() => { setLines([]); setOrigin(null) }}><Trash2 size={18} /></button>{origin && <button className="icon-button" aria-label="Messung abbrechen" title="Messung abbrechen (Escape)" onClick={() => setOrigin(null)}><X size={18} /></button>}</div><svg xmlns="http://www.w3.org/2000/svg" className="floor-plan" role="img" tabIndex={0} aria-label={`Grundriss ${floor.name}`} viewBox={`${house.width / 2 - viewWidth / 2 - pan.x} ${house.depth / 2 - viewHeight / 2 - pan.y} ${viewWidth} ${viewHeight}`} onPointerDown={event => {
     event.currentTarget.focus()
     if (measuring) { const point = location(event); setCursor(point); if (origin) { if (distance(origin, point) > .001) setLines([...lines, { start: origin, end: point }]); setOrigin(null) } else setOrigin(point); return }
     move(event)
-    if (event.target === event.currentTarget) { event.currentTarget.setPointerCapture(event.pointerId); setDrag({ x: event.clientX, y: event.clientY, startX: pan.x, startY: pan.y }) }
-  }} onClickCapture={event => { if (measuring) event.stopPropagation() }} onPointerMove={move} onPointerLeave={() => setHover(null)} onPointerUp={() => setDrag(null)} onPointerCancel={() => setDrag(null)} onKeyDown={event => { if (event.key === 'Escape') { setOrigin(null); setHover(null) } if (event.key === 'Delete') { setLines([]); setOrigin(null) } }} style={{ fontFamily: 'IBM Plex Sans, sans-serif', touchAction: 'none', cursor: measuring ? 'crosshair' : undefined }}>
+    gestures.pointerDown(event)
+  }} onClickCapture={event => { if (measuring) event.stopPropagation(); else gestures.clickCapture(event) }} onPointerMove={move} onPointerLeave={() => setHover(null)} onPointerUp={gestures.pointerUp} onPointerCancel={gestures.pointerUp} onKeyDown={event => { if (event.key === 'Escape') { setOrigin(null); setHover(null) } if (event.key === 'Delete') { setLines([]); setOrigin(null) } }} style={{ fontFamily: 'IBM Plex Sans, sans-serif', touchAction: 'none', cursor: measuring ? 'crosshair' : 'grab' }}>
     <defs><pattern id="terrace-plan" width=".15" height="3" patternUnits="userSpaceOnUse"><rect width=".144" height="3" fill="#c8ad80" /><path d="M.03 0 V3 M.09 0 V3" stroke="#b49c77" strokeWidth=".005" /></pattern><pattern id="closed-eaves" width=".18" height=".18" patternUnits="userSpaceOnUse"><rect width=".18" height=".18" fill="#e4e6e4" /><path d="M0 .18 L.18 0" stroke="#c5cbc6" strokeWidth=".018" /></pattern></defs>
     <rect x="-.22" y="0" width=".22" height={house.depth} fill="#c7cac4" /><text x="-.4" y="5" fontSize=".12" fill="#868b80" textAnchor="middle" transform="rotate(-90 -.4 5)">HAUSTRENNWAND · NACHBAR WEST</text>
     {floor.id === 'EG' && terraceArea > 0 && <g><polygon data-terrace="east" points={terraceOutline.map(point => point.join(',')).join(' ')} fill="url(#terrace-plan)" /><rect x={terraceMain.x} y="13" width={terraceMain.width} height=".28" fill="#c6d7bc" /><text x="5.75" y="12.65" textAnchor="middle" fontSize=".2" fill="#526452">Terrasse · {format(terraceArea)} m²</text>{furnished && terraceFurniture.map(item => <Furnishing key={item.id} item={item} />)}</g>}
@@ -150,8 +176,7 @@ export default function FloorPlan({ floor, selected, onSelect, dimensions, furni
     {floor.id === 'DG' && <g pointerEvents="none">{[1, 2].flatMap(height => [heightLine(height), house.depth - heightLine(height)].map(south => <g key={`${height}-${south}`}><line x1={house.west} x2={house.east} y1={south} y2={south} stroke="#608c94" strokeDasharray=".09 .06" strokeWidth=".022" /><text x={house.width - .25} y={south + .04} fontSize=".13" fill="#60818c">{height} m</text></g>))}<line x1={house.west} x2={house.east} y1={house.depth / 2} y2={house.depth / 2} stroke="#a4aaa1" strokeWidth=".012" strokeDasharray=".25 .05" /></g>}
     {dimensions && floor.rooms.map(room => { const point = labels[room.id] ?? room.spawn; const compact = ['wc', 'entry', 'hall', 'pantry'].includes(room.id); const labelWidth = compact ? .82 : 1.9; return <g key={room.id} data-room-label={room.id} onClick={() => onSelect(room.id)} style={{ cursor: 'pointer' }}><rect x={point[0] - labelWidth / 2} y={point[1] - .25} width={labelWidth} height=".56" rx=".04" fill="#f9fbf6" opacity=".91" /><text x={point[0]} y={point[1] - .04} textAnchor="middle" fontSize={compact ? '.105' : '.145'} fontWeight="500" fill="#334b41">{room.name}</text><text x={point[0]} y={point[1] + .18} textAnchor="middle" fontSize=".155" fontWeight="600" fill="#294c40">{format(roomArea(room, floor.id).floor)} m²</text></g> })}
     {floor.id === 'EG' && entranceOpenings.length > 0 && <g data-entrance-marker="true" transform={`translate(0 ${(entranceStart + entranceEnd) / 2})`} fill="#6a867a"><path d={`M${house.width + .8} 0 H${house.width + .1} l.18 -.1 m-.18 .1 l.18 .1`} stroke="#6a867a" strokeWidth=".025" /><text x={house.width + .45} y="-.25" textAnchor="middle" fontSize=".13">EINGANG</text></g>}
-    {dimensions && <g stroke="#8a9588" strokeWidth=".014" fill="#667262"><path d={`M0 -.25 V-.85 M${house.width} -.25 V-.85 M0 -.65 H${house.width} M${house.width + .3} 0 H${house.width + .95} M${house.width + .3} ${house.depth} H${house.width + .95} M${house.width + .7} 0 V${house.depth}`} /><text x={house.width / 2} y="-.79" textAnchor="middle" fontSize=".2" stroke="none">{house.width.toLocaleString('de-DE', { minimumFractionDigits: 2 })} m</text><text x={house.width + 1} y={house.depth / 2} textAnchor="middle" fontSize=".2" stroke="none" transform={`rotate(90 ${house.width + 1} ${house.depth / 2})`}>{house.depth.toLocaleString('de-DE', { minimumFractionDigits: 2 })} m</text><path d={`M${house.west} ${house.depth + .35} v.35 M${house.east} ${house.depth + .35} v.35 M${house.west} ${house.depth + .55} H${house.east}`} /><text x={house.width / 2} y={house.depth + .48} fontSize=".14" textAnchor="middle" stroke="none">{(house.east - house.west).toLocaleString('de-DE', { minimumFractionDigits: 3 })} m lichte Breite</text></g>}
-    <g data-masonry-legend="true" transform={`translate(${house.west} -1.28)`}><rect width={construction.exteriorWall} height={construction.exteriorWall} fill="#424a43" /><line x1={construction.exteriorWall} y1="0" x2={construction.exteriorWall} y2={construction.exteriorWall} stroke="#899387" strokeWidth=".012" /><text x={construction.exteriorWall + .1} y={construction.exteriorWall - .06} fontSize=".22" fill="#667262">Außenwand 30 cm · Steinraster 30 cm</text></g>
+    {dimensions && <><g stroke="#8a9588" strokeWidth=".014" fill="#667262"><path d={`M0 -.25 V-.85 M${house.width} -.25 V-.85 M0 -.65 H${house.width} M${house.width + .3} 0 H${house.width + .95} M${house.width + .3} ${house.depth} H${house.width + .95} M${house.width + .7} 0 V${house.depth}`} /><text x={house.width / 2} y="-.79" textAnchor="middle" fontSize=".2" stroke="none">{house.width.toLocaleString('de-DE', { minimumFractionDigits: 2 })} m</text><text x={house.width + 1} y={house.depth / 2} textAnchor="middle" fontSize=".2" stroke="none" transform={`rotate(90 ${house.width + 1} ${house.depth / 2})`}>{house.depth.toLocaleString('de-DE', { minimumFractionDigits: 2 })} m</text><path d={`M${house.west} ${house.depth + .5} v.45 M${house.east} ${house.depth + .5} v.45 M${house.west} ${house.depth + .8} H${house.east}`} /><text x={house.width / 2} y={house.depth + .73} fontSize=".14" textAnchor="middle" stroke="none">{(house.east - house.west).toLocaleString('de-DE', { minimumFractionDigits: 3 })} m lichte Breite</text></g>{floor.walls.filter(wall => ['north', 'east', 'south', 'west'].includes(wall.id)).map(wall => <OpeningDimensionChain key={wall.id} wall={wall} />)}</>}
     {floor.id === 'KG' && furnished && floor.furniture.some(item => item.id === 'party-sofa') && <g data-party-room="true" pointerEvents="none"><circle cx={partyRoom.x} cy={partyRoom.z} r={partyRoom.radius} fill="#dce8e8" stroke="#697f85" strokeWidth=".025" /></g>}
     {floor.id === 'DG' && roofWindows.map(window => <rect key={window.id} x={window.x} y={window.z} width={window.width} height={window.depth} fill="#d6edee" fillOpacity=".35" stroke="#42858c" strokeDasharray=".06 .04" strokeWidth=".025" pointerEvents="none" />)}
     {hover && <g pointerEvents="none" stroke="#227d80" strokeWidth=".025" fill="none"><rect x={hover.object.x} y={hover.object.z} width={hover.object.width} height={hover.object.depth} /><path d={`M${hover.object.x} ${hover.object.z - .12} h${hover.object.width} M${hover.object.x - .12} ${hover.object.z} v${hover.object.depth}`} /><text x={hover.object.x + hover.object.width / 2} y={hover.object.z - .19} fill="#195c60" stroke="#fff" strokeWidth=".055" paintOrder="stroke" textAnchor="middle" fontSize=".16">{metres(hover.object.width)}</text><text x={hover.object.x - .2} y={hover.object.z + hover.object.depth / 2} fill="#195c60" stroke="#fff" strokeWidth=".055" paintOrder="stroke" textAnchor="end" fontSize=".16">{metres(hover.object.depth)}</text></g>}

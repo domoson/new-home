@@ -6,8 +6,9 @@ import { distance, furnitureName, metres } from './measure'
 import type { PlanPoint } from './measure'
 import { sectionSpan } from './section'
 import type { SectionAxis } from './section'
+import { usePlanGestures } from './planGestures'
 
-export default function SectionView({ furnished, zoom, floorId }: { furnished: boolean; zoom: number; floorId: FloorId }) {
+export default function SectionView({ furnished, zoom, floorId, onZoom }: { furnished: boolean; zoom: number; floorId: FloorId; onZoom: (zoom: number) => void }) {
   const [axis, setAxis] = useState<SectionAxis>('NS')
   const [position, setPosition] = useState(.9)
   const [heightProbe, setHeightProbe] = useState<number | null>(null)
@@ -15,7 +16,9 @@ export default function SectionView({ furnished, zoom, floorId }: { furnished: b
   const [origin, setOrigin] = useState<PlanPoint | null>(null)
   const [cursor, setCursor] = useState<PlanPoint | null>(null)
   const [lines, setLines] = useState<{ start: PlanPoint; end: PlanPoint }[]>([])
+  const [pan, setPan] = useState({ x: 0, y: 0 })
   const length = axis === 'NS' ? house.depth : house.width
+  const gestures = usePlanGestures(zoom, onZoom, { x: length / 2, y: -3.3 }, pan, setPan, !measuring)
   const roofTop = roofInnerElevation
   const span = (bounds: Rect) => sectionSpan(bounds, axis, position)
   const block = (bounds: Rect, bottom: number, height: number, color: string, label: string, key: string) => {
@@ -31,7 +34,7 @@ export default function SectionView({ furnished, zoom, floorId }: { furnished: b
     return { x: point.x, z: point.y }
   }
   return <><div className="section-measure-tools"><button className={`icon-button ${measuring ? 'on' : ''}`} aria-label="Maßband im Schnitt" aria-pressed={measuring} title="Maßband: zwei Punkte setzen; Shift sperrt die Achse" onClick={() => { setMeasuring(!measuring); setOrigin(null); setHeightProbe(null) }}><Ruler size={19} /></button><button className="icon-button" aria-label="Schnittmessungen löschen" title="Schnittmessungen löschen" disabled={!lines.length && !origin} onClick={() => { setLines([]); setOrigin(null) }}><Trash2 size={18} /></button></div><div className="section-options"><label htmlFor="section-axis">Schnittachse</label><select id="section-axis" value={axis} onChange={event => { const next = event.target.value as SectionAxis; setAxis(next); setPosition(next === 'NS' ? .9 : core.z + .5); setHeightProbe(null); setLines([]); setOrigin(null) }}><option value="NS">A–A · Nord–Süd</option><option value="EW">B–B · West–Ost</option></select><label htmlFor="section-position">{axis === 'NS' ? 'Abstand von West' : 'Abstand von Nord'} <output>{metres(position)}</output></label><input id="section-position" type="range" min=".05" max={axis === 'NS' ? house.width - .05 : house.depth - .05} step=".05" value={position} onChange={event => { setPosition(Number(event.target.value)); setLines([]); setOrigin(null) }} /></div>
-    <svg className="floor-plan section-view" role="img" tabIndex={0} aria-label={`Gebäudeschnitt ${axis === 'NS' ? 'Nord–Süd' : 'West–Ost'}`} viewBox={`${length / 2 - width / 2} ${-3.3 - height / 2} ${width} ${height}`} onPointerMove={event => { const point = pointAt(event.currentTarget, event.clientX, event.clientY, event.shiftKey); setCursor(point); setHeightProbe(!measuring && point.x >= .365 && point.x <= length - .365 ? point.x : null) }} onPointerDown={event => { if (!measuring) return; event.currentTarget.focus(); const point = pointAt(event.currentTarget, event.clientX, event.clientY, event.shiftKey); setCursor(point); if (origin) { if (distance(origin, point) > .001) setLines([...lines, { start: origin, end: point }]); setOrigin(null) } else setOrigin(point) }} onKeyDown={event => { if (event.key === 'Escape') setOrigin(null); if (event.key === 'Delete') { setLines([]); setOrigin(null) } }} onPointerLeave={() => setHeightProbe(null)} style={{cursor: measuring ? 'crosshair' : undefined, touchAction: 'none'}}>
+    <svg className="floor-plan section-view" role="img" tabIndex={0} aria-label={`Gebäudeschnitt ${axis === 'NS' ? 'Nord–Süd' : 'West–Ost'}`} viewBox={`${length / 2 - width / 2 - pan.x} ${-3.3 - height / 2 - pan.y} ${width} ${height}`} onPointerMove={event => { if (gestures.pointerMove(event)) { setHeightProbe(null); return } const point = pointAt(event.currentTarget, event.clientX, event.clientY, event.shiftKey); setCursor(point); setHeightProbe(!measuring && point.x >= .365 && point.x <= length - .365 ? point.x : null) }} onPointerDown={event => { event.currentTarget.focus(); if (!measuring) { gestures.pointerDown(event); return } const point = pointAt(event.currentTarget, event.clientX, event.clientY, event.shiftKey); setCursor(point); if (origin) { if (distance(origin, point) > .001) setLines([...lines, { start: origin, end: point }]); setOrigin(null) } else setOrigin(point) }} onPointerUp={gestures.pointerUp} onPointerCancel={gestures.pointerUp} onClickCapture={event => { if (measuring) event.stopPropagation(); else gestures.clickCapture(event) }} onKeyDown={event => { if (event.key === 'Escape') setOrigin(null); if (event.key === 'Delete') { setLines([]); setOrigin(null) } }} onPointerLeave={() => setHeightProbe(null)} style={{cursor: measuring ? 'crosshair' : 'grab', touchAction: 'none'}}>
       <line data-terrain="assumed" x1="-.8" x2={length + .6} y1={-construction.terrain} y2={-construction.terrain} stroke="#84967c" strokeWidth=".04"><title>OK Gelände / Urgelände angenommen, nicht vermessen: {metres(construction.terrain)}</title></line>
       <text x={length / 2} y={-construction.terrain + .36} fontSize=".28" textAnchor="middle" fill="#496044">OK Gelände / Urgelände {metres(construction.terrain)} · Annahme</text>
       {floorIds.map(id => {
