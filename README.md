@@ -135,17 +135,18 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
   und einem nominell 60 cm breiten Lueftungsbereich (bewegliches Blatt nach
   Rahmen/Fugen etwa 51 cm breit). Nur unter dessen Fluegel liegt bei bodentiefen
   Fenstern ein festes Unterlicht: EG-Suedwest und DG jeweils 90 cm.
-  Das grosse Festfeld bleibt ohne Querholm. Oeffnungsbreiten, Fensterabstaende und Bruestungshoehen
-  der neuen EG-/OG-/DG-Fenster folgen dem 30-cm-Raster (ausgenommen das hohe EG-Kuechenband,
+  Das grosse Festfeld bleibt ohne Querholm. Oeffnungsbreiten und Fensterabstaende
+  der neuen EG-/OG-/DG-Fenster folgen dem 30-cm-Raster (Hoehen und Bruestungen der 125-cm-Fenster ausgenommen, ebenso das hohe EG-Kuechenband,
   Kellerfenster, Eingangsfestfeld und die 2,80 m breite Terrassenanlage mit
   1,25/1,55-m-Feldern sowie die dazu gleich hohe Eckverglasung). Rasterfugen sind schematisch.
   Teilungshoehe und Profile angenaehert; keine Hersteller-/Absturzsicherungsfreigabe.
   Fensterlagen und -groessen aus der neuen Skizze angenaehert, Gartenzugang als
   zweiteilige 2,80-m-Hebeschiebeanlage mit Eckkopplung ohne Mauerstueck:
   innerer westlicher Fluegel 1,25 m beweglich, aeusseres oestliches Feld 1,55 m fest.
-  Beide Ostachsen in OG/DG beginnen bei z=3,30 und 5,70 m, jeweils
+  Beide Ostachsen im OG und DG beginnen bei z=3,30 und 5,70 m, jeweils
   150 cm breit. Die suedliche Achse ist 60 cm nach Norden verschoben;
   Oeffnungen und Teilungen sind symmetrisch zum First bei z=5,25 m.
+  DG und OG fluchten seitlich; die DG-Fenster behalten die bodentiefe Oeffnung.
   Die schmalen Fluegel sitzen jeweils an der aeusseren Seite des Fensterpaars.
   EG ueber der Spuele ein einzelnes Fensterband 210 x 75 cm
   von z=3,30 bis 5,40 m mit 165 cm Bruestung und Oberkante 240 cm.
@@ -154,19 +155,21 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
   nominell 60 cm breiter Lueftungsbereich im Sueden, frei vom Hochschrank.
   Kuechenmoebel unveraendert. Die hohe Bruestung erschwert Einblicke, garantiert
   aber keinen Sichtschutz. Tageslichtversorgung, Sturz, Glasgroesse und Raffstore benoetigen
-  Hersteller-/Tragwerkspruefung. OG-Ostfenster 150 x 150 cm mit 90 cm Bruestung,
-  ohne Unterlicht: gleiche Hoehe und Bruestung wie die OG-Suedfenster,
+  Hersteller-/Tragwerkspruefung. OG-Ostfenster 150 x 125 cm mit 115 cm Bruestung,
+  ohne Unterlicht: gleiche Hoehe und Bruestung wie die OG-Suedfenster und das OG-Nordfenster,
   aber 150 statt 180 cm breit fuer die durchgehenden Ostachsen.
   Oberkante weiterhin 240 cm.
   Das Spielzimmerregal steht vor dem Festfeld.
-  DG-Giebelfenster weiterhin bodentief 150 x 210 cm, ein oeffnender oberer
-  Fluegel je Fenster mit festem Unterlicht bei 90 cm. Oberkante bleibt 210 cm.
+  DG-Giebelfenster wieder bodentief 150 x 210 cm mit Oberkante 210 cm:
+  je ein schmaler oeffnender Fluegel ueber einem 90-cm-Festfeld neben dem
+  durchgehenden Festfeld. Die Achsen fluchten mit den OG-Fenstern;
+  Tragwerk, Dachanschluss und Raffstoreeinbau sind fachlich zu pruefen.
   DG-Buerofenster 60 cm nach Sueden verschoben, Trennwand zum Schlafzimmer
   30 cm nach Sueden auf z=5,10 m: Buero gewinnt 0,915 m2, Schlafzimmer
   entsprechend kleiner. Schraenke beidseits folgen der Wand; niedriger
   Bueroschrank auf 120 cm gekuerzt, um den Fensterfluegel freizuhalten.
-  Festes Unterlicht allein ist kein Absturzsicherungsnachweis;
-  Verglasung, Absturzsicherung und Beschlaege fachlich zu planen.
+  Verglasung, Beschlaege, Tageslicht und Rettungswege fachlich zu planen;
+  die schmalen Lueftungsfluegel sind kein Rettungsfensternachweis.
   EG-Suedostecke fest verglast ab z=9,30 m, 30 cm nach Norden verlaengert:
   90 cm bis zur inneren Suedwandkante plus 30 cm geoeffnete Wandtiefe.
   Beide Glasflaechen treffen sich in der Wandmitte am 8-cm-Eckprofil bei
@@ -177,8 +180,8 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
   OG-Lichtband 240 x 90 cm mit grossem Festfeld und schmalem Lueftungsfluegel,
   weiterhin 150 cm Bruestung bei Oberkante 240 cm.
   Suedwestliche EG-/OG-Fenster fluchten 60 cm von der Trennwand entfernt
-  uebereinander. Die beiden Fenster von Kind Sued sind je 180 x 150 cm mit
-  90 cm Bruestung; das oestliche endet 30 cm vor der Ostkante der
+  uebereinander. Die beiden Fenster von Kind Sued sind je 180 x 125 cm mit
+  115 cm Bruestung; das oestliche endet 30 cm vor der Ostkante der
   Terrassenverglasung. Das EG-Dielenfenster ist ein 150 x 60 cm grosses Band
   bei x=4,50 bis 6,00 m, beide Seitenkanten buendig mit dem OG-Fenster darueber.
   Nach Osten versetzt, nicht mehr mittig ueber der Garderoben-Hakenleiste.
