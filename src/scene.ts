@@ -87,7 +87,7 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
   const frameFaces = (...inside: number[]) => Array.from({ length: 6 }, (_, face) => inside.includes(face) ? frameInsideMaterial : frameMaterial)
   const kitchenStone = mat('#eeeee8', .48), kitchenWhite = mat('#edeee9', .65), kitchenSage = mat('#8eaaa0', .65), steel = mat('#b9c0bf', .26)
   steel.metalness = .75
-  const doorMaterial = mat(finishes.interiorDoor[0].color, .75, oak)
+  const doorMaterial = mat(finishes.interiorDoor[1].color, .75)
   const roofCourseMaterial = mat(initialAppearance.roof)
   roofCourseMaterial.color.copy(roofMaterial.color).multiplyScalar(.72)
   const groundMaterial = mat('#ffffff', 1); groundMaterial.side = THREE.DoubleSide

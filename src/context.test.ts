@@ -3,7 +3,7 @@ import { house } from './model'
 import { boundaryDistance, exteriorStyleId, exteriorStyles, finishes, initialAppearance, initialSettings, partner, polygonArea, siteArea, siteBoundary, siteDivision, siteLengths, siteParcels, sunPosition } from './context'
 
 it('ordnet Aussenstile den Menuefarben zu und erkennt individuelle Anpassungen', () => {
-  expect(exteriorStyleId(initialAppearance)).toBe('original')
+  expect(exteriorStyleId(initialAppearance)).toBe('silver-terracotta')
   expect(new Set(exteriorStyles.map(style => style.id)).size).toBe(exteriorStyles.length)
   for (const style of exteriorStyles) {
     const appearance = { ...initialAppearance, ...style.appearance }
@@ -50,8 +50,9 @@ it('haelt beide Hauskoerper mindestens drei Meter von Nord-, Ost- und Westgrenze
 })
 
 it('verwendet die gewuenschten Farbdefaults fuer beide Haushaelften', () => {
+  expect(initialSettings.interiorDoor).toBe(finishes.interiorDoor[1].color)
   for (const appearance of [initialSettings, initialSettings.west]) {
-    expect(appearance.frame).toBe(finishes.frame[2].color)
+    expect(appearance.frame).toBe(finishes.frame[7].color)
     expect(appearance.facade).toBe(finishes.facade[3].color)
     expect(appearance.composition).toBe('plaster')
     expect(appearance.woodTone).toBe(3)

@@ -35,7 +35,7 @@ test('Innentueren und Zargen wechseln gemeinsam zwischen Eiche und Lackfarben', 
   })
   expect(result.floors.sort()).toEqual(['DG', 'EG', 'KG', 'OG'])
   expect(result.frames).toBeGreaterThan(10)
-  expect(result.defaults.every(door => door.color === 'dfd6c2' && door.map)).toBe(true)
+  expect(result.defaults.every(door => door.color === 'ffffff' && !door.map)).toBe(true)
   for (const sample of result.samples) {
     for (const material of [...sample.doors, ...sample.frames]) expect(material).toEqual({ color: sample.color, map: sample.wood, transparent: false })
   }
@@ -48,7 +48,7 @@ test('Innentueren und Zargen wechseln gemeinsam zwischen Eiche und Lackfarben', 
     const swatch = page.getByRole('button', { name: `Innentüren ${name}`, exact: true })
     await swatch.click()
     await expect(swatch).toHaveAttribute('aria-pressed', 'true')
-    await expect(page.getByLabel('Außenstil', { exact: true })).toHaveValue('original')
+    await expect(page.getByLabel('Außenstil', { exact: true })).toHaveValue('silver-terracotta')
   }
   await page.getByRole('button', { name: 'Innentüren Reinweiß', exact: true }).click()
   expect(await page.locator('.settings-body').evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true)
