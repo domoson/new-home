@@ -1,6 +1,69 @@
 import { expect, test } from '@playwright/test'
 import { PNG } from 'pngjs'
 
+test('Fensterfarben innen und außen bleiben je Haus unabhängig', async ({ page }, testInfo) => {
+  const errors: string[] = []
+  page.on('pageerror', error => errors.push(error.message))
+  await page.goto('/')
+  const probe = await page.evaluate(async () => {
+    const { buildScene } = await import('/src/scene.ts')
+    const THREE = await import('/node_modules/.vite/deps/three.js')
+    const model = buildScene('EG', false, true, true)
+    const east = model.group.getObjectByName('EG-kitchen-east-window-mullion')
+    const west = model.group.getObjectByName('house-west').getObjectByName('EG-kitchen-east-window-mullion')
+    const colors = mesh => mesh.material.map(material => material.color.getHexString())
+    const defaults = colors(east)
+    model.setFinish('frameInside', '#ff0000')
+    model.setFinish('frame', '#00ff00')
+    model.setFinish('frameInside', '#0000ff', 'west')
+    const eastColors = colors(east), westColors = colors(west)
+    const normals = []
+    for (const [id, normal] of [['EG-kitchen-east-window', [-1, 0, 0]], ['EG-garden-west-secondary', [0, 0, -1]], ['OG-bath-window-secondary', [0, 0, 1]]]) {
+      const door = model.doors.find(door => door.id === id)
+      const frame = door.pivot.children.find(mesh => mesh.userData.windowFrame)
+      const face = frame.material.findIndex(material => material.color.getHexString() === 'ff0000')
+      model.setOpening(id, 0); model.group.updateMatrixWorld(true)
+      const direction = new THREE.Vector3(0, 0, face === 4 ? 1 : -1).transformDirection(frame.matrixWorld)
+      model.setOpening(id, 1)
+      normals.push({ actual: direction.toArray(), expected: normal, retained: colors(frame)[face] === 'ff0000' })
+    }
+    model.dispose()
+    return { defaults, eastColors, westColors, normals }
+  })
+  expect(probe.defaults[0]).toBe('756f65')
+  expect(probe.defaults[1]).toBe('f7f7f4')
+  expect(probe.eastColors[0]).toBe('00ff00')
+  expect(probe.eastColors[1]).toBe('ff0000')
+  expect(probe.westColors[0]).toBe('756f65')
+  expect(probe.westColors[1]).toBe('0000ff')
+  for (const result of probe.normals) {
+    result.actual.forEach((value, axis) => expect(value).toBeCloseTo(result.expected[axis]))
+    expect(result.retained).toBe(true)
+  }
+  await page.getByRole('button', { name: '3D', exact: true }).click()
+  await expect(page.locator('.scene-settings')).toBeVisible()
+  await page.locator('.scene-settings summary').click()
+  await page.getByRole('button', { name: 'Fenster innen Moosgrün', exact: true }).click()
+  await page.getByRole('button', { name: 'Fenster außen Weiß', exact: true }).click()
+  await page.getByLabel('Haushälfte', { exact: true }).selectOption('west')
+  await expect(page.getByRole('button', { name: 'Fenster innen Weiß', exact: true })).toHaveAttribute('aria-pressed', 'true')
+  await page.getByLabel('Haushälfte', { exact: true }).selectOption('east')
+  expect(await page.locator('.settings-body').evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true)
+  await page.screenshot({ path: `test-results/${testInfo.project.name}-window-colors.png` })
+  await page.locator('.scene-settings summary').click()
+  await page.getByRole('button', { name: '2D', exact: true }).click()
+  await page.getByRole('button', { name: '3D', exact: true }).click()
+  await page.locator('.scene-settings summary').click()
+  await expect(page.getByRole('button', { name: 'Fenster innen Moosgrün', exact: true })).toHaveAttribute('aria-pressed', 'true')
+  await expect(page.getByRole('button', { name: 'Fenster außen Weiß', exact: true })).toHaveAttribute('aria-pressed', 'true')
+  await page.locator('.scene-settings summary').click()
+  const image = PNG.sync.read(await page.locator('canvas').screenshot())
+  const colors = new Set<string>()
+  for (let offset = 0; offset < image.data.length; offset += 4) colors.add(`${image.data[offset]},${image.data[offset + 1]},${image.data[offset + 2]}`)
+  expect(colors.size).toBeGreaterThan(100)
+  expect(errors).toEqual([])
+})
+
 test('Fassaden: acht Kompositionen, Holztoene und Lamellen ohne Kamerasprung', async ({ page }, testInfo) => {
   const errors: string[] = []
   page.on('pageerror', error => errors.push(error.message))
@@ -30,8 +93,8 @@ test('Fassaden: acht Kompositionen, Holztoene und Lamellen ohne Kamerasprung', a
     const outsideEntry = [[1, 2], [2.75, 1]].map(([height, south]) => sample(outerX, height, south, 'entry'))
     const { initialSettings } = await import('/src/context.ts')
     const model = buildScene('EG', false, true, false)
-    const eastFrame = model.group.getObjectByName('EG-kitchen-east-window-mullion').material.color.getHexString()
-    const westFrame = model.group.getObjectByName('house-west').getObjectByName('EG-kitchen-east-window-mullion').material.color.getHexString()
+    const eastFrame = model.group.getObjectByName('EG-kitchen-east-window-mullion').material[0].color.getHexString()
+    const westFrame = model.group.getObjectByName('house-west').getObjectByName('EG-kitchen-east-window-mullion').material[0].color.getHexString()
     const walls = model.group.children.filter((object: { name: string }) => object.name === 'EG-wall-east' || object.name === 'DG-wall-east').map((mesh: { name: string; material: { customProgramCacheKey: () => string }[] }) => ({ name: mesh.name, materials: mesh.material.map(material => material.customProgramCacheKey()) }))
     model.dispose(); geometry.dispose(); finish.material.dispose(); texture.dispose(); target.dispose(); renderer.dispose()
     return { outer, inner, white, corner, gableReturn, walls, og, dg, entry, gap, slat, exteriorPlaster, entrySurround, outsideEntry, eastFrame, westFrame, initialSettings }

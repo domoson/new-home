@@ -54,6 +54,10 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
   facadeFinish.setComposition(initialAppearance.composition, initialAppearance.woodTone, initialAppearance.woodProfile)
   canopyFinish.setComposition(initialAppearance.composition, initialAppearance.woodTone, 'boards')
   const timber = mat('#ffffff', .75, oak), plaster = mat('#ffffff'), ceramic = mat('#f4f7f3', .28), linen = mat('#e6e5db'), sage = mat('#9fab94'), teal = mat('#687d77'), dark = mat('#343e3b'), stone = mat('#cfcec6'), roofMaterial = mat(initialAppearance.roof), frameMaterial = mat(initialAppearance.frame)
+  const frameInsideMaterial = mat(initialAppearance.frameInside)
+  const mirrorMaterial = mat('#c8dadb', .12)
+  mirrorMaterial.metalness = .65
+  const frameFaces = (...inside: number[]) => Array.from({ length: 6 }, (_, face) => inside.includes(face) ? frameInsideMaterial : frameMaterial)
   const kitchenStone = mat('#eeeee8', .48), kitchenWhite = mat('#edeee9', .65), kitchenSage = mat('#8eaaa0', .65), steel = mat('#b9c0bf', .26)
   steel.metalness = .75
   const doorMaterial = mat('#dfd6c2', .75, oak)
@@ -267,7 +271,7 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
       const count = Math.max(1, Math.round((alongX ? width : depth) / .6))
       for (let index = 0; index < count; index++) {
         const bounds = moduleFront({ ...item, id: item.id, x: x + (alongX ? index * width / count : 0), z: z + (alongX ? 0 : index * depth / count), width: alongX ? width / count : width, depth: alongX ? depth : depth / count, front: item.front, use: 'cupboard' })
-        box(bounds.x, bounds.z, bounds.width, bounds.depth, .04, height - .08, linen).name = `cabinet-front-${item.id}`
+        box(bounds.x, bounds.z, bounds.width, bounds.depth, .04, height - .08, item.id === 'bath-mirror-cabinet' ? mirrorMaterial : linen).name = `cabinet-front-${item.id}`
         box(bounds.x + bounds.width / 2, bounds.z + bounds.depth / 2, alongX ? .018 : .006, alongX ? .006 : .018, Math.min(1, height - .3), .18, dark)
       }
     } else if ((item.id === 'fridge' || item.id.startsWith('kitchen-tall')) && !item.angle) {
@@ -388,8 +392,9 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
         box(x + width - .015, tapZ - .12, .02, .24, height + .15, .1, steel).name = `${item.id}-concealed-control`
         box(x + width - .2, tapZ - .015, .2, .03, height + .18, .025, steel).name = `${item.id}-wall-spout`
       } else if (item.concealedFittings && item.angle === -Math.PI / 2) {
-        box(x - .005, tapZ - .12, .02, .24, height + .15, .1, steel).name = `${item.id}-concealed-control`
-        box(x, tapZ - .015, .2, .03, height + .18, .025, steel).name = `${item.id}-wall-spout`
+        const setback = item.id === 'bath-sink' ? .1 : 0
+        box(x - setback - .005, tapZ - .12, .02, .24, height + .15, .1, steel).name = `${item.id}-concealed-control`
+        box(x - setback, tapZ - .015, .2 + setback, .03, height + .18, .025, steel).name = `${item.id}-wall-spout`
       } else if (item.concealedFittings) {
         box(x + width / 2 - .12, z - .015, .24, .02, height + .15, .1, steel).name = `${item.id}-concealed-control`
         box(x + width / 2 - .015, z - .015, .03, .2, height + .18, .025, steel).name = `${item.id}-wall-spout`
@@ -403,15 +408,14 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
         box(x + width - .01, z + depth / 2 - .12, .025, .24, 1, .14, stone).name = `${item.id}-flush-plate`
       } else {
         box(x + .12, z + (item.angle === Math.PI ? .02 : .13), width - .24, depth - .15, .05, .34, ceramic, true); surface(.38, .06, ceramic, true); box(x + .1, z + (item.angle === Math.PI ? .1 : .2), width - .2, depth - .3, .442, .006, stone, true)
-        if (item.concealedFittings) box(x + width / 2 - .12, z - .015, .24, .025, 1, .14, stone).name = `${item.id}-flush-plate`
+        if (item.concealedFittings) box(x + width / 2 - .12, item.angle === Math.PI ? z + depth - .01 : z - .015, .24, .025, 1, .14, stone).name = `${item.id}-flush-plate`
       }
     } else if (kind === 'bath') {
       surface(.03, height - .03, ceramic, true); box(x + .09, z + .09, width - .18, depth - .18, height, .008, stone, true)
       if (item.id === 'bath-tub') { box(x, z + depth / 2 - .12, .025, .24, .78, .1, stone); beam(new THREE.Vector3(x, elevation + .8, z + depth / 2), new THREE.Vector3(x + .15, elevation + .8, z + depth / 2), .014, dark) }
     } else if (kind === 'shower') {
       surface(.015, .025, ceramic)
-      // angle PI: walk-in shower backed by a south service wall, open toward the room without a glass screen
-      if (item.angle !== Math.PI) box(x + width - .02, z, .015, depth * .65, .04, 1.95, glass)
+      if (item.angle !== Math.PI && item.id !== 'bath-shower') box(x + width - .02, z, .015, depth * .65, .04, 1.95, glass)
       if (item.concealedFittings && item.angle === Math.PI) {
         box(x + width / 2 - .08, z + depth - .01, .16, .02, 1.05, .22, steel).name = `${item.id}-concealed-control`
         box(x + width / 2 - .015, z + depth - .31, .03, .32, 2.1, .03, steel)
@@ -500,11 +504,13 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
           const glazing = opening.cornerGlazing ? { ...opening, width: opening.width + (wall.axis === 'x' ? construction.exteriorWall / 2 : -construction.exteriorWall / 2) } : opening
           const fixedBox = (start: number, bottom: number, width: number, height: number, material: THREE.Material, thickness = .08) => {
             const bounds = wall.axis === 'x' ? rect(east + start, south - thickness / 2, width, thickness) : rect(east - thickness / 2, south + start, thickness, width)
-            return addBox(bounds, base + opening.sill + bottom, height, material)
+            const mesh = addBox(bounds, base + opening.sill + bottom, height, material === frameMaterial ? frameFaces(wall.axis === 'z' ? 1 : wall.id === 'north' ? 4 : 5) : material)
+            if (material === frameMaterial) mesh.userData.windowFrame = `${id}-${opening.id}`
+            return mesh
           }
           for (const start of [0, glazing.width - windowFrame]) fixedBox(start, 0, windowFrame, openHeight, frameMaterial)
           for (const bottom of [0, openHeight - windowFrame]) fixedBox(windowFrame, bottom, glazing.width - 2 * windowFrame, windowFrame, frameMaterial)
-          if (opening.cornerGlazing && wall.axis === 'z') addBox(rect(east - .04, south + glazing.width - .04, .08, .08), base + opening.sill, openHeight, frameMaterial).name = `${id}-glazing-corner-coupling`
+          if (opening.cornerGlazing && wall.axis === 'z') addBox(rect(east - .04, south + glazing.width - .04, .08, .08), base + opening.sill, openHeight, frameFaces(1, 5)).name = `${id}-glazing-corner-coupling`
           const columns = opening.windowLayout?.columns ?? 1, lowerFixed = opening.windowLayout?.lowerFixed
           if (columns === 2) fixedBox(windowMullionStart(glazing), windowFrame, windowJoint, openHeight - 2 * windowFrame, frameMaterial).name = `${id}-${opening.id}-mullion`
           for (const panel of windowPanels(glazing)) {
@@ -520,8 +526,9 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
             pivot.rotation.y = (wall.axis === 'x' ? 0 : -Math.PI / 2) + (reverseHinge ? Math.PI : 0)
             group.add(pivot)
             const mesh = addBox(rect(.035, -.015, width - .07, .03), .035, height - .07, glass, false, false, pivot)
-            for (const edge of [0, width - .035]) addBox(rect(edge, -.03, .035, .06), 0, height, frameMaterial, false, false, pivot)
-            for (const bottom of [0, height - .035]) addBox(rect(.035, -.03, width - .07, .06), bottom, .035, frameMaterial, false, false, pivot)
+            const sashMaterials = frameFaces((wall.id === 'south') !== reverseHinge ? 5 : 4)
+            for (const edge of [0, width - .035]) addBox(rect(edge, -.03, .035, .06), 0, height, sashMaterials, false, false, pivot).userData.windowFrame = `${id}-${opening.id}`
+            for (const bottom of [0, height - .035]) addBox(rect(.035, -.03, width - .07, .06), bottom, .035, sashMaterials, false, false, pivot).userData.windowFrame = `${id}-${opening.id}`
             const direction = (['north', 'east'].includes(wall.id) ? -1 : 1) * (reverseHinge ? -1 : 1)
             addBox(rect(width - .03, direction < 0 ? .033 : -.045, .018, .012), Math.max(.12, height / 2 - .08), .16, dark, false, false, pivot)
             const leafId = `${id}-${opening.id}${panel.column ? '-secondary' : ''}`
@@ -531,8 +538,13 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
           }
         } else {
           const reverseHinge = opening.hinge === 'end'
-          const jamb = opening.frame ?? 0, leafWidth = opening.width - 2 * jamb, leafHeight = Math.min(openHeight, opening.height - jamb)
-          if (jamb) {
+          const jamb = opening.frame ?? 0, leafWidth = opening.width - 2 * jamb, leafBottom = opening.glazed ? .015 : 0, leafThickness = opening.glazed ? .008 : .036
+          const leafHeight = Math.min(openHeight, opening.height - (opening.glazed ? 0 : jamb)) - leafBottom
+          if (opening.glazed) for (const start of [0, opening.width - jamb + .005]) {
+            const bounds = wall.axis === 'x' ? rect(east + start, south - .0125, jamb - .005, .025) : rect(east - .0125, south + start, .025, jamb - .005)
+            addBox(bounds, base, openHeight, steel).name = `${id}-${opening.id}-side-profile`
+          }
+          if (jamb && !opening.glazed) {
             const frameBox = (start: number, bottom: number, width: number, height: number) => {
               const thickness = (wall.axis === 'x' ? wall.depth : wall.width) + .02
               const bounds = wall.axis === 'x' ? rect(east + start, south - thickness / 2, width, thickness) : rect(east - thickness / 2, south + start, thickness, width)
@@ -545,14 +557,18 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
           const pivot = new THREE.Group(); pivot.position.set(east + (wall.axis === 'x' ? hingeOffset : 0), base, south + (wall.axis === 'z' ? hingeOffset : 0)); group.add(pivot)
           const closedAngle = (wall.axis === 'x' ? 0 : -Math.PI / 2) + (reverseHinge ? Math.PI : 0)
           const sliding = opening.id === 'terrace'
-          const glazed = sliding || opening.id.startsWith('garden-door')
-          const mesh = addBox(rect(0, -.018, leafWidth, .036), 0, leafHeight, glazed ? glass : doorMaterial, false, false, pivot)
+          const glazed = opening.glazed || sliding || opening.id.startsWith('garden-door')
+          const mesh = addBox(rect(0, -leafThickness / 2, leafWidth, leafThickness), leafBottom, leafHeight, glazed ? glass : doorMaterial, false, false, pivot)
           mesh.name = `${id}-${opening.id}-leaf`
           if (!glazed) for (const side of [-.04, .025]) addBox(rect(leafWidth - .16, side, .12, .015), Math.min(1.02, leafHeight - .25), .025, steel, false, false, pivot)
-          if (glazed) {
-            for (const east of [0, opening.width - .035]) addBox(rect(east, -.025, .035, .05), 0, openHeight, frameMaterial, false, false, pivot)
-            for (const bottom of [0, openHeight - .035]) addBox(rect(0, -.025, opening.width, .05), bottom, .035, frameMaterial, false, false, pivot)
-            if (opening.id.startsWith('garden-door') && openHeight > .75) addBox(rect(.035, -.025, opening.width - .07, .05), .67, .06, frameMaterial, false, false, pivot).name = `${id}-${opening.id}-transom`
+          if (opening.glazed) {
+            for (const bottom of [.25, 1.65]) addBox(rect(-.015, -.016, .055, .032), bottom, .08, steel, false, false, pivot).name = `${id}-${opening.id}-hinge`
+            for (const side of [-.035, .015]) addBox(rect(leafWidth - .1, side, .018, .02), .95, .18, steel, false, false, pivot).name = `${id}-${opening.id}-handle`
+          } else if (glazed) {
+            const sashMaterials = frameFaces((wall.id === 'south') !== reverseHinge ? 5 : 4)
+            for (const east of [0, opening.width - .035]) addBox(rect(east, -.025, .035, .05), 0, openHeight, sashMaterials, false, false, pivot).userData.windowFrame = `${id}-${opening.id}`
+            for (const bottom of [0, openHeight - .035]) addBox(rect(0, -.025, opening.width, .05), bottom, .035, sashMaterials, false, false, pivot).userData.windowFrame = `${id}-${opening.id}`
+            if (opening.id.startsWith('garden-door') && openHeight > .75) addBox(rect(.035, -.025, opening.width - .07, .05), .67, .06, sashMaterials, false, false, pivot).name = `${id}-${opening.id}-transom`
             addBox(rect(.1, -.08, .025, .025), Math.min(.8, openHeight - .25), .2, dark, false, false, pivot)
             addBox(rect(east, south - .09, opening.width * (sliding ? 2 : 1), .18), base, .012, frameMaterial, false)
           }
@@ -561,9 +577,9 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
           const position = pivot.position.clone()
           pivot.rotation.y = closedAngle + (sliding ? 0 : direction * Math.PI / 2)
           if (sliding) { pivot.position.x += opening.width; pivot.position.z -= .07; pivot.position.y += .012 }
-          const names: Record<string, string> = { entrance: 'Eingang', terrace: 'Terrasse', wc: 'Dusch-WC', bath: 'Bad / Technik', 'child-north': 'Kind Nord / Waschen', 'child-south': 'Kind Süd / Hobby', store: 'Abstellraum', pantry: 'Speisekammer', bedroom: 'Büro / Gäste', office: 'Eltern', 'attic-office': 'Büro / Gäste', 'attic-parents': 'Eltern', 'low-storage': 'Dachstauraum' }
+          const names: Record<string, string> = { entrance: 'Eingang', terrace: 'Terrasse', shower: 'Dusche', wc: 'Dusch-WC', bath: 'Bad / Technik', 'child-north': 'Kind Nord / Waschen', 'child-south': 'Kind Süd / Hobby', store: 'Abstellraum', pantry: 'Speisekammer', bedroom: 'Büro / Gäste', office: 'Eltern', 'attic-office': 'Büro / Gäste', 'attic-parents': 'Eltern', 'low-storage': 'Dachstauraum' }
           const roomName = floor.rooms.find(room => room.id === opening.id)?.name ?? ({ 'attic-parents-south': 'Eltern / Ankleide', 'stair-lower': 'Treppe nach oben', 'stair-upper': 'Treppe nach unten' }[opening.id])
-          doors.push({ id: `${id}-${opening.id}`, label: `${id} · ${sliding ? 'Hebeschiebetür' : 'Tür'} ${roomName ?? (opening.id === 'basement-stair' ? 'Kellertreppe' : names[opening.id]) ?? opening.id}`, kind: 'door', pivot, closedAngle, direction, amount: 1, open, size: new THREE.Vector3(leafWidth, leafHeight, .036), center: mesh.position.clone(), position, object: mesh, sliding })
+          doors.push({ id: `${id}-${opening.id}`, label: `${id} · ${sliding ? 'Hebeschiebetür' : opening.glazed ? 'Glastür' : 'Tür'} ${roomName ?? (opening.id === 'basement-stair' ? 'Kellertreppe' : names[opening.id]) ?? opening.id}`, kind: 'door', pivot, closedAngle, direction, amount: 1, open, size: new THREE.Vector3(leafWidth, leafHeight, leafThickness), center: mesh.position.clone(), position, object: mesh, sliding })
         }
       }
     }
@@ -696,7 +712,7 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
     door.pivot.rotation.set(door.closedPitch === undefined ? 0 : door.closedPitch - amount * Math.PI / 5, door.closedAngle + (!door.sliding && door.closedPitch === undefined ? amount * (door.direction ?? 1) * Math.PI / 2 : 0), 0)
     if (door.sliding) { door.pivot.position.x += amount * door.size.x; door.pivot.position.z -= Math.min(1, amount * 10) * .07; door.pivot.position.y += Math.min(1, amount * 10) * .012 }
     door.pivot.updateMatrixWorld(true); return true
-  }, setFinish(key, color, house = 'east') { if (house === 'west') { west?.setFinish(key, color); return } ({ facade, roof: roofMaterial, frame: frameMaterial })[key].color.set(color); if (key === 'roof') roofCourseMaterial.color.copy(roofMaterial.color).multiplyScalar(.72) }, setGroundOpacity(value) { groundMaterial.opacity = value; groundMaterial.transparent = value < 1; groundMaterial.depthWrite = value === 1 }, dispose() { if (surroundings) { group.remove(surroundings.neighborhood, surroundings.garden); surroundings.dispose() } if (west) { group.remove(west.group); west.dispose() } const geometries = new Set<THREE.BufferGeometry>(); group.traverse(object => { if (object instanceof THREE.Mesh) geometries.add(object.geometry); if (object instanceof THREE.SpotLight || object instanceof THREE.PointLight) object.dispose() }); for (const geometry of geometries) geometry.dispose(); for (const material of materials) material.dispose(); for (const texture of textures) texture.dispose() } }
+  }, setFinish(key, color, house = 'east') { if (house === 'west') { west?.setFinish(key, color); return } ({ facade, roof: roofMaterial, frame: frameMaterial, frameInside: frameInsideMaterial })[key].color.set(color); if (key === 'roof') roofCourseMaterial.color.copy(roofMaterial.color).multiplyScalar(.72) }, setGroundOpacity(value) { groundMaterial.opacity = value; groundMaterial.transparent = value < 1; groundMaterial.depthWrite = value === 1 }, dispose() { if (surroundings) { group.remove(surroundings.neighborhood, surroundings.garden); surroundings.dispose() } if (west) { group.remove(west.group); west.dispose() } const geometries = new Set<THREE.BufferGeometry>(); group.traverse(object => { if (object instanceof THREE.Mesh) geometries.add(object.geometry); if (object instanceof THREE.SpotLight || object instanceof THREE.PointLight) object.dispose() }); for (const geometry of geometries) geometry.dispose(); for (const material of materials) material.dispose(); for (const texture of textures) texture.dispose() } }
   const dispose = model.dispose
   model.dispose = () => { for (const blind of blinds) blind.dispose(); dispose() }
   model.setLighting({}, floorId)

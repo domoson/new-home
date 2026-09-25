@@ -92,19 +92,23 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
   Rahmen/Fugen etwa 51 cm breit). Nur unter dessen Fluegel liegt bei bodentiefen
   Fenstern ein festes Unterlicht: EG-Suedwest 90 cm, DG 60 cm.
   Das grosse Festfeld bleibt ohne Querholm. Oeffnungsbreiten, Fensterabstaende und Bruestungshoehen
-  der neuen EG-/OG-/DG-Fenster folgen dem 30-cm-Raster (ausgenommen bestehende
+  der neuen EG-/OG-/DG-Fenster folgen dem 30-cm-Raster (ausgenommen das hohe EG-Kuechenband,
   Kellerfenster, Eingangsfestfeld und die 2,80 m breite Terrassenanlage mit
   1,25/1,55-m-Feldern sowie die dazu gleich hohe Eckverglasung). Rasterfugen sind schematisch.
   Teilungshoehe und Profile angenaehert; keine Hersteller-/Absturzsicherungsfreigabe.
   Fensterlagen und -groessen aus der neuen Skizze angenaehert, Gartenzugang als
   zweiteilige 2,80-m-Hebeschiebeanlage mit Eckkopplung ohne Mauerstueck:
   innerer westlicher Fluegel 1,25 m beweglich, aeusseres oestliches Feld 1,55 m fest.
-  Beide Ostachsen in EG/OG/DG beginnen bei z=3,30 und 5,70 m, jeweils
+  Beide Ostachsen in OG/DG beginnen bei z=3,30 und 5,70 m, jeweils
   150 cm breit. Die suedliche Achse ist 60 cm nach Norden verschoben;
   Oeffnungen und Teilungen sind symmetrisch zum First bei z=5,25 m.
   Die schmalen Fluegel sitzen jeweils an der aeusseren Seite des Fensterpaars.
-  EG ueber Spuele und Insel weiterhin 150 x 120 cm mit 120 cm Bruestung;
-  Kueche unveraendert. OG-Ostfenster 150 x 150 cm mit 90 cm Bruestung,
+  EG ueber Spuele und Insel jetzt ein durchgehendes Fensterband 390 x 75 cm
+  von z=3,30 bis 7,20 m mit 165 cm Bruestung und Oberkante 240 cm.
+  Grosses Festfeld und nominell 60 cm breiter Lueftungsbereich im Norden;
+  Kuechenmoebel unveraendert. Die hohe Bruestung erschwert Einblicke, garantiert
+  aber keinen Sichtschutz. Sturz, Glasgroesse und 390-cm-Raffstorebreite benoetigen
+  Hersteller-/Tragwerkspruefung. OG-Ostfenster 150 x 150 cm mit 90 cm Bruestung,
   ohne Unterlicht: gleiche Hoehe und Bruestung wie die OG-Suedfenster,
   aber 150 statt 180 cm breit fuer die durchgehenden Ostachsen.
   Oberkante weiterhin 240 cm.
@@ -132,7 +136,10 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
   Terrassenverglasung. Das Flurfenster ist quadratisch 90 x 90 cm mit
   150 cm Bruestung, der Schrank in Kind
   Sued steht an der Nordwand.
-  Beide Haushaelften starten mit warmgrauen Rahmen und einer zusammenhaengenden
+  Beide Haushaelften starten mit warmgrauen Aussenrahmen und weissen Innenrahmen.
+  Innen- und Aussenfarbe sind im Szenenmenue pro Haus separat einstellbar,
+  auch fuer bewegliche Fluegel; Raffstores folgen nur der Aussenfarbe.
+  Beide Haeuser behalten eine zusammenhaengende
   Holzfassung um Haustuer und Seitenteil (20 cm seitlich, 18 cm ueber dem Sturz).
   Verglasung bleibt in der Wandmitte zurueckgesetzt. Kein Treppenlichtband in
   der Haustrennwand. Schmale Lueftungsfluegel
@@ -152,7 +159,7 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
 - OG: Spielzimmer-Suedwand 20 cm nach Norden auf z=8,025 m; Kind Sued hat
   rechts unten 2,05 m lichte Nord-Sued-Raumtiefe (Schrank steht innerhalb davon).
   Spielzimmer-Nordwand und Schrank von Kind Nord zusaetzlich 15 cm nach Norden,
-  damit das Ostfenster exakt ueber dem EG-Fenster sitzt und nicht die
+  damit das Ostfenster in der OG-/DG-Achse sitzt und nicht die
   Raumtrennwand schneidet. Spielzimmer 7,10875 m2; Tisch und Stuhl 20 cm nach Norden; Suedschrank folgt
   der Wand. Abstellraum genau 2,00 m2, Wand zu Kind Sued nur 12,5 cm statt
   20 cm, Kinderzimmertuer-Anschluss buendig. Regal passend gekuerzt;
@@ -162,15 +169,25 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
   mittig, 130 x 50 cm im Grundriss (aus Zeichnung angenaehert, kein Herstellermass).
 - EG-Dusche im Suedwesten des Bades, WC/Waschtisch im Norden; Nord-Vorwand 8 cm tief/120 cm hoch
   ist Annahme, von der Raumflaeche abgezogen.
-- OG-Bad als T-Grundriss nach Vorlage: raumhohe Waschtisch-Vorwand 15 cm mittig
-  (x 1,30-1,45 m, 1,30 m lang) mit Waschtisch 130 x 50 cm nach Osten, ein Becken
-  60 cm mittig und je 35 cm Ablage beidseitig; dahinter westlich bodengleiche
-  Dusche 96 x 126 cm im Nordwesten (Nordfenster) und WC im Suedwesten, getrennt
-  durch eine 15-cm-Installationswand fuer Spuelkasten und Duscharmatur.
-  Durchgaenge je 85 cm statt 65 cm der Vorlage; Wanne 180 x 80 cm an der Ostwand
-  unter dem zweiten Nordfenster, 70 cm Gang zwischen Waschtisch und Wanne,
-  1,15 m freie Zone vor der Tuer.
-  Dusche ohne Glaswand (offener Durchgang wie Vorlage). Leitungen und Anschluesse nicht fachlich geplant.
+- OG-Bad nach um 90 Grad gedrehter Skizze: T-Waende 15 cm stark und 242 cm
+  hoch, beide 35 cm unter der Decke endend. Querwand x=1,30-1,45 m,
+  z=1,05-2,40 m; Einzelwaschtisch 135 x 50 cm nach Osten mit einem
+  60 x 40 cm Becken. Je 37,5 cm Seitenablage und 10 cm hinter dem Becken;
+  Spiegelschrank 120 cm breit, 70 cm hoch, 16 cm tief ab 115 cm Bodenhoehe.
+  Spiegelfronten als Material, keine berechnete Raumspiegelung.
+  Dahinter WC im Nordwesten, bodengleiche
+  Dusche 96 x 141 cm im Suedwesten; T-Steg bei z=1,70 m mit WC-Spuelkasten.
+  Duschkopf und Armatur an der noerdlichen T-Installationswand, gegenueber
+  der suedlichen Raumwand. Suedlicher Zugang 90 cm breit mit
+  beweglicher 8-mm-Glastuer, 210 cm Oberkante, 67 cm zur Decke offen.
+  Seitliche Anschlussprofile ohne oberen Abschluss; suedlicher Anschlag,
+  nach aussen oeffnend. Im Modell geoeffnet inklusive Griffen mehr als
+  80 cm freier Zugang; geschlossen im Rundgang gesperrt. Beschlaege,
+  Sicherheitsglas, Dichtungen, Spritzschutz und Wandbefestigung ungeprueft.
+  WC-Zugang 75 cm, vor dem Waschtisch 70 cm zur Wanne.
+  Wanne 180 x 80 cm im Nordosten, Eingang im Suedosten und Nordlichtband
+  unveraendert. Netto-Badflaeche 9,0975 m2. Leitungen, Abdichtung und
+  Bewegungsflaechen sind nicht fachlich geplant oder als barrierefrei nachgewiesen.
 - DG-Abstellraumtuer 73 x 160 cm, rechteckig und ueber den Schwenkweg unter dem
   Dach geprueft. Kein aufrechter Durchgang; der Rundgang hat keine Duckfunktion.
 - Die Planungsannahmen zeigen Modellflaechen und die Beschriftungen der neuen

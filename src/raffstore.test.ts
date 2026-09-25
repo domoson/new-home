@@ -38,7 +38,7 @@ describe('Raffstoredetails', () => {
   })
   it('uses one south curtain over the slider and fixed pane with a shared corner guide', () => {
     const blinds = raffstores(makeFloor('EG'))
-    expect(blinds).toHaveLength(7)
+    expect(blinds).toHaveLength(6)
     expect(raffstores(makeFloor('OG'))).toHaveLength(6)
     expect(raffstores(makeFloor('DG'))).toHaveLength(2)
     expect(raffstores(makeFloor('KG'))).toEqual([])

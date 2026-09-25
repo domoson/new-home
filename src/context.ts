@@ -25,15 +25,15 @@ export const finishes = {
   roof: [{ name: 'Graphit', color: '#424749' }, { name: 'Ziegelrot', color: '#99584c' }, { name: 'Zinkgrau', color: '#89928f' }, { name: 'Schwarz', color: '#252927' }, { name: 'Naturrot', color: '#b66b52' }, { name: 'Warmes Schiefergrau', color: '#747a78' }, { name: 'Basaltgrau', color: '#686f6e' }, { name: 'Kaffeebraun', color: '#5b493f' }, { name: 'Umbra', color: '#665247' }, { name: 'Mangan', color: '#4c4641' }],
   frame: [{ name: 'Weiß', color: '#f7f7f4' }, { name: 'Anthrazit', color: '#3b4243' }, { name: 'Eiche', color: '#b79a70' }, { name: 'Aluminium', color: '#a8b1b0' }, { name: 'Moosgrün', color: '#536b5d' }, { name: 'Bronze', color: '#8b7760' }, { name: 'Warmgrau', color: '#756f65' }],
 } as const
-export type FinishKey = keyof typeof finishes
+export type FinishKey = keyof typeof finishes | 'frameInside'
 export const facadeCompositions = [{ id: 'plaster', name: 'Putz durchgehend' }, { id: 'timber', name: 'Holzfassade ab EG' }, { id: 'upper', name: 'Putz + Holz OG und DG' }, { id: 'gable', name: 'Putz + Holzgiebelfeld' }, { id: 'entry', name: 'Putz + Holz am Eingang' }, { id: 'og', name: 'Nur OG in Holz' }, { id: 'og-entry', name: 'OG + Eingang in Holz' }, { id: 'panels', name: 'Vertikale Holzfelder' }] as const
 export type FacadeComposition = typeof facadeCompositions[number]['id']
 export const woodTones = [{ name: 'Lärche natur', color: '#b99e74' }, { name: 'Silbergrau', color: '#92968f' }, { name: 'Dunkel lasiert', color: '#514f48' }, { name: 'Eiche hell', color: '#d2bb91' }, { name: 'Thermoesche', color: '#88644c' }, { name: 'Zeder', color: '#b97b5b' }, { name: 'Gekälkt', color: '#ddd7c8' }, { name: 'Verkohlt', color: '#303330' }] as const
 export const woodProfiles = [{ id: 'boards', name: 'Vertikale Bretter' }, { id: 'slats', name: 'Schmale Lamellen' }, { id: 'open-slats', name: 'Lamellenfelder auf Putz' }] as const
 export type WoodProfile = typeof woodProfiles[number]['id']
-export type HouseAppearance = { facade: string; roof: string; frame: string; composition: FacadeComposition; woodTone: number; woodProfile: WoodProfile }
+export type HouseAppearance = { facade: string; roof: string; frame: string; frameInside: string; composition: FacadeComposition; woodTone: number; woodProfile: WoodProfile }
 export type SceneSettings = HouseAppearance & { hour: number; season: 'summer' | 'spring' | 'winter'; west: HouseAppearance; surroundings: boolean; landscaping: boolean; transparentGround: boolean; lights: Record<string, boolean>; lightingMode: 'room' | 'global'; carportRoof: 'metal' | 'green'; raffstoreExtension: number; raffstoreTilt: number }
-export const initialAppearance: HouseAppearance = { facade: finishes.facade[3].color, roof: finishes.roof[0].color, frame: finishes.frame[6].color, composition: 'entry', woodTone: 3, woodProfile: 'boards' }
+export const initialAppearance: HouseAppearance = { facade: finishes.facade[3].color, roof: finishes.roof[0].color, frame: finishes.frame[6].color, frameInside: finishes.frame[0].color, composition: 'entry', woodTone: 3, woodProfile: 'boards' }
 export const initialSettings: SceneSettings = { ...initialAppearance, west: { ...initialAppearance }, hour: 14, season: 'summer', surroundings: true, landscaping: true, transparentGround: false, lights: {}, lightingMode: 'global', carportRoof: 'metal', raffstoreExtension: 0, raffstoreTilt: 30 }
 export function sunPosition(hour: number, season: SceneSettings['season']) {
   const [month, day, offset] = { summer: [5, 21, 2], spring: [2, 20, 1], winter: [11, 21, 1] }[season]
