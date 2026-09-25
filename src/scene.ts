@@ -381,9 +381,9 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
       }
       
       if (item.id === 'kitchen-tall') {
-        const oven = box(ovenX, z + depth + .002, ovenWidth, .018, .85, .55, dark)
+        const oven = box(x + .015, z + depth + .002, width - .03, .018, .85, .55, dark)
         oven.name = 'kitchen-oven'
-        box(ovenX + .05, z + depth + .025, ovenWidth - .1, .025, 1.32, .025, stone)
+        box(x + .065, z + depth + .025, width - .13, .025, 1.32, .025, stone)
         box(x, z + depth + .005, width, .01, 2.1, .008, dark)
       }
     } else if (kind === 'hob') {

@@ -433,6 +433,10 @@ Heller zweigeschossiger Baukoerper, graues Satteldach mit Ost-West-First,
 geschlossene Giebel, Dachfenster, langer Suedbalkon und westlich unmittelbar
 angebaute niedrige Flachdachgarage mit suedlicher Zufahrt und Vorgarten.
 Die verzerrte Fotogrammetrie ist nicht als Fassadentextur uebernommen.
+Der uns zugewandte Westgiebel zeigt entsprechend der Detailaufnahme ein
+oberes Fenster und zwei unterschiedlich grosse Fenster ueber der Garage.
+Rahmen, aussenliegende Scheiben und Fensterbaenke sind separat modelliert;
+Abmessungen und Hoehen sind aus dem Bild geschaetzt.
 
 Schematische Modellmasse: Haus ca. 10,7 x 8,8 m, Traufe weiterhin 5,50 m
 ueber Gelaende; Garage mit angepasster Breite bis direkt an die Ostgrenze,
@@ -469,12 +473,18 @@ dem Schalter Nachbarschaft.
 
 Die Umgebungsbaeume haben leicht unregelmaessige, gegliederte Laubkronen,
 dezente Farbvariation und verjuengte Astgabeln. Ihre Verteilung folgt jetzt
-48 abgelesenen Kronen-/Gehoelzflaechen im zuletzt bereitgestellten Draufblick
+urspruenglich 48 abgelesenen Kronen-/Gehoelzflaechen im bereitgestellten Draufblick
 (995 x 720 Pixel), statt automatisch gesetzten Einzelbaeumen. Drei Dachpunkte
 an Nr. 12, 50 und 8 registrieren das Bild auf die bestehende Lagebasis.
 Kronenmitten und zwei Radien bestimmen Standort und Ausdehnung; die grosse
 dunkle Krone nordwestlich, der niedrigere noerdliche Gehoelzstreifen und die
 Gruppen in den gegenueberliegenden Gaerten sind separat erfasst.
+Die neueren Detailaufnahmen verfeinern die Vorgaerten von Nr. 8 und den
+gegenueberliegenden Doppelhaeusern Nr. 9 und 11: Fuenf grobe Kronen sind durch
+20 kleinere, unterschiedlich hohe Laub-/Strauchgruppen ersetzt (insgesamt
+63 Kronengruppen). Unregelmaessige Beete lassen die Hauszugaenge frei;
+helle, dunkelgruene und roetliche Kronen folgen den sichtbaren Farbgruppen.
+Alle anderen Kronen behalten ihre Positionen und prozeduralen Formen.
 Dies ist keine exakte Baumzaehlung: zusammenhaengende Kronen koennen mehrere
 Staemme verdecken, Schraegansicht und Schatten erschweren die Ablesung.
 Hoehen, Baumarten und Kronenmasse sind geschaetzt, nicht vermessen; natuerliche

@@ -1,5 +1,5 @@
 import { Matrix3, Vector3 } from 'three'
-import { mapPoint, neighborFootprints } from './neighborhoodLayout'
+import { mapPoint, mapPolygon, neighborFootprints } from './neighborhoodLayout'
 import type { MapPoint } from './neighborhoodLayout'
 
 export const aerialTreeAnchors = [
@@ -69,9 +69,49 @@ export const aerialCrowns: Crown[] = [
   { id: 'south-5-rear-3', image: [936, 610], radius: [30, 33], height: 10 },
 ]
 
-export const contextVegetation = aerialCrowns.map(crown => {
+export const frontGardenBeds = [
+  { id: '8-west', points: [[389,344],[401,347],[408,362],[408,375],[394,379],[387,367]] },
+  { id: '8-east', points: [[422,330],[440,326],[455,349],[456,358],[421,372],[414,361]] },
+  { id: '11b', points: [[244,457],[250,456],[254,473],[242,473],[239,466]] },
+  { id: '11b-east', points: [[258,455],[267,453],[270,474],[262,474]] },
+  { id: '11a', points: [[277,451],[285,449],[286,474],[278,474]] },
+  { id: '11a-east', points: [[294,448],[301,446],[301,473],[294,471]] },
+  { id: '9b', points: [[331,437],[338,435],[339,451],[329,451]] },
+  { id: '9b-east', points: [[346,433],[355,431],[357,451],[349,451]] },
+  { id: '9a', points: [[365,429],[373,427],[374,452],[365,451]] },
+  { id: '9a-east', points: [[380,425],[389,423],[397,443],[388,451],[381,445]] },
+].map(bed => ({ ...bed, points: mapPolygon(bed.points as MapPoint[]) }))
+
+type GardenCrown = { id: string; map: MapPoint; eastRadius: number; southRadius: number; height: number; tone?: 'copper' | 'dark' | 'silver'; low?: boolean }
+
+export const frontGardenCrowns = ([
+  { id: 'east-8-front-small-tree', map: [396,352], eastRadius: 1.45, southRadius: 1.7, height: 3.6 },
+  { id: 'east-8-front-west-shrub', map: [396,369], eastRadius: 1.25, southRadius: 1.5, height: 1.8, low: true, tone: 'dark' },
+  { id: 'east-8-front-red-shrub', map: [404,374], eastRadius: .8, southRadius: .75, height: 1.25, low: true, tone: 'copper' },
+  { id: 'east-8-front-light-tree', map: [436,348], eastRadius: 3.2, southRadius: 3, height: 5.8, low: true, tone: 'silver' },
+  { id: 'east-8-front-east-shrub', map: [447,350], eastRadius: 1.5, southRadius: 1.8, height: 2.4, low: true, tone: 'dark' },
+  { id: 'east-8-front-street-shrub', map: [433,362], eastRadius: 1.85, southRadius: 1.2, height: 2.1, low: true },
+  { id: 'east-8-front-terrace-shrub', map: [429,336], eastRadius: 1.3, southRadius: 1.15, height: 2.2, low: true },
+  { id: 'south-11-front-west', map: [247,468], eastRadius: 1.1, southRadius: 1.25, height: 2.1, low: true, tone: 'dark' },
+  { id: 'south-11-front-west-low', map: [245,459], eastRadius: .8, southRadius: .7, height: .9, low: true },
+  { id: 'south-11-front-round', map: [264,466], eastRadius: 1.7, southRadius: 1.65, height: 3.2, low: true },
+  { id: 'south-11-front-copper', map: [281,459], eastRadius: 1.5, southRadius: 1.35, height: 2.7, low: true, tone: 'copper' },
+  { id: 'south-11-front-east-copper', map: [297,466], eastRadius: 1.25, southRadius: 1.35, height: 2.3, low: true, tone: 'copper' },
+  { id: 'south-11-front-east-low', map: [298,450], eastRadius: .75, southRadius: .9, height: 1.15, low: true, tone: 'dark' },
+  { id: 'south-9-front-tall', map: [333,444], eastRadius: 1.65, southRadius: 2.2, height: 5.6, tone: 'dark' },
+  { id: 'south-9-front-west-low', map: [335,437], eastRadius: .8, southRadius: .9, height: 1.15, low: true },
+  { id: 'south-9-front-silver', map: [352,443], eastRadius: 1.45, southRadius: 1.4, height: 2.6, low: true, tone: 'silver' },
+  { id: 'south-9-front-center', map: [369,446], eastRadius: 1.4, southRadius: 1.25, height: 2.15, low: true, tone: 'dark' },
+  { id: 'south-9-front-center-low', map: [367,432], eastRadius: .8, southRadius: .65, height: 1, low: true },
+  { id: 'south-9-front-east', map: [388,441], eastRadius: 1.35, southRadius: 1.25, height: 1.8, low: true },
+  { id: 'south-9-front-east-low', map: [386,428], eastRadius: .95, southRadius: .8, height: 1.05, low: true, tone: 'copper' },
+] satisfies GardenCrown[]).map((crown, index) => ({ ...crown, center: mapPoint(crown.map), angle: -.15, seed: 87001 + index * 7919, frontGarden: true }))
+
+const replacedCrowns = new Set(['east-8-front-1', 'east-8-front-2', 'south-11-front', 'south-9-front', 'south-9-front-2'])
+
+export const contextVegetation = [...aerialCrowns.map((crown, index) => {
   const center = aerialTreePoint(crown.image)
   const east = aerialTreePoint([crown.image[0] + crown.radius[0], crown.image[1]])
   const south = aerialTreePoint([crown.image[0], crown.image[1] + crown.radius[1]])
-  return { ...crown, center, eastRadius: Math.hypot(east[0] - center[0], east[1] - center[1]), southRadius: Math.hypot(south[0] - center[0], south[1] - center[1]), angle: -Math.atan2(east[1] - center[1], east[0] - center[0]) }
-})
+  return { ...crown, center, eastRadius: Math.hypot(east[0] - center[0], east[1] - center[1]), southRadius: Math.hypot(south[0] - center[0], south[1] - center[1]), angle: -Math.atan2(east[1] - center[1], east[0] - center[0]), seed: 12754 + index * 7919, frontGarden: false }
+}).filter(crown => !replacedCrowns.has(crown.id)), ...frontGardenCrowns]

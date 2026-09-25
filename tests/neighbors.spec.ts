@@ -3,6 +3,80 @@ import { PNG } from 'pngjs'
 
 declare global { interface Window { __neighborCleanup?: () => void; __neighborRotate?: () => void } }
 
+test('Luftbilddetails: Westfenster Haus 8 und drei bepflanzte Vorgaerten', async ({ page }, testInfo) => {
+  await page.goto('/')
+  const result = await page.evaluate(async () => {
+    const THREE = await import('/node_modules/.vite/deps/three.js')
+    const { createSurroundings } = await import('/src/surroundings.ts')
+    const { neighbor8 } = await import('/src/neighbor8.ts')
+    const { frontGardenCrowns } = await import('/src/contextVegetation.ts')
+    const model = createSurroundings(), building = model.neighborhood.getObjectByName('neighbor-8')!
+    const windows = building.children.filter(object => object.name === 'neighbor-8-west-window')
+    const westWindows = windows.map(mesh => ({
+      outerEdge: mesh.position.x + mesh.geometry.parameters.width / 2,
+      bottom: mesh.position.y - mesh.geometry.parameters.height / 2,
+      south: mesh.position.z,
+      width: mesh.geometry.parameters.depth,
+    }))
+    const vegetation = model.neighborhood.getObjectByName('context-vegetation')!
+    const scene = new THREE.Scene(); scene.background = new THREE.Color('#edf1ed'); scene.add(model.neighborhood)
+    scene.add(new THREE.HemisphereLight('#ffffff', '#9da894', 2))
+    const sun = new THREE.DirectionalLight('#ffffff', 3); sun.position.set(-30, 45, -20); scene.add(sun)
+    const width = Math.min(innerWidth, 1000), height = Math.min(innerHeight, 760), aspect = width / height
+    const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, .1, 300)
+    const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true }); renderer.setSize(width, height)
+    renderer.domElement.dataset.frontGardenPreview = 'true'; renderer.domElement.style.cssText = 'position:fixed;inset:0;z-index:9999'; document.body.appendChild(renderer.domElement)
+    const show = (east: boolean) => {
+      const names = east ? ['neighbor-8'] : ['neighbor-9a', 'neighbor-9b', 'neighbor-11a', 'neighbor-11b']
+      const bounds = new THREE.Box3()
+      for (const child of model.neighborhood.children) {
+        child.visible = names.includes(child.name) || child === vegetation
+        if (names.includes(child.name)) bounds.expandByObject(child)
+      }
+      for (const child of vegetation.children) {
+        const crown = frontGardenCrowns.find(spec => spec.id === child.userData.aerialCrown)
+        child.visible = crown ? (east ? crown.id.startsWith('east-8-') : crown.id.startsWith('south-')) : child.name.startsWith(east ? 'front-garden-bed-8-' : 'front-garden-bed-9') || (!east && child.name.startsWith('front-garden-bed-11'))
+        if (child.visible) bounds.expandByObject(child)
+      }
+      const center = bounds.getCenter(new THREE.Vector3()), radius = bounds.getSize(new THREE.Vector3()).length() / 2
+      const halfHeight = radius * 1.07 / Math.min(1, aspect)
+      camera.left = -halfHeight * aspect; camera.right = halfHeight * aspect; camera.top = halfHeight; camera.bottom = -halfHeight; camera.updateProjectionMatrix()
+      camera.position.copy(center).add(new THREE.Vector3(east ? -1 : 0, .75, east ? .65 : -1).normalize().multiplyScalar(100)); camera.lookAt(center); camera.updateMatrixWorld()
+      renderer.render(scene, camera)
+      return [bounds.min.x, bounds.max.x].every(east => [bounds.min.y, bounds.max.y].every(up => [bounds.min.z, bounds.max.z].every(south => {
+        const point = new THREE.Vector3(east, up, south).project(camera)
+        return Math.abs(point.x) < .99 && Math.abs(point.y) < .99
+      })))
+    }
+    const framedEast = show(true)
+    window.__neighborRotate = () => { show(false) }
+    window.__neighborCleanup = () => { renderer.domElement.remove(); renderer.dispose(); model.dispose(); delete window.__neighborRotate }
+    return { westWindows, wall: neighbor8.house.x, garageTop: neighbor8.ground + neighbor8.garage.height + .14, framedEast, planted: vegetation.children.filter(child => frontGardenCrowns.some(spec => spec.id === child.userData.aerialCrown)).length }
+  })
+  expect(result.westWindows).toHaveLength(3)
+  expect(result.westWindows.filter(window => window.bottom > 6)).toHaveLength(1)
+  expect(result.westWindows.filter(window => window.width < .7)).toHaveLength(1)
+  const upperWindow = result.westWindows.find(window => window.bottom > 6)!
+  for (const window of result.westWindows.filter(window => window.bottom < 6)) expect(window.south).toBeLessThan(upperWindow.south)
+  for (const window of result.westWindows) {
+    expect(window.outerEdge).toBeLessThan(result.wall)
+    expect(window.bottom).toBeGreaterThan(result.garageTop)
+  }
+  expect(result.framedEast).toBe(true)
+  expect(result.planted).toBe(20)
+  const preview = page.locator('[data-front-garden-preview]')
+  const before = PNG.sync.read(await preview.screenshot({ path: `test-results/${testInfo.project.name}-front-garden-8.png` }))
+  const colors = new Set<string>()
+  for (let offset = 0; offset < before.data.length; offset += 16) colors.add(`${before.data[offset] >> 4},${before.data[offset + 1] >> 4},${before.data[offset + 2] >> 4}`)
+  expect(colors.size).toBeGreaterThan(25)
+  await page.evaluate(() => window.__neighborRotate?.())
+  const after = PNG.sync.read(await preview.screenshot({ path: `test-results/${testInfo.project.name}-front-garden-opposite.png` }))
+  let changed = 0
+  for (let offset = 0; offset < before.data.length; offset += 16) if (Math.abs(before.data[offset] - after.data[offset]) > 8) changed++
+  expect(changed).toBeGreaterThan(1000)
+  await page.evaluate(() => window.__neighborCleanup?.())
+})
+
 test('Garagen 8 und 12: Wand und Dach liegen durchgehend an der eigenen Grenze', async ({ page }) => {
   await page.goto('/')
   const result = await page.evaluate(async () => {

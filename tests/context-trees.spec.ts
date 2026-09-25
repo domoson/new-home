@@ -81,7 +81,7 @@ test('Umgebungsbaeume: gegliederte Kronen, keine Kugelbaeume im Garten und sicht
     return { inside, count: trees.length, leaves: leaves.length, framed, placementErrors, gardenHeights: gardenCrowns.map(crown => crown.position.y), gardenColors: gardenCrowns.map(crown => crown.material.color.getHexString()), gardenCrowns: gardenCrowns.length, gardenHasNewTrees: !!garden.getObjectByName('context-tree'), instances: leaves.every(leaf => leaf.isInstancedMesh && leaf.count === 56) }
   })
   expect(result.inside).toBe(0)
-  expect(result.count).toBe(48)
+  expect(result.count).toBe(63)
   expect(result.placementErrors).toEqual([])
   expect(result.gardenHeights).toEqual([])
   expect(result.gardenColors).toEqual([])

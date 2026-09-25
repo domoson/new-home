@@ -8,7 +8,7 @@ import { createSeatLeon } from './seatLeon'
 import { createCarParking } from './carParking'
 import { createGreenRoof } from './greenRoof'
 import { createContextTree } from './contextTree'
-import { contextVegetation } from './contextVegetation'
+import { contextVegetation, frontGardenBeds } from './contextVegetation'
 import { contextAnnexes, contextBuildings, contextRoofRise, drivewayEnd, footprintPlacement, mapPolygon, neighborhoodParcels, neighborhoodRoads, placementMatrix, polylineZ, reshapePlanMesh } from './neighborhoodLayout'
 
 export function createSurroundings() {
@@ -144,6 +144,11 @@ export function createSurroundings() {
     }
     for (const south of [1.3, 6.6]) for (const bottom of [.85, 3.4]) window(body.x + body.width, bottom, south, 1.2, 1.3, true)
     window(body.x + body.width, 6.05, 3.95, 1.45, 1.35, true)
+    for (const [south, bottom, width, height] of [[3.95, 6.05, 1.05, 1.35], [1.55, 3.5, 1.05, 1.3], [3.45, 3.5, .7, .85]]) {
+      box(building, body.x - .085, bottom, south, .085, height, width, trim).name = 'neighbor-8-west-window-frame'
+      box(building, body.x - .105, bottom + .065, south + .065, .02, height - .13, width - .13, glazing).name = 'neighbor-8-west-window'
+      box(building, body.x - .18, bottom - .045, south - .045, .2, .045, width + .09, metal).name = 'neighbor-8-west-window-sill'
+    }
     box(building, body.x + .1, 2.62, body.z + body.depth, body.width - .2, .19, 1.35, trim).name = 'neighbor-8-balcony'
     box(building, body.x + .1, 2.81, body.z + body.depth + 1.24, body.width - .2, .85, .11, shell).name = 'neighbor-8-balcony-parapet'
     for (const east of [body.x + .1, body.x + body.width - .21]) box(building, east, 2.81, body.z + body.depth, .11, .85, 1.35, shell)
@@ -179,14 +184,28 @@ export function createSurroundings() {
     box(annex, 0, 2.41, 0, 1, .12, 1, roof)
   }
   const vegetation = new THREE.Group(); vegetation.name = 'context-vegetation'; neighborhood.add(vegetation)
-  const copperFoliage = material('#70636a'), darkFoliage = material('#586b58')
-  for (const [index, spec] of contextVegetation.entries()) {
-    const finish = spec.tone === 'copper' ? copperFoliage : spec.tone === 'dark' ? darkFoliage : foliage[index % foliage.length]
-    const model = createContextTree(spec.height, spec.eastRadius, trunk, finish, 12754 + index * 7919)
+  const copperFoliage = material('#70636a'), darkFoliage = material('#586b58'), silverFoliage = material('#b2b99a'), bedSoil = material('#77776a', groundTexture)
+  for (const bed of frontGardenBeds) band(vegetation, bed.points, -.12, bedSoil, `front-garden-bed-${bed.id}`)
+  for (const spec of contextVegetation) {
+    const finish = spec.tone === 'copper' ? copperFoliage : spec.tone === 'dark' ? darkFoliage : spec.tone === 'silver' ? silverFoliage : foliage[((spec.seed - 12754) / 7919 | 0) % foliage.length]
+    const model = createContextTree(spec.height, spec.eastRadius, trunk, finish, spec.seed)
     model.position.set(spec.center[0], -.14, spec.center[1]); model.rotation.y = spec.angle; model.scale.z = spec.southRadius / spec.eastRadius
     model.name = spec.id === 'west-beech' ? 'detailed-copper-beech' : 'context-tree'
     model.userData.aerialCrown = spec.id; model.userData.estimated = true
-    if (spec.low || spec.tone === 'copper') {
+    if (spec.frontGarden && spec.low) {
+      const crown = model.getObjectByName('context-tree-foliage') as THREE.InstancedMesh
+      const cluster = new THREE.Object3D()
+      for (let index = 0; index < crown.count; index++) {
+        const level = .18 + Math.floor(index / 14) * .2, angle = index * 2.3999632297 + spec.seed
+        const spread = spec.eastRadius * (.4 + index % 3 * .1) * Math.sqrt(1 - ((level - .25) / .85) ** 2)
+        cluster.position.set(Math.cos(angle) * spread, spec.height * level, Math.sin(angle) * spread)
+        cluster.rotation.set(.12 * Math.sin(angle), angle, .12 * Math.cos(angle))
+        cluster.scale.set(spec.eastRadius * .34, spec.height * .23, spec.eastRadius * .3)
+        cluster.updateMatrix(); crown.setMatrixAt(index, cluster.matrix)
+      }
+      crown.instanceMatrix.needsUpdate = true; crown.computeBoundingBox(); crown.computeBoundingSphere()
+      model.getObjectByName('context-tree-branches')!.scale.y = .45
+    } else if (spec.low || spec.tone === 'copper') {
       const crown = model.getObjectByName('context-tree-foliage')!, stretch = spec.low ? 1.8 : 1.55
       crown.scale.y = stretch; crown.position.y = -spec.height * .98 * (stretch - 1)
     }
