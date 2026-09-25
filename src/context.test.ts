@@ -1,6 +1,30 @@
 import { expect, it } from 'vitest'
 import { house } from './model'
-import { boundaryDistance, finishes, initialSettings, partner, polygonArea, siteArea, siteBoundary, siteDivision, siteLengths, siteParcels, sunPosition } from './context'
+import { boundaryDistance, exteriorStyleId, exteriorStyles, finishes, initialAppearance, initialSettings, partner, polygonArea, siteArea, siteBoundary, siteDivision, siteLengths, siteParcels, sunPosition } from './context'
+
+it('ordnet Aussenstile den Menuefarben zu und erkennt individuelle Anpassungen', () => {
+  expect(exteriorStyleId(initialAppearance)).toBe('original')
+  expect(new Set(exteriorStyles.map(style => style.id)).size).toBe(exteriorStyles.length)
+  for (const style of exteriorStyles) {
+    const appearance = { ...initialAppearance, ...style.appearance }
+    expect(exteriorStyleId(appearance)).toBe(style.id)
+    expect(exteriorStyleId({ ...appearance, frameInside: '#123456' })).toBe(style.id)
+    expect(exteriorStyleId({ ...appearance, facade: '#123456' })).toBe('custom')
+    expect(style.appearance).not.toHaveProperty('frameInside')
+    for (const key of ['facade', 'roof', 'roofTrim', 'entryDoor', 'frame'] as const) {
+      expect(finishes[key].some(finish => finish.color === appearance[key])).toBe(true)
+    }
+  }
+  expect(exteriorStyles[0].appearance).toMatchObject({ facade: '#eee8d8', frame: '#bcbdb7', roof: '#424749', roofTrim: '#c4c7c4', composition: 'plaster' })
+  expect(exteriorStyles.map(style => style.name)).toEqual(['Kiesel & Creme', 'Bronze & Schiefer', 'Silber & Terrakotta', 'Graphit & Terrakotta', 'Eiche & Terrakotta', 'Bisheriger Entwurf'])
+  const expected = [
+    { frame: '#8b7760', entryDoor: '#8b7760', roof: '#353b43', roofTrim: '#3b4243' },
+    { frame: '#bcbdb7', entryDoor: '#bcbdb7', roof: '#b66b52', roofTrim: '#c4c7c4' },
+    { frame: '#3b4243', entryDoor: '#3b4243', roof: '#b66b52', roofTrim: '#3b4243' },
+    { frame: '#b79a70', entryDoor: '#dfd6c2', roof: '#b66b52', roofTrim: '#b79a70' },
+  ]
+  expected.forEach((appearance, index) => expect(exteriorStyles[index + 1].appearance).toMatchObject({ ...appearance, composition: 'plaster' }))
+})
 
 it('rekonstruiert die vier Grenzlaengen und eine flaechengleiche Nord-Sued-Teilung', () => {
   for (const [index, point] of siteBoundary.entries()) {

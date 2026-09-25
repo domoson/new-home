@@ -10,7 +10,7 @@ import { createIndirectLighting } from './indirectLighting'
 import { stairPrism } from './winderStair'
 import { roofTileGeometry } from './roofTiles'
 import type { FloorId, Furniture, Rect, Solid } from './model'
-import { initialAppearance, partner, siteBoundary } from './context'
+import { finishes, initialAppearance, partner, siteBoundary } from './context'
 import type { FacadeComposition, FinishKey, WoodProfile } from './context'
 import { createFacadeMaterial } from './facade'
 import { raffstores } from './raffstore'
@@ -80,6 +80,8 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
   canopyFinish.setComposition(initialAppearance.composition, initialAppearance.woodTone, 'boards')
   const timber = mat('#ffffff', .75, oak), plaster = mat('#ffffff'), ceramic = mat('#f4f7f3', .28), linen = mat('#e6e5db'), sage = mat('#9fab94'), teal = mat('#687d77'), dark = mat('#343e3b'), stone = mat('#cfcec6'), roofMaterial = mat(initialAppearance.roof), frameMaterial = mat(initialAppearance.frame)
   const frameInsideMaterial = mat(initialAppearance.frameInside)
+  const roofTrimMaterial = mat(initialAppearance.roofTrim)
+  const entryDoorMaterial = mat(initialAppearance.entryDoor, .75, oak)
   const mirrorMaterial = mat('#c8dadb', .12)
   mirrorMaterial.metalness = .65
   const frameFaces = (...inside: number[]) => Array.from({ length: 6 }, (_, face) => inside.includes(face) ? frameInsideMaterial : frameMaterial)
@@ -572,7 +574,7 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
             const frameBox = (start: number, bottom: number, width: number, height: number) => {
               const thickness = (wall.axis === 'x' ? wall.depth : wall.width) + .02
               const bounds = wall.axis === 'x' ? rect(east + start, south - thickness / 2, width, thickness) : rect(east - thickness / 2, south + start, thickness, width)
-              addBox(bounds, base + bottom, height, doorMaterial).name = `${id}-${opening.id}-frame`
+              addBox(bounds, base + bottom, height, opening.id === 'entrance' ? entryDoorMaterial : doorMaterial).name = `${id}-${opening.id}-frame`
             }
             for (const start of [0, opening.width - jamb]) frameBox(start, 0, jamb, openHeight)
             if (openHeight === opening.height) frameBox(jamb, leafHeight, leafWidth, jamb)
@@ -582,7 +584,7 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
           const closedAngle = (wall.axis === 'x' ? 0 : -Math.PI / 2) + (reverseHinge ? Math.PI : 0)
           const sliding = opening.id === 'terrace'
           const glazed = opening.glazed || sliding || opening.id.startsWith('garden-door')
-          const mesh = addBox(rect(0, -leafThickness / 2, leafWidth, leafThickness), leafBottom, leafHeight, glazed ? glass : doorMaterial, false, false, pivot)
+          const mesh = addBox(rect(0, -leafThickness / 2, leafWidth, leafThickness), leafBottom, leafHeight, glazed ? glass : opening.id === 'entrance' ? entryDoorMaterial : doorMaterial, false, false, pivot)
           mesh.name = `${id}-${opening.id}-leaf`
           if (!glazed) for (const side of [-.04, .025]) addBox(rect(leafWidth - .16, side, .12, .015), Math.min(1.02, leafHeight - .25), .025, steel, false, false, pivot)
           if (opening.glazed) {
@@ -634,7 +636,7 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
     }
     const thickness = roofVerticalThickness
     const roofAt = roofInnerElevation
-    for (const part of roofPanels()) { const bottom: [number, number] = [roofAt(part.z), roofAt(part.z + part.depth)]; const panel = wedge(part, bottom, [bottom[0] + thickness, bottom[1] + thickness], [plaster, roofMaterial, roofMaterial, roofMaterial, roofMaterial, roofMaterial]); panel.name = 'main-roof-panel' }
+    for (const part of roofPanels()) { const bottom: [number, number] = [roofAt(part.z), roofAt(part.z + part.depth)]; const panel = wedge(part, bottom, [bottom[0] + thickness, bottom[1] + thickness], [roofTrimMaterial, roofMaterial, roofMaterial, roofMaterial, roofMaterial, roofMaterial]); panel.name = 'main-roof-panel' }
     const ridge = new THREE.Mesh(new THREE.CylinderGeometry(construction.ridgeCapAllowance, construction.ridgeCapAllowance, house.width + .35, 20), roofMaterial)
     ridge.rotation.z = Math.PI / 2; ridge.position.set((house.width + .15) / 2, ridgeElevations.roofSurface, house.depth / 2)
     ridge.name = 'main-ridge-cap'; ridge.castShadow = true; ridge.receiveShadow = true; group.add(ridge)
@@ -736,7 +738,20 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
     door.pivot.rotation.set(door.closedPitch === undefined ? 0 : door.closedPitch - amount * Math.PI / 5, door.closedAngle + (!door.sliding && door.closedPitch === undefined ? amount * (door.direction ?? 1) * Math.PI / 2 : 0), 0)
     if (door.sliding) { door.pivot.position.x += amount * door.size.x; door.pivot.position.z -= Math.min(1, amount * 10) * .07; door.pivot.position.y += Math.min(1, amount * 10) * .012 }
     door.pivot.updateMatrixWorld(true); return true
-  }, setFinish(key, color, house = 'east') { if (house === 'west') { west?.setFinish(key, color); return } ({ facade, roof: roofMaterial, frame: frameMaterial, frameInside: frameInsideMaterial })[key].color.set(color); if (key === 'roof') roofCourseMaterial.color.copy(roofMaterial.color).multiplyScalar(.72) }, setGroundOpacity(value) { groundMaterial.opacity = value; groundMaterial.transparent = value < 1; groundMaterial.depthWrite = value === 1 }, dispose() { if (surroundings) { group.remove(surroundings.neighborhood, surroundings.garden); surroundings.dispose() } if (west) { group.remove(west.group); west.dispose() } const geometries = new Set<THREE.BufferGeometry>(); group.traverse(object => { if (object instanceof THREE.Mesh) geometries.add(object.geometry); if (object instanceof THREE.SpotLight || object instanceof THREE.PointLight) object.dispose() }); for (const geometry of geometries) geometry.dispose(); for (const material of materials) material.dispose(); for (const texture of textures) texture.dispose() } }
+  }, setFinish(key, color, house = 'east') {
+    if (house === 'west') { west?.setFinish(key, color); return }
+    const material = ({ facade, roof: roofMaterial, roofTrim: roofTrimMaterial, entryDoor: entryDoorMaterial, frame: frameMaterial, frameInside: frameInsideMaterial })[key]
+    material.color.set(color)
+    if (key === 'roof') roofCourseMaterial.color.copy(roofMaterial.color).multiplyScalar(.72)
+    if (key === 'entryDoor') {
+      const map = color === initialAppearance.entryDoor ? oak : null
+      if (entryDoorMaterial.map !== map) { entryDoorMaterial.map = map; entryDoorMaterial.needsUpdate = true }
+    }
+    if (key === 'roofTrim') {
+      const map = color === finishes.roofTrim[3].color ? oak : null
+      if (roofTrimMaterial.map !== map) { roofTrimMaterial.map = map; roofTrimMaterial.needsUpdate = true }
+    }
+  }, setGroundOpacity(value) { groundMaterial.opacity = value; groundMaterial.transparent = value < 1; groundMaterial.depthWrite = value === 1 }, dispose() { if (surroundings) { group.remove(surroundings.neighborhood, surroundings.garden); surroundings.dispose() } if (west) { group.remove(west.group); west.dispose() } const geometries = new Set<THREE.BufferGeometry>(); group.traverse(object => { if (object instanceof THREE.Mesh) geometries.add(object.geometry); if (object instanceof THREE.SpotLight || object instanceof THREE.PointLight) object.dispose() }); for (const geometry of geometries) geometry.dispose(); for (const material of materials) material.dispose(); for (const texture of textures) texture.dispose() } }
   const dispose = model.dispose
   model.dispose = () => { for (const blind of blinds) blind.dispose(); dispose() }
   model.setLighting({}, floorId)

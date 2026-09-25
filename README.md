@@ -18,6 +18,31 @@ freien Port. `npm run build` erstellt `dist/`, das auf einem statischen HTTP-Hos
 betrieben werden kann. `npm run preview` dient der lokalen Build-Vorschau.
 Nicht ueber `file://` oeffnen. WebGL2 ist fuer 3D erforderlich, 2D funktioniert ohne.
 
+## Aussenstile
+
+Im 3D-Szenenmenue unter Oberflaechen steht pro Haushaelfte eine Stilauswahl
+mit fuenf Bildvorlagen und dem bisherigen Entwurf. Die Vorlagen setzen Putz, Dach, Dachunterbau, Haustuer,
+aeussere Fensterrahmen und Holzgestaltung gemeinsam; alle Einzelwerte bleiben
+anpassbar. Abweichende Kombinationen erscheinen als Individuell.
+Fensterinnenfarben, Sonnenstand und die andere Haushaelfte bleiben unveraendert.
+Die Einstellungen bleiben beim Ansichtswechsel erhalten, nicht beim Neuladen.
+
+Die fuenf Bildstile in der Reihenfolge der Vorlagen:
+
+- Kiesel & Creme: cremeweisser Putz, hellgraue Fenster und Haustuer,
+  graphitgraue Ziegel, hellgrauer Dachunterbau.
+- Bronze & Schiefer: muschelweisser Putz, bronzefarbene Fenster und Haustuer,
+  schieferanthrazite Ziegel, anthrazitfarbener Dachunterbau.
+- Silber & Terrakotta: muschelweisser Putz, hellgraue Fenster und Haustuer,
+  naturrote Ziegel, hellgrauer Dachunterbau.
+- Graphit & Terrakotta: cremeweisser Putz, anthrazitfarbene Fenster und Haustuer,
+  naturrote Ziegel, anthrazitfarbener Dachunterbau.
+- Eiche & Terrakotta: cremeweisser Putz, Fenster in Eiche, Haustuer und
+  Dachunterbau mit Holztextur, naturrote Ziegel.
+
+Farben sind visuelle Naeherungen, keine verbindlichen RAL- oder Materialangaben.
+Dachgeometrie, Ziegelraster und silberne Entwaesserung bleiben unveraendert.
+
 ## Aktuelle Variante 6,90 x 10,50 m
 
 Die neue EG-/OG-Skizze ersetzt die bisherige Raumaufteilung. Die Osthaelfte ist

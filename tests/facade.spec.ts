@@ -1,6 +1,139 @@
 import { expect, test } from '@playwright/test'
 import { PNG } from 'pngjs'
 
+test('Aussenstile setzen alle Oberflaechen pro Haus und bleiben individuell anpassbar', async ({ page }, testInfo) => {
+  const errors: string[] = []
+  page.on('pageerror', error => errors.push(error.message))
+  await page.goto('/')
+  const probe = await page.evaluate(async () => {
+    const { buildScene } = await import('/src/scene.ts')
+    const { exteriorStyles, finishes, initialAppearance } = await import('/src/context.ts')
+    const model = buildScene('EG', false, true, true)
+    const west = model.group.getObjectByName('house-west')
+    const color = mesh => mesh.material.color.getHexString()
+    const snapshot = root => ({
+      roof: root.getObjectByName('main-roof-panel').material.map(material => material.color.getHexString()),
+      roofTrimMap: !!root.getObjectByName('main-roof-panel').material[0].map,
+      door: color(root.getObjectByName('EG-entrance-leaf')),
+      doorMap: !!root.getObjectByName('EG-entrance-leaf').material.map,
+      frame: root.getObjectByName('EG-kitchen-east-window-mullion').material.map(material => material.color.getHexString()),
+    })
+    const westBefore = snapshot(west)
+    const interiorDoor = model.doors.find(door => door.kind === 'door' && !door.id.startsWith('west-') && door.id !== 'EG-entrance' && !door.sliding && !door.object.material.transparent)
+    const interiorBefore = color(interiorDoor.object)
+    const apply = (appearance, side = 'east') => {
+      for (const key of ['facade', 'roof', 'roofTrim', 'entryDoor', 'frame']) model.setFinish(key, appearance[key], side)
+      model.setCladding(appearance.composition, appearance.woodTone, appearance.woodProfile, side)
+    }
+    apply(exteriorStyles[0].appearance)
+    const cream = snapshot(model.group), westUnchanged = snapshot(west)
+    const interiorAfter = color(interiorDoor.object)
+    const interiorPlaster = color(model.group.getObjectByName('attic-ceiling'))
+    apply(exteriorStyles.find(style => style.id === 'graphite-terracotta').appearance, 'west')
+    const westDark = snapshot(west), eastUnchanged = snapshot(model.group)
+    const samples = exteriorStyles.filter(style => style.id !== 'original').map(style => {
+      apply(style.appearance)
+      const labels = { facade: 'Fassade', roof: 'Dach', roofTrim: 'Dachunterbau', entryDoor: 'Haustür', frame: 'Fenster außen' }
+      const swatches = Object.entries(labels).map(([key, label]) => `${label} ${finishes[key].find(finish => finish.color === style.appearance[key]).name}`)
+      return { id: style.id, appearance: style.appearance, actual: snapshot(model.group), swatches }
+    })
+    apply(initialAppearance)
+    const restored = snapshot(model.group)
+    model.dispose()
+    return { cream, westBefore, westUnchanged, westDark, eastUnchanged, restored, interiorBefore, interiorAfter, interiorPlaster, samples }
+  })
+  expect(probe.cream.roof).toEqual(['c4c7c4', ...Array(5).fill('424749')])
+  expect(probe.cream.door).toBe('bcbdb7')
+  expect(probe.cream.doorMap).toBe(false)
+  expect(probe.cream.frame[0]).toBe('bcbdb7')
+  expect(probe.cream.frame[1]).toBe('f7f7f4')
+  expect(probe.westUnchanged).toEqual(probe.westBefore)
+  expect(probe.eastUnchanged).toEqual(probe.cream)
+  expect(probe.westDark.door).toBe('3b4243')
+  expect(probe.westDark.roof[0]).toBe('3b4243')
+  expect(probe.interiorAfter).toBe(probe.interiorBefore)
+  expect(probe.interiorPlaster).toBe('ffffff')
+  expect(probe.restored.doorMap).toBe(true)
+  expect(probe.restored.door).toBe('dfd6c2')
+  expect(probe.restored.roofTrimMap).toBe(false)
+  for (const sample of probe.samples) {
+    expect(sample.actual.roof).toEqual([sample.appearance.roofTrim.slice(1), ...Array(5).fill(sample.appearance.roof.slice(1))])
+    expect(sample.actual.door).toBe(sample.appearance.entryDoor.slice(1))
+    expect(sample.actual.frame[0]).toBe(sample.appearance.frame.slice(1))
+    expect(sample.actual.frame[1]).toBe('f7f7f4')
+    expect(sample.actual.roofTrimMap).toBe(sample.id === 'oak-terracotta')
+  }
+  await page.getByRole('button', { name: '3D', exact: true }).click()
+  await page.getByRole('button', { name: 'Dach', exact: true }).click()
+  await expect(page.locator('.scene-settings')).toBeVisible()
+  const menu = page.locator('.scene-settings summary')
+  await menu.click()
+  const style = page.getByLabel('Außenstil', { exact: true })
+  await expect(style).toHaveValue('original')
+  await page.getByRole('button', { name: 'Fassadenansicht', exact: true }).click()
+  await menu.click()
+  const canvas = page.locator('canvas')
+  const before = PNG.sync.read(await canvas.screenshot())
+  await menu.click()
+  await style.selectOption('cream-grey')
+  for (const name of ['Fassade Cremeweiß', 'Dach Graphit', 'Dachunterbau Hellgrau', 'Haustür Hellgrau', 'Fenster außen Hellgrau', 'Fenster innen Weiß']) {
+    await expect(page.getByRole('button', { name, exact: true })).toHaveAttribute('aria-pressed', 'true')
+  }
+  await expect(page.getByLabel('Fassadenentwurf')).toHaveValue('plaster')
+  await style.scrollIntoViewIfNeeded()
+  expect(await page.locator('.settings-body').evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true)
+  await page.screenshot({ path: `test-results/${testInfo.project.name}-exterior-style-menu.png` })
+  await menu.click()
+  const after = PNG.sync.read(await canvas.screenshot({ path: `test-results/${testInfo.project.name}-exterior-style-cream.png` }))
+  let changed = 0
+  const colors = new Set<string>()
+  for (let offset = 0; offset < after.data.length; offset += 4) {
+    if (Math.abs(after.data[offset] - before.data[offset]) > 8) changed++
+    colors.add(`${after.data[offset]},${after.data[offset + 1]},${after.data[offset + 2]}`)
+  }
+  expect(changed).toBeGreaterThan(500)
+  expect(colors.size).toBeGreaterThan(100)
+  const bounds = await canvas.boundingBox()
+  await page.mouse.move(bounds!.x + bounds!.width * .5, bounds!.y + bounds!.height * .55)
+  await page.mouse.down(); await page.mouse.move(bounds!.x + bounds!.width * .7, bounds!.y + bounds!.height * .55, { steps: 10 }); await page.mouse.up()
+  const rotated = PNG.sync.read(await canvas.screenshot({ path: `test-results/${testInfo.project.name}-exterior-style-rotated.png` }))
+  expect(Buffer.compare(after.data, rotated.data)).not.toBe(0)
+  await menu.click()
+  for (const sample of probe.samples) {
+    await style.selectOption(sample.id)
+    for (const name of sample.swatches) await expect(page.getByRole('button', { name, exact: true })).toHaveAttribute('aria-pressed', 'true')
+    await expect(page.getByLabel('Fassadenentwurf')).toHaveValue('plaster')
+    await menu.click()
+    await canvas.screenshot({ path: `test-results/${testInfo.project.name}-style-${sample.id}.png` })
+    await menu.click()
+  }
+  await style.selectOption('cream-grey')
+  await page.getByRole('button', { name: 'Fenster innen Moosgrün', exact: true }).click()
+  await expect(style).toHaveValue('cream-grey')
+  await page.getByRole('button', { name: 'Haustür Anthrazit', exact: true }).click()
+  await expect(style).toHaveValue('custom')
+  await style.selectOption('cream-grey')
+  await expect(page.getByRole('button', { name: 'Fenster innen Moosgrün', exact: true })).toHaveAttribute('aria-pressed', 'true')
+  await page.getByLabel('Haushälfte', { exact: true }).selectOption('west')
+  await expect(style).toHaveValue('original')
+  await style.selectOption('oak-terracotta')
+  await expect(page.getByRole('button', { name: 'Dachunterbau Eiche natur', exact: true })).toHaveAttribute('aria-pressed', 'true')
+  await expect(page.getByRole('button', { name: 'Fenster außen Eiche', exact: true })).toHaveAttribute('aria-pressed', 'true')
+  await style.selectOption('graphite-terracotta')
+  await page.getByLabel('Haushälfte', { exact: true }).selectOption('east')
+  await expect(style).toHaveValue('cream-grey')
+  await menu.click()
+  await page.getByRole('button', { name: '2D', exact: true }).click()
+  await page.getByRole('button', { name: '3D', exact: true }).click()
+  await menu.click()
+  await expect(style).toHaveValue('cream-grey')
+  await page.getByLabel('Haushälfte', { exact: true }).selectOption('west')
+  await expect(style).toHaveValue('graphite-terracotta')
+  await style.selectOption('original')
+  await expect(page.getByRole('button', { name: 'Haustür Eiche natur', exact: true })).toHaveAttribute('aria-pressed', 'true')
+  expect(errors).toEqual([])
+})
+
 test('Fensterfarben innen und außen bleiben je Haus unabhängig', async ({ page }, testInfo) => {
   const errors: string[] = []
   page.on('pageerror', error => errors.push(error.message))
