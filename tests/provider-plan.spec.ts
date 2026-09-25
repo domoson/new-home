@@ -47,6 +47,9 @@ test('Raffstores fahren vor der Verglasung und die OG-Raumrevision bleibt bedien
     const showerRoute = route([[2.85, 3.9], [2.85, 2.95], [2.25, 2.95], [.8, 2.95]])
     const toiletRoute = route([[2.25, 2.95], [2.25, .68], [.8, .68]])
     const upper = makeFloor('OG')
+    const showerStem = upper.walls.find(wall => wall.id === 'bath-installation')
+    const showerHead = bounds('bath-shower-rain-head'), showerControl = bounds('bath-shower-concealed-control')
+    const showerFittingsAtTWall = showerControl.min.z > showerStem.z + showerStem.depth && showerControl.max.z < showerStem.z + showerStem.depth + .05 && showerHead.min.z > showerStem.z + showerStem.depth && showerHead.max.z < showerStem.z + showerStem.depth + .5 && showerHead.max.y < elevations.OG + showerStem.height
     const showerDoor = model.doors.find(door => door.id === 'OG-shower')
     const obstacles = [...upper.walls.flatMap(wall => wallSolids(wall, upper.height)), ...upper.furniture.filter(item => item.id !== 'bath-shower').flatMap(furnitureVolumes)].map(solid => new THREE.Box3(new THREE.Vector3(solid.x, elevations.OG + solid.bottom, solid.z), new THREE.Vector3(solid.x + solid.width, elevations.OG + solid.bottom + solid.height, solid.z + solid.depth)))
     const showerSweepClear = []
@@ -63,7 +66,7 @@ test('Raffstores fahren vor der Verglasung und die OG-Raumrevision bleibt bedien
     const showerClearWidth = openGlass.min.z - upper.walls.find(wall => wall.id === 'bath-screen').z - upper.walls.find(wall => wall.id === 'bath-screen').depth
     const areas = Object.fromEntries(upper.rooms.map(room => [room.id, roomArea(room, 'OG').floor]))
     walker.dispose(); model.dispose()
-    return { count: groups.length, curtainStates, cornerClear: !east.intersectsBox(south), raised, storageRoute, bedroomRoute, showerRoute, toiletRoute, areas, showerSweepClear, closedBlocksShower, showerClearWidth, showerTop: closedGlass.max.y - elevations.OG, showerGlass: showerDoor.object.material.transparent }
+    return { count: groups.length, curtainStates, cornerClear: !east.intersectsBox(south), raised, storageRoute, bedroomRoute, showerRoute, toiletRoute, areas, showerSweepClear, closedBlocksShower, showerClearWidth, showerFittingsAtTWall, showerTop: closedGlass.max.y - elevations.OG, showerGlass: showerDoor.object.material.transparent }
   })
   expect(geometry.count).toBe(28)
   expect(geometry.curtainStates.every(state => state.extension === 1 && state.tilt === 75)).toBe(true)
@@ -78,6 +81,7 @@ test('Raffstores fahren vor der Verglasung und die OG-Raumrevision bleibt bedien
   expect(geometry.showerClearWidth).toBeGreaterThanOrEqual(.8)
   expect(geometry.showerTop).toBeCloseTo(2.1)
   expect(geometry.showerGlass).toBe(true)
+  expect(geometry.showerFittingsAtTWall).toBe(true)
   expect(geometry.areas.store).toBeCloseTo(2)
   expect(geometry.areas.playroom).toBeCloseTo(7.10875)
   await page.getByRole('button', { name: '3D', exact: true }).click()
@@ -282,7 +286,7 @@ test('Fensterflügel öffnen einzeln nach innen und lassen Festfelder und Unterl
       if (opening.windowLayout.lowerFixed) checks.push({ id, lowerFixed: !!model.group.getObjectByName(`${id}-transom-${opening.windowLayout.ventilationWidth ? ventilationColumn : 0}`) })
       if (opening.windowLayout.ventilationWidth) checks.push({ id, uninterrupted: !model.group.getObjectByName(`${id}-transom-${1 - ventilationColumn}`) })
     }
-    const mirrored = model.doors.find(door => door.id === 'west-EG-kitchen-east-window')
+    const mirrored = model.doors.find(door => door.id === 'west-EG-kitchen-east-window-secondary')
     checks.push({ id: 'west', mirrored: !!mirrored && model.setOpening(mirrored.id, .5) && mirrored.amount === .5 })
     model.dispose()
     return checks
@@ -389,7 +393,7 @@ test('Anbieterplaene, Flächenabgleich und bewegtes 3D-Modell', async ({ page },
     await page.getByRole('button', { name: floor, exact: true }).click()
     await expect(page.locator('svg.floor-plan')).toContainText('10,50 m')
     await expect(page.locator('svg.floor-plan')).toContainText('6,90 m')
-    await expect(page.locator('[data-window-mullion]')).toHaveCount(({ KG: 0, EG: 2, OG: 6, DG: 2 } as Record<string, number>)[floor])
+    await expect(page.locator('[data-window-mullion]')).toHaveCount(({ KG: 0, EG: 3, OG: 6, DG: 2 } as Record<string, number>)[floor])
     if (floor === 'EG') await expect(page.locator('[data-angled-wall]')).toHaveCount(0)
     await expect(page.locator('[data-exterior-masonry]')).toHaveCount(4)
     await expect(page.locator('[data-exterior-masonry="west"] [data-masonry-joint]')).toHaveCount(34)

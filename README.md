@@ -103,11 +103,13 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
   150 cm breit. Die suedliche Achse ist 60 cm nach Norden verschoben;
   Oeffnungen und Teilungen sind symmetrisch zum First bei z=5,25 m.
   Die schmalen Fluegel sitzen jeweils an der aeusseren Seite des Fensterpaars.
-  EG ueber Spuele und Insel jetzt ein durchgehendes Fensterband 390 x 75 cm
-  von z=3,30 bis 7,20 m mit 165 cm Bruestung und Oberkante 240 cm.
-  Grosses Festfeld und nominell 60 cm breiter Lueftungsbereich im Norden;
+  EG ueber der Spuele ein einzelnes Fensterband 210 x 75 cm
+  von z=3,30 bis 5,40 m mit 165 cm Bruestung und Oberkante 240 cm.
+  Nordkante fluchtet mit den noerdlichen OG-/DG-Ostfenstern; das EG-Fenster
+  reicht 60 cm weiter nach Sueden. Grosses Festfeld vollstaendig vor der Spuele,
+  nominell 60 cm breiter Lueftungsbereich im Sueden, frei vom Hochschrank.
   Kuechenmoebel unveraendert. Die hohe Bruestung erschwert Einblicke, garantiert
-  aber keinen Sichtschutz. Sturz, Glasgroesse und 390-cm-Raffstorebreite benoetigen
+  aber keinen Sichtschutz. Tageslichtversorgung, Sturz, Glasgroesse und Raffstore benoetigen
   Hersteller-/Tragwerkspruefung. OG-Ostfenster 150 x 150 cm mit 90 cm Bruestung,
   ohne Unterlicht: gleiche Hoehe und Bruestung wie die OG-Suedfenster,
   aber 150 statt 180 cm breit fuer die durchgehenden Ostachsen.
@@ -133,8 +135,14 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
   Suedwestliche EG-/OG-Fenster fluchten 60 cm von der Trennwand entfernt
   uebereinander. Die beiden Fenster von Kind Sued sind je 180 x 150 cm mit
   90 cm Bruestung; das oestliche endet 30 cm vor der Ostkante der
-  Terrassenverglasung. Das Flurfenster ist quadratisch 90 x 90 cm mit
-  150 cm Bruestung, der Schrank in Kind
+  Terrassenverglasung. Das EG-Dielenfenster ist ein 150 x 60 cm grosses Band
+  bei x=4,50 bis 6,00 m, beide Seitenkanten buendig mit dem OG-Fenster darueber.
+  Nach Osten versetzt, nicht mehr mittig ueber der Garderoben-Hakenleiste.
+  Bruestung 180 cm und Oberkante 240 cm wie beim EG-Badfenster;
+  Hakenleiste unveraendert, 12 cm unter der Bruestung. Grosses Festfeld
+  und schmaler Lueftungsfluegel. Der bisherige Fensterplatz im schmalen
+  Flur ist geschlossen; Tageslichtversorgung bleibt fachlich ungeprueft.
+  Der Schrank in Kind
   Sued steht an der Nordwand.
   Beide Haushaelften starten mit warmgrauen Aussenrahmen und weissen Innenrahmen.
   Innen- und Aussenfarbe sind im Szenenmenue pro Haus separat einstellbar,

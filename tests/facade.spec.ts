@@ -18,7 +18,7 @@ test('Fensterfarben innen und außen bleiben je Haus unabhängig', async ({ page
     model.setFinish('frameInside', '#0000ff', 'west')
     const eastColors = colors(east), westColors = colors(west)
     const normals = []
-    for (const [id, normal] of [['EG-kitchen-east-window', [-1, 0, 0]], ['EG-garden-west-secondary', [0, 0, -1]], ['OG-bath-window-secondary', [0, 0, 1]]]) {
+    for (const [id, normal] of [['EG-kitchen-east-window-secondary', [-1, 0, 0]], ['EG-garden-west-secondary', [0, 0, -1]], ['OG-bath-window-secondary', [0, 0, 1]]]) {
       const door = model.doors.find(door => door.id === id)
       const frame = door.pivot.children.find(mesh => mesh.userData.windowFrame)
       const face = frame.material.findIndex(material => material.color.getHexString() === 'ff0000')

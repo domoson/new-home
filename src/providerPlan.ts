@@ -22,8 +22,8 @@ export const referenceAreas: Partial<Record<FloorId, Record<string, number>>> = 
 }
 
 function shell(id: FloorId): Wall[] {
-  const north = id === 'KG' ? [windowOpening('well-plant', .9, basementWindow.width, 1.35, basementWindow.height)] : id === 'EG' ? [windowOpening('wc-window', .3, 1.2, 1.8, .6), windowOpening('hall-window', 2.1, .9, 1.5, .9)] : id === 'OG' ? [windowOpening('bath-window', .3, 2.4, 1.5, .9), windowOpening('child-north-window', 4.2, 1.5, .9, 1.5)] : []
-  const east: Opening[] = id === 'KG' ? [windowOpening('well-hobby', house.depth - basementWindow.southGap - basementWindow.width, basementWindow.width, 1.35, basementWindow.height)] : id === 'EG' ? [windowOpening('entrance-fixed', .3, .3, 0, 2.52), { ...opening('entrance', .6), width: 1.1, height: 2.52, swing: 'reverse' }, windowOpening('kitchen-east-window', 3.3, 3.9, 1.65, .75), { ...windowOpening('living-corner-fixed', 9.3, 1.2, 0, 2.52), cornerGlazing: true }] : id === 'OG' ? [windowOpening('east-north', 3.3, 1.5, .9, 1.5), windowOpening('play-window', 5.7, 1.5, .9, 1.5)] : [{ ...windowOpening('gable-office', 3.3, 1.5, 0, 2.1), windowLayout: { columns: 2, lowerFixed: .6 } }, { ...windowOpening('gable-parents', 5.7, 1.5, 0, 2.1), windowLayout: { columns: 2, lowerFixed: .6 } }]
+  const north = id === 'KG' ? [windowOpening('well-plant', .9, basementWindow.width, 1.35, basementWindow.height)] : id === 'EG' ? [windowOpening('wc-window', .3, 1.2, 1.8, .6), windowOpening('hall-window', 4.2, 1.5, 1.8, .6)] : id === 'OG' ? [windowOpening('bath-window', .3, 2.4, 1.5, .9), windowOpening('child-north-window', 4.2, 1.5, .9, 1.5)] : []
+  const east: Opening[] = id === 'KG' ? [windowOpening('well-hobby', house.depth - basementWindow.southGap - basementWindow.width, basementWindow.width, 1.35, basementWindow.height)] : id === 'EG' ? [windowOpening('entrance-fixed', .3, .3, 0, 2.52), { ...opening('entrance', .6), width: 1.1, height: 2.52, swing: 'reverse' }, windowOpening('kitchen-east-window', 3.3, 2.1, 1.65, .75), { ...windowOpening('living-corner-fixed', 9.3, 1.2, 0, 2.52), cornerGlazing: true }] : id === 'OG' ? [windowOpening('east-north', 3.3, 1.5, .9, 1.5), windowOpening('play-window', 5.7, 1.5, .9, 1.5)] : [{ ...windowOpening('gable-office', 3.3, 1.5, 0, 2.1), windowLayout: { columns: 2, lowerFixed: .6 } }, { ...windowOpening('gable-parents', 5.7, 1.5, 0, 2.1), windowLayout: { columns: 2, lowerFixed: .6 } }]
   const southWallLength = house.east - house.west
   const terraceWidth = 2.5, terraceLeaf = terraceWidth / 2
   const terraceStart = southWallLength - terraceWidth - construction.exteriorWall
@@ -31,7 +31,7 @@ function shell(id: FloorId): Wall[] {
   if (id === 'EG') for (const glazed of [...east, ...south].filter(opening => opening.kind === 'window' && opening.sill === 0)) glazed.windowLayout = { columns: glazed.windowLayout!.columns }
   if (id === 'EG') south.find(opening => opening.id === 'garden-west')!.windowLayout = { columns: 2, lowerFixed: .9 }
   if (id !== 'KG') for (const glazed of [...north, ...east, ...south].filter(opening => opening.kind === 'window' && opening.width >= 1.5 && !opening.id.includes('fixed'))) glazed.windowLayout = { ...glazed.windowLayout!, ventilationWidth: .6 }
-  if (id !== 'KG') east.find(opening => opening.kind === 'window' && !opening.id.includes('fixed'))!.windowLayout!.ventilationSide = 'start'
+  if (id !== 'KG' && id !== 'EG') east.find(opening => opening.kind === 'window' && !opening.id.includes('fixed'))!.windowLayout!.ventilationSide = 'start'
   return [wall('west', 'z', 0, 0, house.depth, [], house.west), wall('east', 'z', house.east, 0, house.depth, east, construction.exteriorWall), wall('north', 'x', house.west, 0, house.east - house.west, north, construction.exteriorWall), wall('south', 'x', house.west, house.south, house.east - house.west, south, construction.exteriorWall)]
 }
 
