@@ -16,7 +16,7 @@ import { createFacadeMaterial } from './facade'
 import { raffstores } from './raffstore'
 import { createRaffstore } from './raffstoreScene'
 import { flatGeometry } from './geometry'
-import { createSurroundings } from './surroundings'
+import { createSummerLawnTexture, createSurroundings } from './surroundings'
 
 export type ColliderShape = { position: THREE.Vector3; size: THREE.Vector3; rotation: THREE.Quaternion }
 export type DoorModel = { id: string; label: string; kind: 'door' | 'window'; pivot: THREE.Group; closedAngle: number; closedPitch?: number; direction?: number; amount: number; open: boolean; size: THREE.Vector3; center: THREE.Vector3; position: THREE.Vector3; object: THREE.Mesh; sliding: boolean }
@@ -87,10 +87,10 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
   const frameFaces = (...inside: number[]) => Array.from({ length: 6 }, (_, face) => inside.includes(face) ? frameInsideMaterial : frameMaterial)
   const kitchenStone = mat('#eeeee8', .48), kitchenWhite = mat('#edeee9', .65), kitchenSage = mat('#8eaaa0', .65), steel = mat('#b9c0bf', .26)
   steel.metalness = .75
-  const doorMaterial = mat('#dfd6c2', .75, oak)
+  const doorMaterial = mat(finishes.interiorDoor[0].color, .75, oak)
   const roofCourseMaterial = mat(initialAppearance.roof)
   roofCourseMaterial.color.copy(roofMaterial.color).multiplyScalar(.72)
-  const groundMaterial = mat('#a6b894'); groundMaterial.side = THREE.DoubleSide
+  const groundMaterial = mat('#ffffff', 1); groundMaterial.side = THREE.DoubleSide
   const glass = new THREE.MeshStandardMaterial({ color: '#bddadc', roughness: .15, transparent: true, opacity: .22, depthWrite: false, side: THREE.DoubleSide }); materials.push(glass)
   const addBox = (bounds: Rect, bottom: number, height: number, material: THREE.Material | THREE.Material[], collide = true, round = false, parent: THREE.Object3D = group) => {
     const size = new THREE.Vector3(bounds.width, height, bounds.depth)
@@ -689,6 +689,7 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
     const shape = new THREE.Shape(siteBoundary.map(([x, z]) => new THREE.Vector2(x, z)))
     for (const hole of [rect(0, 0, house.width, house.depth), rect(partner.x, partner.z, partner.width, partner.depth), ...wells, ...wells.map(well => rect(-well.x - well.width, well.z + partner.z, well.width, well.depth))]) shape.holes.push(new THREE.Path([new THREE.Vector2(hole.x, hole.z), new THREE.Vector2(hole.x + hole.width, hole.z), new THREE.Vector2(hole.x + hole.width, hole.z + hole.depth), new THREE.Vector2(hole.x, hole.z + hole.depth)]))
     const geometry = new THREE.ShapeGeometry(shape); geometry.rotateX(Math.PI / 2); geometry.translate(0, construction.terrain, 0)
+    const lawn = createSummerLawnTexture(); textures.push(lawn); groundMaterial.map = lawn
     const ground = new THREE.Mesh(geometry, groundMaterial); ground.name = 'site-ground'; ground.receiveShadow = true; group.add(ground)
     triangles.push({ vertices: new Float32Array(geometry.getAttribute('position').array), indices: new Uint32Array(geometry.getIndex()!.array) })
     for (let index = 0; index < siteBoundary.length; index++) { const [x, z] = siteBoundary[index], [nextX, nextZ] = siteBoundary[(index + 1) % siteBoundary.length]; beam(new THREE.Vector3(x, construction.terrain + .02, z), new THREE.Vector3(nextX, construction.terrain + .02, nextZ), .035, stone) }
@@ -740,12 +741,16 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
     door.pivot.updateMatrixWorld(true); return true
   }, setFinish(key, color, house = 'east') {
     if (house === 'west') { west?.setFinish(key, color); return }
-    const material = ({ facade, roof: roofMaterial, roofTrim: roofTrimMaterial, entryDoor: entryDoorMaterial, frame: frameMaterial, frameInside: frameInsideMaterial })[key]
+    const material = ({ facade, roof: roofMaterial, roofTrim: roofTrimMaterial, entryDoor: entryDoorMaterial, interiorDoor: doorMaterial, frame: frameMaterial, frameInside: frameInsideMaterial })[key]
     material.color.set(color)
     if (key === 'roof') roofCourseMaterial.color.copy(roofMaterial.color).multiplyScalar(.72)
     if (key === 'entryDoor') {
       const map = color === initialAppearance.entryDoor ? oak : null
       if (entryDoorMaterial.map !== map) { entryDoorMaterial.map = map; entryDoorMaterial.needsUpdate = true }
+    }
+    if (key === 'interiorDoor') {
+      const map = color === finishes.interiorDoor[0].color ? oak : null
+      if (doorMaterial.map !== map) { doorMaterial.map = map; doorMaterial.needsUpdate = true }
     }
     if (key === 'roofTrim') {
       const map = color === finishes.roofTrim[3].color ? oak : null

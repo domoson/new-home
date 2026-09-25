@@ -10,6 +10,49 @@ import { createContextTree } from './contextTree'
 import { contextVegetation, frontGardenBeds } from './contextVegetation'
 import { contextAnnexes, contextBuildings, contextRoofRise, drivewayEnd, footprintPlacement, mapPolygon, neighborhoodParcels, neighborhoodRoads, placementMatrix, polylineZ, reshapePlanMesh } from './neighborhoodLayout'
 
+export function createSummerLawnTexture() {
+  const size = 512, canvas = document.createElement('canvas')
+  canvas.width = canvas.height = size
+  const context = canvas.getContext('2d')!
+  let seed = 250925
+  const random = () => { seed = seed * 16807 % 2147483647; return seed / 2147483647 }
+  const layers = [4, 16, 64].map(width => ({ width, values: Array.from({ length: width * width }, random) }))
+  const noise = (east: number, south: number, layer: typeof layers[number]) => {
+    const across = east / size * layer.width, along = south / size * layer.width
+    const column = Math.floor(across), row = Math.floor(along)
+    const smooth = (value: number) => value * value * (3 - 2 * value)
+    const horizontal = smooth(across - column), vertical = smooth(along - row)
+    const sample = (columnIndex: number, rowIndex: number) => layer.values[(rowIndex % layer.width) * layer.width + columnIndex % layer.width]
+    const north = sample(column, row) * (1 - horizontal) + sample(column + 1, row) * horizontal
+    const southValue = sample(column, row + 1) * (1 - horizontal) + sample(column + 1, row + 1) * horizontal
+    return north * (1 - vertical) + southValue * vertical
+  }
+  const pixels = context.createImageData(size, size)
+  for (let south = 0; south < size; south++) for (let east = 0; east < size; east++) {
+    const dryness = Math.min(1, Math.max(0, (noise(east, south, layers[0]) * .65 + noise(east, south, layers[1]) * .25 + noise(east, south, layers[2]) * .1 - .22) * 1.8))
+    const grain = (random() - .5) * 20, offset = (south * size + east) * 4
+    pixels.data[offset] = 98 + dryness * 70 + grain
+    pixels.data[offset + 1] = 108 + dryness * 38 + grain
+    pixels.data[offset + 2] = 58 + dryness * 45 + grain
+    pixels.data[offset + 3] = 255
+  }
+  context.putImageData(pixels, 0, 0)
+  for (let blade = 0; blade < 28000; blade++) {
+    const east = random() * size, south = random() * size, angle = random() * Math.PI * 2
+    const length = .6 + random() * 3
+    context.strokeStyle = ['#c1ab7c80', '#d0bc9260', '#68713f70', '#66573c50'][Math.floor(random() * 4)]
+    context.lineWidth = .4 + random() * .5
+    for (const offsetEast of [-size, 0, size]) for (const offsetSouth of [-size, 0, size]) {
+      context.beginPath(); context.moveTo(east + offsetEast, south + offsetSouth)
+      context.lineTo(east + offsetEast + Math.cos(angle) * length, south + offsetSouth + Math.sin(angle) * length); context.stroke()
+    }
+  }
+  const texture = new THREE.CanvasTexture(canvas)
+  texture.name = 'summer-lawn'; texture.wrapS = texture.wrapT = THREE.RepeatWrapping
+  texture.repeat.set(1 / 8, 1 / 8); texture.colorSpace = THREE.SRGBColorSpace; texture.anisotropy = 8
+  return texture
+}
+
 export function createSurroundings() {
   const neighborhood = new THREE.Group(), garden = new THREE.Group()
   neighborhood.name = 'neighborhood'; garden.name = 'landscaping'
@@ -19,10 +62,11 @@ export function createSurroundings() {
   const material = (color: string, map?: THREE.Texture) => {
     const result = new THREE.MeshStandardMaterial({ color, roughness: 1, map: map ?? null }); materials.push(result); return result
   }
-  const paving = material('#c0c3bd'), walls = material('#dddeda'), roof = material('#838984'), glass = material('#a7b8ba'), fence = material('#64766c'), trunk = material('#82786b')
+  const lawnTexture = createSummerLawnTexture(); textures.push(lawnTexture)
+  const paving = material('#c0c3bd'), walls = material('#dddeda'), roof = material('#838984'), glass = material('#a7b8ba'), fence = material('#64766c'), trunk = material('#6d604b')
   const carportWood = { east: material(woodTones[initialAppearance.woodTone].color), west: material(woodTones[initialAppearance.woodTone].color) }
-  const roofEdge = material('#535c58'), roofMetal = material('#69716f'), grassPaving = material('#a0ab8d')
-  const foliage = ['#72856b', '#879879', '#6c826c'].map(color => material(color))
+  const roofEdge = material('#535c58'), roofMetal = material('#69716f'), grassPaving = material('#e1dfc4', lawnTexture)
+  const foliage = ['#546333', '#74833d', '#3f5737'].map(color => material(color))
   const canvas = document.createElement('canvas'); canvas.width = canvas.height = 128
   const context = canvas.getContext('2d')!
   let seed = 7401
@@ -30,7 +74,7 @@ export function createSurroundings() {
   context.fillStyle = '#9da49a'; context.fillRect(0, 0, 128, 128)
   for (let index = 0; index < 3500; index++) { context.fillStyle = `rgba(55,69,57,${random() * .12})`; context.fillRect(random() * 128, random() * 128, 1, 1) }
   const groundTexture = new THREE.CanvasTexture(canvas); groundTexture.wrapS = groundTexture.wrapT = THREE.RepeatWrapping; groundTexture.repeat.set(20, 20); groundTexture.colorSpace = THREE.SRGBColorSpace; textures.push(groundTexture)
-  const groundMaterial = material('#dce2d8', groundTexture), asphalt = material('#989f9f', groundTexture)
+  const groundMaterial = material('#ffffff', lawnTexture), asphalt = material('#989f9f', groundTexture)
   const box = (parent: THREE.Group, x: number, y: number, z: number, width: number, height: number, depth: number, finish: THREE.Material) => {
     const mesh = new THREE.Mesh(new THREE.BoxGeometry(width, height, depth), finish)
     mesh.position.set(x + width / 2, y + height / 2, z + depth / 2); mesh.castShadow = true; mesh.receiveShadow = true; parent.add(mesh); return mesh
@@ -39,7 +83,7 @@ export function createSurroundings() {
   groundShape.holes.push(new THREE.Path(siteBoundary.map(([x, z]) => new THREE.Vector2(x, z))))
   const groundGeometry = new THREE.ShapeGeometry(groundShape); groundGeometry.rotateX(Math.PI / 2); groundGeometry.translate(0, -.18, 0)
   groundMaterial.side = THREE.DoubleSide
-  const ground = new THREE.Mesh(groundGeometry, groundMaterial); ground.receiveShadow = true; neighborhood.add(ground)
+  const ground = new THREE.Mesh(groundGeometry, groundMaterial); ground.name = 'context-ground'; ground.receiveShadow = true; neighborhood.add(ground)
   const band = (parent: THREE.Group, points: [number, number][], height: number, finish: THREE.Material, name: string) => {
     const geometry = new THREE.ShapeGeometry(new THREE.Shape(points.map(([east, south]) => new THREE.Vector2(east, south))))
     geometry.rotateX(Math.PI / 2); geometry.translate(0, height, 0); finish.side = THREE.DoubleSide
@@ -55,7 +99,7 @@ export function createSurroundings() {
     band(neighborhood, [...road.north, ...north.toReversed()], -.095, paving, 'sidewalk')
     band(neighborhood, [...south, ...road.south.toReversed()], -.095, paving, 'sidewalk')
   }
-  const parcelColors = ['#adb59f', '#b6bba9', '#a5b09d'].map(color => material(color))
+  const parcelColors = ['#ffffff', '#e6e7cd', '#d6ddbf'].map(color => material(color, lawnTexture))
   const boundaryMaterial = material('#748072')
   neighborhoodParcels.forEach((parcel, index) => {
     const surface = band(neighborhood, parcel.points, -.17, parcelColors[index % parcelColors.length], `neighbor-parcel-${parcel.id}`)
@@ -162,7 +206,7 @@ export function createSurroundings() {
     for (const child of building.children) {
       if (child instanceof THREE.Mesh && (child.name.startsWith('neighbor-8-garage') || child.name === 'neighbor-8-driveway')) reshapePlanMesh(child, neighbor8GarageLocalPoint)
     }
-    band(building, [[body.x,body.depth],[body.x+body.width,body.depth],[body.x+body.width,toStreet(body.x+body.width)-.3],[body.x,toStreet(body.x)-.3]], -.13, foliage[1], 'neighbor-8-front-garden')
+    band(building, [[body.x,body.depth],[body.x+body.width,body.depth],[body.x+body.width,toStreet(body.x+body.width)-.3],[body.x,toStreet(body.x)-.3]], -.13, parcelColors[1], 'neighbor-8-front-garden')
     band(building, [[body.x+.3,body.depth],[body.x+body.width-.3,body.depth],[body.x+body.width-.3,body.depth+1.7],[body.x+.3,body.depth+1.7]], -.1, paving, 'neighbor-8-terrace')
   }
   for (const spec of contextBuildings) {
@@ -183,7 +227,7 @@ export function createSurroundings() {
     box(annex, 0, 2.41, 0, 1, .12, 1, roof)
   }
   const vegetation = new THREE.Group(); vegetation.name = 'context-vegetation'; neighborhood.add(vegetation)
-  const copperFoliage = material('#70636a'), darkFoliage = material('#586b58'), silverFoliage = material('#b2b99a'), bedSoil = material('#77776a', groundTexture)
+  const copperFoliage = material('#624039'), darkFoliage = material('#354b30'), silverFoliage = material('#959b70'), bedSoil = material('#756144', groundTexture)
   for (const bed of frontGardenBeds) band(vegetation, bed.points, -.12, bedSoil, `front-garden-bed-${bed.id}`)
   for (const spec of contextVegetation) {
     const finish = spec.tone === 'copper' ? copperFoliage : spec.tone === 'dark' ? darkFoliage : spec.tone === 'silver' ? silverFoliage : foliage[((spec.seed - 12754) / 7919 | 0) % foliage.length]

@@ -1,6 +1,77 @@
 import { expect, test } from '@playwright/test'
 import { PNG } from 'pngjs'
 
+test('Innentueren und Zargen wechseln gemeinsam zwischen Eiche und Lackfarben', async ({ page }, testInfo) => {
+  const errors: string[] = []
+  page.on('pageerror', error => errors.push(error.message))
+  await page.goto('/')
+  const result = await page.evaluate(async () => {
+    const { buildScene } = await import('/src/scene.ts')
+    const { finishes, initialSettings, exteriorStyles } = await import('/src/context.ts')
+    const model = buildScene('EG', true, true, true)
+    const doors = model.doors.filter(door => door.kind === 'door' && !door.id.endsWith('-entrance') && !door.object.material.transparent)
+    const materials = new Set(doors.map(door => door.object.material))
+    const frames = []
+    model.group.traverse(object => { if (object.isMesh && object.name.endsWith('-frame') && materials.has(object.material)) frames.push(object) })
+    const excluded = model.doors.filter(door => !doors.includes(door))
+    const appearance = object => ({ color: object.material.color.getHexString(), map: !!object.material.map, transparent: object.material.transparent })
+    const before = excluded.map(door => appearance(door.object))
+    const defaults = doors.map(door => appearance(door.object))
+    const samples = [...finishes.interiorDoor, finishes.interiorDoor[0]].map(finish => {
+      for (const side of ['east', 'west']) model.setFinish('interiorDoor', finish.color, side)
+      return { color: finish.color.slice(1), wood: finish === finishes.interiorDoor[0], doors: doors.map(door => appearance(door.object)), frames: frames.map(appearance) }
+    })
+    const style = exteriorStyles[0].appearance
+    model.setFinish('interiorDoor', '#ffffff')
+    for (const key of ['facade', 'roof', 'roofTrim', 'entryDoor', 'frame']) model.setFinish(key, style[key])
+    model.setCladding(style.composition, style.woodTone, style.woodProfile)
+    const afterStyle = doors.map(door => appearance(door.object))
+    model.setFinish('entryDoor', initialSettings.entryDoor)
+    model.setFinish('frame', initialSettings.frame)
+    const after = excluded.map(door => appearance(door.object))
+    const floors = [...new Set(doors.map(door => door.id.split('-')[0]))]
+    model.dispose()
+    return { defaults, samples, before, after, floors, frames: frames.length, afterStyle }
+  })
+  expect(result.floors.sort()).toEqual(['DG', 'EG', 'KG', 'OG'])
+  expect(result.frames).toBeGreaterThan(10)
+  expect(result.defaults.every(door => door.color === 'dfd6c2' && door.map)).toBe(true)
+  for (const sample of result.samples) {
+    for (const material of [...sample.doors, ...sample.frames]) expect(material).toEqual({ color: sample.color, map: sample.wood, transparent: false })
+  }
+  expect(result.after).toEqual(result.before)
+  expect(result.afterStyle.every(door => door.color === 'ffffff' && !door.map)).toBe(true)
+  await page.getByRole('button', { name: '3D', exact: true }).click()
+  const menu = page.locator('.scene-settings summary')
+  await menu.click()
+  for (const name of ['Reinweiß', 'Gebrochenes Weiß', 'Hellgrau', 'Eiche natur']) {
+    const swatch = page.getByRole('button', { name: `Innentüren ${name}`, exact: true })
+    await swatch.click()
+    await expect(swatch).toHaveAttribute('aria-pressed', 'true')
+    await expect(page.getByLabel('Außenstil', { exact: true })).toHaveValue('original')
+  }
+  await page.getByRole('button', { name: 'Innentüren Reinweiß', exact: true }).click()
+  expect(await page.locator('.settings-body').evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true)
+  await page.screenshot({ path: `test-results/${testInfo.project.name}-interior-door-menu.png` })
+  await page.getByLabel('Außenstil', { exact: true }).selectOption('bronze-slate')
+  await expect(page.getByRole('button', { name: 'Innentüren Reinweiß', exact: true })).toHaveAttribute('aria-pressed', 'true')
+  await menu.click()
+  await page.getByRole('button', { name: 'OG', exact: true }).click()
+  await menu.click()
+  await expect(page.getByRole('button', { name: 'Innentüren Reinweiß', exact: true })).toHaveAttribute('aria-pressed', 'true')
+  await menu.click()
+  await page.getByRole('button', { name: '2D', exact: true }).click()
+  await page.getByRole('button', { name: '3D', exact: true }).click()
+  await menu.click()
+  await expect(page.getByRole('button', { name: 'Innentüren Reinweiß', exact: true })).toHaveAttribute('aria-pressed', 'true')
+  await menu.click()
+  const image = PNG.sync.read(await page.locator('canvas').screenshot({ path: `test-results/${testInfo.project.name}-interior-doors-white.png` }))
+  const colors = new Set<string>()
+  for (let offset = 0; offset < image.data.length; offset += 16) colors.add(`${image.data[offset]},${image.data[offset + 1]},${image.data[offset + 2]}`)
+  expect(colors.size).toBeGreaterThan(100)
+  expect(errors).toEqual([])
+})
+
 test('Aussenstile setzen alle Oberflaechen pro Haus und bleiben individuell anpassbar', async ({ page }, testInfo) => {
   const errors: string[] = []
   page.on('pageerror', error => errors.push(error.message))

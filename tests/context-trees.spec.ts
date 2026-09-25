@@ -1,6 +1,67 @@
 import { expect, test } from '@playwright/test'
 import { PNG } from 'pngjs'
 
+test('Sommerrasen zeigt trockene Halme und gruene Restflaechen statt einer Vollfarbe', async ({ page }, testInfo) => {
+  const errors: string[] = []
+  page.on('pageerror', error => errors.push(error.message))
+  await page.goto('/')
+  const result = await page.evaluate(async () => {
+    const THREE = await import('/node_modules/.vite/deps/three.js')
+    const { buildScene } = await import('/src/scene.ts')
+    const model = buildScene('EG', false, true, false)
+    const ground = model.group.getObjectByName('site-ground')
+    const texture = ground.material.map
+    const neighborLawns = model.group.getObjectByName('neighborhood').children.filter(object => object.name.startsWith('neighbor-parcel-') && object.name !== 'neighbor-parcel-boundary')
+    const contextLawn = model.group.getObjectByName('context-ground').material.map
+    const street = model.group.getObjectByName('neighborhood').children.find(object => object.name.startsWith('street-'))
+    const surroundings = { lawns: neighborLawns.length, sameTexture: neighborLawns.every(object => object.material.map === contextLawn), lawnName: contextLawn.name, streetTexture: street.material.map.name, hedge: model.group.getObjectByName('division-hedge').material.color.getHexString() }
+    const pixels = texture.image.getContext('2d').getImageData(0, 0, 512, 512).data
+    let dry = 0, green = 0, darkest = 255, lightest = 0
+    for (let offset = 0; offset < pixels.length; offset += 4) {
+      if (pixels[offset] > pixels[offset + 1] + 5) dry++
+      if (pixels[offset + 1] > pixels[offset]) green++
+      darkest = Math.min(darkest, pixels[offset]); lightest = Math.max(lightest, pixels[offset])
+    }
+    const transparent = () => ({ opacity: ground.material.opacity, depthWrite: ground.material.depthWrite })
+    model.setGroundOpacity(.2); const basement = transparent(); model.setGroundOpacity(1)
+    const scene = new THREE.Scene(); scene.background = new THREE.Color('#dce6e8'); scene.add(model.group)
+    scene.add(new THREE.HemisphereLight('#ffffff', '#8c8b72', 1.3))
+    const sun = new THREE.DirectionalLight('#fff7e9', 3); sun.position.set(10, 25, 15); scene.add(sun)
+    const width = Math.min(innerWidth, 1000), height = Math.min(innerHeight, 760)
+    const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true })
+    renderer.setSize(width, height); renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.25
+    renderer.domElement.dataset.lawnPreview = 'true'; renderer.domElement.style.cssText = 'position:fixed;inset:0;z-index:9999'; document.body.appendChild(renderer.domElement)
+    const camera = new THREE.PerspectiveCamera(45, width / height, .05, 200)
+    camera.position.set(4, 2.3, 18); camera.lookAt(2, -.2, 13); renderer.render(scene, camera)
+    window.__neighborRotate = () => { camera.position.set(width < 500 ? 30 : 23, 24, 38); camera.lookAt(0, 0, 10); renderer.render(scene, camera) }
+    window.__neighborCleanup = () => { renderer.domElement.remove(); renderer.dispose(); model.dispose(); delete window.__neighborRotate }
+    return { dry: dry / (512 * 512), green: green / (512 * 512), darkest, lightest, name: texture.name, repeat: texture.repeat.toArray(), roughness: ground.material.roughness, basement, restored: transparent(), surroundings }
+  })
+  expect(result.name).toBe('summer-lawn')
+  expect(result.surroundings.lawns).toBeGreaterThan(10)
+  expect(result.surroundings.sameTexture).toBe(true)
+  expect(result.surroundings.lawnName).toBe('summer-lawn')
+  expect(result.surroundings.streetTexture).not.toBe('summer-lawn')
+  expect(result.surroundings.hedge).toBe('546333')
+  expect(result.repeat).toEqual([.125, .125])
+  expect(result.dry).toBeGreaterThan(.4)
+  expect(result.green).toBeGreaterThan(.02)
+  expect(result.lightest - result.darkest).toBeGreaterThan(50)
+  expect(result.roughness).toBe(1)
+  expect(result.basement).toEqual({ opacity: .2, depthWrite: false })
+  expect(result.restored).toEqual({ opacity: 1, depthWrite: true })
+  const preview = page.locator('[data-lawn-preview]')
+  const before = PNG.sync.read(await preview.screenshot({ path: `test-results/${testInfo.project.name}-summer-lawn-detail.png` }))
+  const colors = new Set<string>()
+  for (let offset = 0; offset < before.data.length; offset += 16) colors.add(`${before.data[offset]},${before.data[offset + 1]},${before.data[offset + 2]}`)
+  expect(colors.size).toBeGreaterThan(200)
+  await page.evaluate(() => window.__neighborRotate?.())
+  const after = PNG.sync.read(await preview.screenshot({ path: `test-results/${testInfo.project.name}-summer-lawn-overview.png` }))
+  expect(Buffer.compare(before.data, after.data)).not.toBe(0)
+  await page.evaluate(() => window.__neighborCleanup?.())
+  expect(errors).toEqual([])
+})
+
 test('Luftbildbestand: Gesamtansicht von oben und aus Sueden', async ({ page }, testInfo) => {
   await page.goto('/')
   await page.evaluate(async () => {

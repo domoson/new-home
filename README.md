@@ -43,6 +43,25 @@ Die fuenf Bildstile in der Reihenfolge der Vorlagen:
 Farben sind visuelle Naeherungen, keine verbindlichen RAL- oder Materialangaben.
 Dachgeometrie, Ziegelraster und silberne Entwaesserung bleiben unveraendert.
 
+## Innentueren
+
+Im Szenenmenue unter Innentueren lassen sich alle Innentuerblaetter und Zargen
+geschossuebergreifend gemeinsam auf Eiche natur (bisheriger Zustand), Reinweiss,
+gebrochenes Weiss oder Hellgrau stellen. Lackfarben haben keine Holzmaserung.
+Haustueren, Fenster, Glastueren und Beschlaege bleiben unveraendert;
+Aussenstile ueberschreiben die Innentuerfarbe nicht. Die Auswahl bleibt bei
+Geschoss- und Ansichtswechseln erhalten, nicht beim Neuladen der Seite.
+
+## Sommerliche Gartenfarben
+
+Rasen auf dem eigenen Grundstueck, Nachbarparzellen und begruenten Stellplaetzen
+hat eine lokal erzeugte, fleckige Sommertextur mit strohbraunen Halmen und
+olivgruenen Restflaechen nach den Standortfotos. Laub und Hecken sind kraeftiger
+gelbgruen bis dunkelgruen, Beeterde erdbraun. Standorte, Kronenformen, Wege
+und Kollisionen bleiben unveraendert. Die Farbgebung ist eine Annaeherung an
+trockenen Sommerbestand, keine exakte Fototextur; der Datumsregler aendert
+weiterhin nur den Sonnenstand, nicht den Vegetationszustand.
+
 ## Aktuelle Variante 6,90 x 10,50 m
 
 Die neue EG-/OG-Skizze ersetzt die bisherige Raumaufteilung. Die Osthaelfte ist

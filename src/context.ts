@@ -21,6 +21,7 @@ export function boundaryDistance(point: [number, number], side: number) {
 }
 export const partner = { x: -house.width, z: .9, width: house.width, depth: house.depth }
 export const finishes = {
+  interiorDoor: [{ name: 'Eiche natur', color: '#dfd6c2' }, { name: 'Reinweiß', color: '#ffffff' }, { name: 'Gebrochenes Weiß', color: '#f2efe6' }, { name: 'Hellgrau', color: '#c4c7c4' }],
   facade: [{ name: 'Kreideweiß', color: '#fafafa' }, { name: 'Lichtgrau', color: '#d3d7d6' }, { name: 'Salbeigrau', color: '#bfc9bd' }, { name: 'Muschelweiß', color: '#eeeae0' }, { name: 'Nebelblau', color: '#bdcdd3' }, { name: 'Mineralgrün', color: '#9eaea4' }, { name: 'Steingrau', color: '#b4b4b0' }, { name: 'Kohle', color: '#666b68' }, { name: 'Cremeweiß', color: '#eee8d8' }],
   roof: [{ name: 'Graphit', color: '#424749' }, { name: 'Ziegelrot', color: '#99584c' }, { name: 'Zinkgrau', color: '#89928f' }, { name: 'Schwarz', color: '#252927' }, { name: 'Naturrot', color: '#b66b52' }, { name: 'Warmes Schiefergrau', color: '#747a78' }, { name: 'Basaltgrau', color: '#686f6e' }, { name: 'Kaffeebraun', color: '#5b493f' }, { name: 'Umbra', color: '#665247' }, { name: 'Mangan', color: '#4c4641' }, { name: 'Schieferanthrazit', color: '#353b43' }],
   frame: [{ name: 'Weiß', color: '#f7f7f4' }, { name: 'Anthrazit', color: '#3b4243' }, { name: 'Eiche', color: '#b79a70' }, { name: 'Aluminium', color: '#a8b1b0' }, { name: 'Moosgrün', color: '#536b5d' }, { name: 'Bronze', color: '#8b7760' }, { name: 'Warmgrau', color: '#756f65' }, { name: 'Hellgrau', color: '#bcbdb7' }],
@@ -34,7 +35,7 @@ export const woodTones = [{ name: 'Lärche natur', color: '#b99e74' }, { name: '
 export const woodProfiles = [{ id: 'boards', name: 'Vertikale Bretter' }, { id: 'slats', name: 'Schmale Lamellen' }, { id: 'open-slats', name: 'Lamellenfelder auf Putz' }] as const
 export type WoodProfile = typeof woodProfiles[number]['id']
 export type HouseAppearance = { facade: string; roof: string; roofTrim: string; entryDoor: string; frame: string; frameInside: string; composition: FacadeComposition; woodTone: number; woodProfile: WoodProfile }
-export type SceneSettings = HouseAppearance & { hour: number; season: 'summer' | 'spring' | 'winter'; west: HouseAppearance; surroundings: boolean; landscaping: boolean; transparentGround: boolean; lights: Record<string, boolean>; lightingMode: 'room' | 'global'; raffstoreExtension: number; raffstoreTilt: number }
+export type SceneSettings = HouseAppearance & { interiorDoor: string; hour: number; season: 'summer' | 'spring' | 'winter'; west: HouseAppearance; surroundings: boolean; landscaping: boolean; transparentGround: boolean; lights: Record<string, boolean>; lightingMode: 'room' | 'global'; raffstoreExtension: number; raffstoreTilt: number }
 export const initialAppearance: HouseAppearance = { facade: finishes.facade[3].color, roof: finishes.roof[0].color, roofTrim: finishes.roofTrim[0].color, entryDoor: finishes.entryDoor[0].color, frame: finishes.frame[6].color, frameInside: finishes.frame[0].color, composition: 'entry', woodTone: 3, woodProfile: 'boards' }
 type ExteriorAppearance = Omit<HouseAppearance, 'frameInside'>
 const originalExterior: ExteriorAppearance = { facade: initialAppearance.facade, roof: initialAppearance.roof, roofTrim: initialAppearance.roofTrim, entryDoor: initialAppearance.entryDoor, frame: initialAppearance.frame, composition: initialAppearance.composition, woodTone: initialAppearance.woodTone, woodProfile: initialAppearance.woodProfile }
@@ -49,7 +50,7 @@ export const exteriorStyles: { id: string; name: string; appearance: ExteriorApp
 export function exteriorStyleId(appearance: HouseAppearance) {
   return exteriorStyles.find(style => (Object.keys(style.appearance) as (keyof ExteriorAppearance)[]).every(key => appearance[key] === style.appearance[key]))?.id ?? 'custom'
 }
-export const initialSettings: SceneSettings = { ...initialAppearance, west: { ...initialAppearance }, hour: 14, season: 'summer', surroundings: true, landscaping: true, transparentGround: false, lights: {}, lightingMode: 'global', raffstoreExtension: 0, raffstoreTilt: 30 }
+export const initialSettings: SceneSettings = { ...initialAppearance, interiorDoor: finishes.interiorDoor[0].color, west: { ...initialAppearance }, hour: 14, season: 'summer', surroundings: true, landscaping: true, transparentGround: false, lights: {}, lightingMode: 'global', raffstoreExtension: 0, raffstoreTilt: 30 }
 export function sunPosition(hour: number, season: SceneSettings['season']) {
   const [month, day, offset] = { summer: [5, 21, 2], spring: [2, 20, 1], winter: [11, 21, 1] }[season]
   const date = new Date(Date.UTC(2026, month, day, 0, Math.round((hour - offset) * 60)))

@@ -72,7 +72,7 @@ describe('Fassadenfenster', () => {
         for (const opening of windows) {
           if (opening.id !== 'garden-fixed') onGrid(opening.start)
           if (opening.id !== 'garden-fixed') onGrid(opening.width)
-          if (!['garden-fixed', 'living-corner-fixed', 'kitchen-east-window'].includes(opening.id)) {
+          if (!['garden-west', 'garden-fixed', 'living-corner-fixed', 'kitchen-east-window'].includes(opening.id)) {
             onGrid(opening.sill)
             onGrid(opening.height)
           }
@@ -89,9 +89,20 @@ describe('Fassadenfenster', () => {
     const ground = makeFloor('EG'), upper = makeFloor('OG')
     const southGround = ground.walls.find(wall => wall.id === 'south')!.openings
     const southUpper = upper.walls.find(wall => wall.id === 'south')!.openings
-    expect(southGround.find(opening => opening.id === 'garden-west')).toMatchObject({ start: .6, width: 1.8, sill: 0, height: 2.4 })
+    expect(southGround.find(opening => opening.id === 'garden-west')).toMatchObject({ start: .6, width: 1.8, sill: 0, height: 2.52, windowLayout: { lowerFixed: .9 } })
     expect(southUpper.find(opening => opening.id === 'south-west')).toMatchObject({ start: .6, width: 1.8, sill: .9, height: 1.5 })
     const terrace = southGround.find(opening => opening.id === 'terrace')!
+    for (const side of ['east', 'west'] as const) {
+      const south = makeFloor('EG', side).walls.find(wall => wall.id === 'south')!
+      const window = south.openings.find(opening => opening.id === 'garden-west')!
+      expect(window.height).toBe(terrace.height)
+      expect(window.sill + window.height).toBe(terrace.sill + terrace.height)
+      const panel = windowPanels(window).find(panel => !panel.fixed)!
+      expect(panel.bottom + panel.height).toBeCloseTo(terrace.height - windowFrame)
+      const center = south.x + window.start + window.width / 2
+      const lintel = wallSolids(south, ground.height).filter(solid => solid.x < center && solid.x + solid.width > center && solid.bottom >= window.height)
+      expect(lintel.length).toBeGreaterThan(0)
+    }
     const fixed = southGround.find(opening => opening.id === 'garden-fixed')!
     const upperWindow = southUpper.find(opening => opening.id === 'south-east')!
     expect(upper.walls.find(wall => wall.id === 'east')!.openings.some(opening => opening.id === 'east-south')).toBe(false)

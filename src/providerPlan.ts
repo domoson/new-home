@@ -27,7 +27,7 @@ function shell(id: FloorId): Wall[] {
   const southWallLength = house.east - house.west
   const terraceWidth = 2.5, terraceLeaf = terraceWidth / 2
   const terraceStart = southWallLength - terraceWidth - construction.exteriorWall
-  const south: Opening[] = id === 'EG' ? [windowOpening('garden-west', .6, 1.8, 0, 2.4), opening('terrace', terraceStart, terraceLeaf, 'door', 0, 2.52), { ...windowOpening('garden-fixed', terraceStart + terraceLeaf, terraceLeaf + construction.exteriorWall, 0, 2.52), cornerGlazing: true, windowLayout: { columns: 1 } }] : id === 'OG' ? [windowOpening('south-west', .6, 1.8, .9, 1.5), windowOpening('south-east', southWallLength - construction.exteriorWall - 1.8, 1.8, .9, 1.5)] : []
+  const south: Opening[] = id === 'EG' ? [windowOpening('garden-west', .6, 1.8, 0, 2.52), opening('terrace', terraceStart, terraceLeaf, 'door', 0, 2.52), { ...windowOpening('garden-fixed', terraceStart + terraceLeaf, terraceLeaf + construction.exteriorWall, 0, 2.52), cornerGlazing: true, windowLayout: { columns: 1 } }] : id === 'OG' ? [windowOpening('south-west', .6, 1.8, .9, 1.5), windowOpening('south-east', southWallLength - construction.exteriorWall - 1.8, 1.8, .9, 1.5)] : []
   if (id === 'EG') for (const glazed of [...east, ...south].filter(opening => opening.kind === 'window' && opening.sill === 0)) glazed.windowLayout = { columns: glazed.windowLayout!.columns }
   if (id === 'EG') south.find(opening => opening.id === 'garden-west')!.windowLayout = { columns: 2, lowerFixed: .9 }
   if (id !== 'KG') for (const glazed of [...north, ...east, ...south].filter(opening => opening.kind === 'window' && opening.width >= 1.5 && !opening.id.includes('fixed'))) glazed.windowLayout = { ...glazed.windowLayout!, ventilationWidth: .6 }
