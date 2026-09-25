@@ -18,6 +18,17 @@ freien Port. `npm run build` erstellt `dist/`, das auf einem statischen HTTP-Hos
 betrieben werden kann. `npm run preview` dient der lokalen Build-Vorschau.
 Nicht ueber `file://` oeffnen. WebGL2 ist fuer 3D erforderlich, 2D funktioniert ohne.
 
+## Traufstreifen
+
+Die Aussenanlagen enthalten einen schlichten, 40 cm breiten grauen Kiesstreifen
+entlang der freien Fassaden beider Haushaelften, einschliesslich der Hausversaetze.
+Die unveraenderten Lichtschacht-Aussenkanten ragen 10 cm ueber den Kies hinaus; die Oberflaeche liegt
+auf Hoehe der Schachtraender (-0,14 m gegenueber EG-FFB). Lichtschacht-Oeffnungen,
+Eingangspodeste und die gemeinsame Hauswand bleiben frei. Plan und 3D verwenden
+dieselbe Geometrie; in 3D gehoert der Streifen zur Garten-Sichtbarkeit.
+Material und Hoehe sind Entwurfsannahmen. Kiesaufbau, Entwaesserung, Einfassung
+und Sockelabdichtung sind nicht als Ausfuehrungsdetail geplant.
+
 ## Aussenstile
 
 Im 3D-Szenenmenue unter Oberflaechen steht pro Haushaelfte eine Stilauswahl
@@ -131,12 +142,13 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
   durch die geringere Haustiefe geometrisch niedriger, nicht durch geaenderte Hoehenparameter.
 - Sofa 250 x 170 cm: lange Seite Sued, Chaiselongue West; Stuehle zum Tisch gedreht.
   Sideboard 180 x 45 x 60 cm erhalten; Regal auf 110 cm gekuerzt.
-- Neue Fensterordnung: breite Fenster ab 150 cm mit durchgehendem Festfeld
-  und einem nominell 60 cm breiten Lueftungsbereich (bewegliches Blatt nach
+- Neue Fensterordnung: zweiteilige Fenster mit 150 cm Breite: 60 cm
+  Lueftungsbereich und 90 cm Festfeld; bei 180 cm Breite: 60 cm
+  Lueftungsbereich und 120 cm Festfeld (bewegliches Blatt nach
   Rahmen/Fugen etwa 51 cm breit). Nur unter dessen Fluegel liegt bei bodentiefen
   Fenstern ein festes Unterlicht: EG-Suedwest und DG jeweils 90 cm.
   Das grosse Festfeld bleibt ohne Querholm. Oeffnungsbreiten und Fensterabstaende
-  der neuen EG-/OG-/DG-Fenster folgen dem 30-cm-Raster (Hoehen und Bruestungen der 125-cm-Fenster ausgenommen, ebenso das hohe EG-Kuechenband,
+  der neuen EG-/OG-/DG-Fenster folgen dem 30-cm-Raster (ausgenommen das hohe EG-Kuechenband,
   Kellerfenster, Eingangsfestfeld und die 2,80 m breite Terrassenanlage mit
   1,25/1,55-m-Feldern sowie die dazu gleich hohe Eckverglasung). Rasterfugen sind schematisch.
   Teilungshoehe und Profile angenaehert; keine Hersteller-/Absturzsicherungsfreigabe.
@@ -155,7 +167,7 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
   nominell 60 cm breiter Lueftungsbereich im Sueden, frei vom Hochschrank.
   Kuechenmoebel unveraendert. Die hohe Bruestung erschwert Einblicke, garantiert
   aber keinen Sichtschutz. Tageslichtversorgung, Sturz, Glasgroesse und Raffstore benoetigen
-  Hersteller-/Tragwerkspruefung. OG-Ostfenster 150 x 125 cm mit 115 cm Bruestung,
+  Hersteller-/Tragwerkspruefung. OG-Ostfenster 150 x 150 cm mit 90 cm Bruestung,
   ohne Unterlicht: gleiche Hoehe und Bruestung wie die OG-Suedfenster und das OG-Nordfenster,
   aber 150 statt 180 cm breit fuer die durchgehenden Ostachsen.
   Oberkante weiterhin 240 cm.
@@ -176,12 +188,12 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
   x=6,75/z=10,35 m, Oberkante 252 cm wie die Hebeschiebeanlage.
   Mauerecke unter dem Sturz entfernt; kein nachgewiesenes Tragwerk,
   keine Herstellerfreigabe. Die unveraenderte Sitzbank steht teilweise vor dem Festglas.
-  Nordbadfenster im EG unveraendert 120 x 60 cm mit 180 cm Bruestung;
+  Nordbadfenster im EG wie das Dielenfenster 150 x 60 cm mit 180 cm Bruestung;
   OG-Lichtband 240 x 90 cm mit grossem Festfeld und schmalem Lueftungsfluegel,
   weiterhin 150 cm Bruestung bei Oberkante 240 cm.
   Suedwestliche EG-/OG-Fenster fluchten 60 cm von der Trennwand entfernt
-  uebereinander. Die beiden Fenster von Kind Sued sind je 180 x 125 cm mit
-  115 cm Bruestung; das oestliche endet 30 cm vor der Ostkante der
+  uebereinander. Die beiden Fenster von Kind Sued sind je 180 x 150 cm mit
+  90 cm Bruestung; das oestliche endet 30 cm vor der Ostkante der
   Terrassenverglasung. Das EG-Dielenfenster ist ein 150 x 60 cm grosses Band
   bei x=4,50 bis 6,00 m, beide Seitenkanten buendig mit dem OG-Fenster darueber.
   Nach Osten versetzt, nicht mehr mittig ueber der Garderoben-Hakenleiste.

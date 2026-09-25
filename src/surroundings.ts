@@ -8,6 +8,7 @@ import { createSeatLeon } from './seatLeon'
 import { createCarParking } from './carParking'
 import { createContextTree } from './contextTree'
 import { contextVegetation, frontGardenBeds } from './contextVegetation'
+import { splashStripLevel, splashStripParts } from './splashStrip'
 import { contextAnnexes, contextBuildings, contextRoofRise, drivewayEnd, footprintPlacement, mapPolygon, neighborhoodParcels, neighborhoodRoads, placementMatrix, polylineZ, reshapePlanMesh } from './neighborhoodLayout'
 
 export function createSummerLawnTexture() {
@@ -89,6 +90,24 @@ export function createSurroundings() {
     geometry.rotateX(Math.PI / 2); geometry.translate(0, height, 0); finish.side = THREE.DoubleSide
     const mesh = new THREE.Mesh(geometry, finish); mesh.receiveShadow = true; mesh.name = name; parent.add(mesh); return mesh
   }
+  const gravelCanvas = document.createElement('canvas'); gravelCanvas.width = gravelCanvas.height = 256
+  const gravelContext = gravelCanvas.getContext('2d')!
+  gravelContext.fillStyle = '#898b88'; gravelContext.fillRect(0, 0, 256, 256)
+  let gravelSeed = 250926
+  const gravelRandom = () => { gravelSeed = gravelSeed * 16807 % 2147483647; return gravelSeed / 2147483647 }
+  for (let pebble = 0; pebble < 2600; pebble++) {
+    const east = gravelRandom() * 256, south = gravelRandom() * 256, radius = 1.2 + gravelRandom() * 2.2, angle = gravelRandom() * Math.PI
+    gravelContext.fillStyle = ['#b5b6b2', '#c2c3bf', '#a4a6a2', '#d1d1cc', '#989b97'][Math.floor(gravelRandom() * 5)]
+    for (const offsetEast of [-256, 0, 256]) for (const offsetSouth of [-256, 0, 256]) {
+      gravelContext.beginPath(); gravelContext.ellipse(east + offsetEast, south + offsetSouth, radius, radius * .7, angle, 0, Math.PI * 2); gravelContext.fill()
+    }
+  }
+  const gravelTexture = new THREE.CanvasTexture(gravelCanvas)
+  gravelTexture.name = 'splash-strip-gravel'; gravelTexture.wrapS = gravelTexture.wrapT = THREE.RepeatWrapping
+  gravelTexture.colorSpace = THREE.SRGBColorSpace; gravelTexture.anisotropy = 8; textures.push(gravelTexture)
+  const gravel = material('#ffffff', gravelTexture), splashStrip = new THREE.Group()
+  splashStrip.name = 'splash-strip'; garden.add(splashStrip)
+  for (const part of splashStripParts) band(splashStrip, rectCorners(part), splashStripLevel, gravel, 'splash-strip-surface')
   for (const road of neighborhoodRoads) {
     const inward = (edge: [number, number][], other: [number, number][]) => edge.map(([east, south], index): [number, number] => {
       const length = Math.hypot(other[index][0] - east, other[index][1] - south)

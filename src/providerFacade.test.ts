@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { house, makeFloor, roofHeight, roomArea, wallSolids } from './model'
-import { windowFrame, windowJoint, windowPanels } from './windowLayout'
+import { windowFrame, windowJoint, windowMullionStart, windowPanels } from './windowLayout'
 
 const onGrid = (value: number) => expect(value / .3).toBeCloseTo(Math.round(value / .3), 6)
 
@@ -14,7 +14,7 @@ describe('Fassadenfenster', () => {
       if (floorId !== 'EG') expect(windows[0].start + windows[1].start + windows[0].width).toBeCloseTo(house.depth)
       for (const opening of windows) {
         expect(opening.sill + opening.height).toBeCloseTo(floorId === 'DG' ? 2.1 : 2.4)
-        if (floorId === 'OG') expect(opening).toMatchObject({ sill: 1.15, height: 1.25 })
+        if (floorId === 'OG') expect(opening).toMatchObject({ sill: .9, height: 1.5 })
         if (floorId === 'DG') expect(opening).toMatchObject({ sill: 0, height: 2.1, windowLayout: { lowerFixed: .9 } })
         expect(opening.windowLayout?.ventilationWidth).toBe(.6)
         const panels = windowPanels(opening).filter(panel => !panel.fixed)
@@ -22,6 +22,18 @@ describe('Fassadenfenster', () => {
         for (const panel of panels) for (const furniture of floor.furniture.filter(item => item.x + item.width > house.east - panel.width && item.z < opening.start + panel.start + panel.width && item.z + item.depth > opening.start + panel.start)) {
           expect((furniture.bottom ?? 0) + furniture.height, `${floorId} ${furniture.id}`).toBeLessThan(opening.sill + panel.bottom)
         }
+      }
+    }
+  })
+  it('divides 150 and 180 cm windows into 60 cm opening and 90 or 120 cm fixed fields', () => {
+    for (const floorId of ['EG', 'OG', 'DG'] as const) for (const wall of makeFloor(floorId).walls) {
+      for (const opening of wall.openings.filter(opening => opening.kind === 'window' && [1.5, 1.8].includes(opening.width) && !opening.id.includes('fixed'))) {
+        expect(opening.windowLayout?.ventilationWidth).toBe(.6)
+        const divider = windowMullionStart(opening) + windowJoint / 2
+        const openingWidth = opening.windowLayout?.ventilationSide === 'start' ? divider : opening.width - divider
+        expect(openingWidth).toBeCloseTo(.6)
+        expect(opening.width - openingWidth).toBeCloseTo(opening.width === 1.5 ? .9 : 1.2)
+        expect(windowPanels(opening).filter(panel => !panel.fixed)).toHaveLength(1)
       }
     }
   })
@@ -74,9 +86,7 @@ describe('Fassadenfenster', () => {
         for (const opening of windows) {
           if (opening.id !== 'garden-fixed') onGrid(opening.start)
           if (opening.id !== 'garden-fixed') onGrid(opening.width)
-          if (floorId === 'OG' && opening.height === 1.25) {
-            expect(opening.sill + opening.height).toBeCloseTo(2.4)
-          } else if (!['garden-west', 'garden-fixed', 'living-corner-fixed', 'kitchen-east-window'].includes(opening.id)) {
+          if (!['garden-west', 'garden-fixed', 'living-corner-fixed', 'kitchen-east-window'].includes(opening.id)) {
             onGrid(opening.sill)
             onGrid(opening.height)
           }
@@ -93,15 +103,15 @@ describe('Fassadenfenster', () => {
     const ground = makeFloor('EG'), upper = makeFloor('OG')
     const southGround = ground.walls.find(wall => wall.id === 'south')!.openings
     const southUpper = upper.walls.find(wall => wall.id === 'south')!.openings
-    const upperWindows = upper.walls.flatMap(wall => wall.openings).filter(opening => opening.kind === 'window' && opening.height === 1.25)
+    const upperWindows = upper.walls.flatMap(wall => wall.openings).filter(opening => opening.kind === 'window' && opening.height === 1.5)
     expect(upperWindows).toHaveLength(5)
     for (const window of upperWindows) {
-      expect(window.sill).toBeCloseTo(1.15)
+      expect(window.sill).toBeCloseTo(.9)
       expect(window.sill + window.height).toBeCloseTo(2.4)
       expect(window.windowLayout?.lowerFixed).toBeUndefined()
     }
     expect(southGround.find(opening => opening.id === 'garden-west')).toMatchObject({ start: .6, width: 1.8, sill: 0, height: 2.52, windowLayout: { lowerFixed: .9 } })
-    expect(southUpper.find(opening => opening.id === 'south-west')).toMatchObject({ start: .6, width: 1.8, sill: 1.15, height: 1.25 })
+    expect(southUpper.find(opening => opening.id === 'south-west')).toMatchObject({ start: .6, width: 1.8, sill: .9, height: 1.5 })
     const terrace = southGround.find(opening => opening.id === 'terrace')!
     for (const side of ['east', 'west'] as const) {
       const south = makeFloor('EG', side).walls.find(wall => wall.id === 'south')!
@@ -117,7 +127,7 @@ describe('Fassadenfenster', () => {
     const fixed = southGround.find(opening => opening.id === 'garden-fixed')!
     const upperWindow = southUpper.find(opening => opening.id === 'south-east')!
     expect(upper.walls.find(wall => wall.id === 'east')!.openings.some(opening => opening.id === 'east-south')).toBe(false)
-    expect(upperWindow).toMatchObject({ width: 1.8, sill: 1.15, height: 1.25 })
+    expect(upperWindow).toMatchObject({ width: 1.8, sill: .9, height: 1.5 })
     expect(terrace.width).toBeCloseTo(1.25)
     expect(fixed.width).toBeCloseTo(1.55)
     expect(upperWindow.start - terrace.start).toBeCloseTo(.7)
@@ -128,7 +138,7 @@ describe('Fassadenfenster', () => {
     expect(wardrobe.z + wardrobe.depth).toBeLessThan(upper.walls.find(wall => wall.id === 'south')!.z - .9)
     const groundNorth = ground.walls.find(wall => wall.id === 'north')!.openings
     const upperNorth = upper.walls.find(wall => wall.id === 'north')!.openings
-    expect(groundNorth.find(opening => opening.id === 'wc-window')).toMatchObject({ start: .3, width: 1.2, sill: 1.8, height: .6 })
+    expect(groundNorth.find(opening => opening.id === 'wc-window')).toMatchObject({ start: .3, width: 1.5, sill: 1.8, height: .6 })
     const hallWindow = groundNorth.find(opening => opening.id === 'hall-window')!
     expect(hallWindow).toMatchObject({ start: 4.2, width: 1.5, sill: 1.8, height: .6 })
     const coats = ground.furniture.find(item => item.id === 'entry-coats')!
@@ -137,6 +147,8 @@ describe('Fassadenfenster', () => {
     expect(hallWindow.start + hallWindow.width).toBeCloseTo(upperHallAxis.start + upperHallAxis.width)
     expect(hallWindow.sill - coats.bottom! - coats.height).toBeCloseTo(.12)
     const bathWindow = groundNorth.find(opening => opening.id === 'wc-window')!
+    expect(bathWindow.windowLayout).toEqual(hallWindow.windowLayout)
+    expect(windowPanels(bathWindow).map(panel => ({ start: panel.start, width: panel.width, fixed: panel.fixed }))).toEqual(windowPanels(hallWindow).map(panel => ({ start: panel.start, width: panel.width, fixed: panel.fixed })))
     expect(hallWindow.sill).toBe(bathWindow.sill)
     expect(hallWindow.sill + hallWindow.height).toBeCloseTo(bathWindow.sill + bathWindow.height)
     const hallLeaf = windowPanels(hallWindow).find(panel => !panel.fixed)!
@@ -158,7 +170,7 @@ describe('Fassadenfenster', () => {
     const playWindow = upper.walls.find(wall => wall.id === 'east')!.openings.find(opening => opening.id === 'play-window')!
     expect(playWindow).toMatchObject({ start: 5.7, width: 1.5, sill: upperWindow.sill, height: upperWindow.height })
     expect(playWindow.windowLayout?.lowerFixed).toBeUndefined()
-    expect(playWindow.width * playWindow.height).toBeCloseTo(1.875)
+    expect(playWindow.width * playWindow.height).toBeCloseTo(2.25)
     expect(playWindow.start).toBeGreaterThan(upper.walls.find(wall => wall.id === 'children-divider')!.z + .125)
     expect(playWindow.start + playWindow.width).toBeLessThan(upper.walls.find(wall => wall.id === 'playroom-south')!.z)
     expect(childWindow.start + childWindow.width).toBeLessThan(upper.furniture.find(item => item.id === 'wardrobe-north')!.z)

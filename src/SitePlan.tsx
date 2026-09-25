@@ -11,6 +11,7 @@ import { parkingEntrance, rectCorners, siteParking } from './parking'
 import { neighborItems, siteItems } from './sitePlanModel'
 import type { SiteItem } from './sitePlanModel'
 import { neighborhoodParcels, neighborhoodRoads } from './neighborhoodLayout'
+import { siteEntrySteps, siteLightWells, splashStripParts } from './splashStrip'
 
 type Point = [number, number]
 
@@ -96,6 +97,15 @@ export default function SitePlan({ dimensions, zoom, selected, onSelect, onZoom 
       <path d={`M${siteBoundary[3]} L${siteBoundary[2]}`} stroke="#d3d8d2" strokeWidth=".12" />
       <text x="0" y="25" textAnchor="middle" fontSize={overview ? 1.25 : .5} fill="#607068">An der Röth</text>
       <path d={`M${siteDivision[0]} L0,0 M0,${house.depth + partner.z} L${siteDivision[1]}`} stroke="#809a72" strokeWidth=".45" />
+      <g data-splash-strip="true">
+        <title>Traufstreifen: 40 cm grauer Kies, Lichtschächte ausgespart</title>
+        <defs><pattern id="site-gravel" width=".16" height=".16" patternUnits="userSpaceOnUse"><rect width=".16" height=".16" fill="#c3c5bf" /><circle cx=".04" cy=".05" r=".018" fill="#939891" /><circle cx=".12" cy=".13" r=".014" fill="#e1e2dc" /></pattern></defs>
+        <path d={splashStripParts.map(part => `M${part.x},${part.z}h${part.width}v${part.depth}h${-part.width}Z`).join(' ')} fill="url(#site-gravel)" />
+      </g>
+      <g fill="#e2e4df" stroke="#8b938d" strokeWidth=".025">
+        {siteEntrySteps.map((part, index) => <rect key={`step-${index}`} x={part.x} y={part.z} width={part.width} height={part.depth} />)}
+        {siteLightWells.map((well, index) => <g key={index} data-site-light-well="true"><title>Lichtschacht</title><rect x={well.x} y={well.z} width={well.width} height={well.depth} />{Array.from({ length: 7 }, (_, bar) => <line key={bar} x1={well.x} x2={well.x + well.width} y1={well.z + (bar + 1) * well.depth / 8} y2={well.z + (bar + 1) * well.depth / 8} />)}</g>)}
+      </g>
       {siteItems.map(item => <g key={item.id} data-site-object={item.id} role="button" tabIndex={0} aria-label={`${item.name}: ${item.details}`} onClick={() => { if (!measuring) onSelect(item) }} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onSelect(item) } }}>
         <title>{item.name}: {item.details}</title>
         <polygon points={item.points.map(point => point.join(',')).join(' ')} fill={item.color} stroke={selected === item.id ? '#247d7a' : '#718276'} strokeWidth={selected === item.id ? 2 : .7} vectorEffect="non-scaling-stroke" />
