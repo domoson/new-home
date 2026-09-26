@@ -9,18 +9,18 @@ test('Five tall cabinets have clear south fronts above the connected corner coun
   const floor = makeFloor('EG')
   for (const [index, id] of ['kitchen-tall-storage-1', 'kitchen-tall-storage-2', 'kitchen-tall', 'fridge', 'kitchen-tall-storage-3'].entries()) {
     const cabinet = floor.furniture.find(item => item.id === id)!
-    expect(cabinet.x).toBeCloseTo(3.45 + index * .63)
-    expect(cabinet).toMatchObject({ z: 2.5, width: .63, depth: .6, height: floor.height, angle: 0 })
-    const opening = { x: cabinet.x, z: 3.1, width: .63, depth: .63 }
+    expect(cabinet.x).toBeCloseTo(3.39 + index * .642)
+    expect(cabinet).toMatchObject({ z: 2.5, width: .642, depth: .6, height: floor.height, angle: 0 })
+    const opening = { x: cabinet.x, z: 3.1, width: cabinet.width, depth: cabinet.width }
     const frontBottom = cabinet.frontBottom ?? (cabinet.niche ? cabinet.niche.bottom + cabinet.niche.height : .1)
     for (const other of floor.furniture.filter(other => other.height + (other.bottom ?? 0) > frontBottom)) expect(overlap(opening, other), `${id}/${other.id}`).toBeLessThan(1e-8)
   }
 })
 
-test('Six base modules have accessible fronts and individual opening clearance', () => {
+test('Five base modules have accessible fronts and individual opening clearance', () => {
   const floor = makeFloor('EG'), owners = floor.furniture.filter(item => kitchenModules(item).length)
   const modules = owners.flatMap(kitchenModules)
-  expect(modules).toHaveLength(6)
+  expect(modules).toHaveLength(5)
   expect(modules.filter(module => module.use === 'dishwasher')).toHaveLength(1)
   for (const owner of owners) for (const module of kitchenModules(owner)) {
     expect(overlap(module, owner)).toBeCloseTo(module.width * module.depth)

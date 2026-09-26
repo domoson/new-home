@@ -10,7 +10,7 @@ test('Badewannenarmatur sitzt an der Ostwand und ragt ueber die Wanne', async ({
     const model = buildScene('OG', true, true, true)
     const floor = makeFloor('OG')
     const tub = floor.furniture.find(item => item.id === 'bath-tub')
-    const eastWall = floor.walls.find(wall => wall.id === 'east-divider')
+    const eastWall = floor.walls.find(wall => wall.id === 'bath-east')
     const bounds = (name: string) => new THREE.Box3().setFromObject(model.group.getObjectByName(name))
     const control = bounds('bath-tub-control'), spout = bounds('bath-tub-spout')
     model.dispose()
@@ -28,8 +28,15 @@ test('Raffstores fahren vor der Verglasung und die OG-Raumrevision bleibt bedien
   const errors: string[] = []
   page.on('pageerror', error => errors.push(error.message))
   await page.goto('/')
+  await page.getByRole('button', { name: 'EG', exact: true }).click()
+  await expect(page.locator('[data-furniture="coffee-counter"]')).toHaveCount(0)
+  await expect(page.locator('[data-furniture="peninsula"]')).toHaveAttribute('transform', 'translate(4 4.96)')
+  await page.screenshot({ path: `test-results/${testInfo.project.name}-revised-eg-plan.png` })
   await page.getByRole('button', { name: 'OG', exact: true }).click()
   await expect(page.locator('[data-raffstore]')).toHaveCount(6)
+  await expect(page.locator('svg.floor-plan')).not.toContainText('Spielzimmer')
+  await expect(page.locator('[data-furniture="play-table"]')).toHaveCount(0)
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
   await page.screenshot({ path: `test-results/${testInfo.project.name}-raffstore-og-plan.png` })
   const geometry = await page.evaluate(async () => {
     const THREE = await import('/node_modules/.vite/deps/three.js')
@@ -55,8 +62,8 @@ test('Raffstores fahren vor der Verglasung und die OG-Raumrevision bleibt bedien
     for (const door of model.doors) model.setOpening(door.id, 1)
     const camera = new THREE.PerspectiveCamera()
     const walker = createWalker(model, camera, new THREE.Vector3(2.85, elevations.OG, 6.2))
-    const route = (points: number[][]) => {
-      walker.teleport(new THREE.Vector3(points[0][0], elevations.OG, points[0][1]))
+    const route = (points: number[][], level = elevations.OG) => {
+      walker.teleport(new THREE.Vector3(points[0][0], level, points[0][1]))
       for (const [east, south] of points.slice(1)) {
         for (let step = 0; step < 350 && Math.hypot(walker.position().x - east, walker.position().z - south) > .07; step++) {
           camera.lookAt(east, camera.position.y, south); walker.keys.add('KeyW'); walker.tick(); walker.keys.clear()
@@ -66,9 +73,12 @@ test('Raffstores fahren vor der Verglasung und die OG-Raumrevision bleibt bedien
       return true
     }
     const storageRoute = route([[2.85, 6.2], [1.25, 6.2]])
-    const bedroomRoute = route([[2.85, 6.2], [2.85, 8], [3.16, 8], [3.16, 8.48], [3.95, 8.48], [3.95, 9.25], [5.5, 9.25]])
+    const bedroomRoute = route([[2.85, 6.2], [2.85, 8.5], [3.95, 8.5], [3.95, 9.25], [5.5, 9.25]])
+    const northRoute = route([[2.85, 4.4], [4.6, 4.4], [5.1, 4.4], [5.1, 6.7], [5.1, 4.4], [4.6, 4.4], [4.6, 2.8]])
+    const tubRoute = route([[2.85, 3.9], [2.6, 2.8], [2.6, .7]])
+    const kitchenRoute = route([[2.8, 3.9], [4.8, 3.9], [4.8, 4.55], [3.65, 4.55], [3.65, 6.7]], elevations.EG)
     const showerRoute = route([[2.85, 3.9], [2.85, 2.95], [2.25, 2.95], [.8, 2.95]])
-    const toiletRoute = route([[2.25, 2.95], [2.25, .68], [.8, .68]])
+    const toiletRoute = route([[2.6, 2.95], [2.6, .68], [.9, .68]])
     const upper = makeFloor('OG')
     const showerStem = upper.walls.find(wall => wall.id === 'bath-installation')
     const showerHead = bounds('bath-shower-rain-head'), showerControl = bounds('bath-shower-concealed-control')
@@ -89,7 +99,7 @@ test('Raffstores fahren vor der Verglasung und die OG-Raumrevision bleibt bedien
     const showerClearWidth = openGlass.min.z - upper.walls.find(wall => wall.id === 'bath-screen').z - upper.walls.find(wall => wall.id === 'bath-screen').depth
     const areas = Object.fromEntries(upper.rooms.map(room => [room.id, roomArea(room, 'OG').floor]))
     walker.dispose(); model.dispose()
-    return { count: groups.length, curtainStates, cornerClear: !east.intersectsBox(south), raised, storageRoute, bedroomRoute, showerRoute, toiletRoute, areas, showerSweepClear, closedBlocksShower, showerClearWidth, showerFittingsAtTWall, showerTop: closedGlass.max.y - elevations.OG, showerGlass: showerDoor.object.material.transparent }
+    return { count: groups.length, curtainStates, cornerClear: !east.intersectsBox(south), raised, storageRoute, bedroomRoute, northRoute, tubRoute, kitchenRoute, showerRoute, toiletRoute, areas, showerSweepClear, closedBlocksShower, showerClearWidth, showerFittingsAtTWall, showerTop: closedGlass.max.y - elevations.OG, showerGlass: showerDoor.object.material.transparent }
   })
   expect(geometry.count).toBe(28)
   expect(geometry.curtainStates.every(state => state.extension === 1 && state.tilt === 75)).toBe(true)
@@ -97,6 +107,9 @@ test('Raffstores fahren vor der Verglasung und die OG-Raumrevision bleibt bedien
   expect(geometry.raised.every(Boolean)).toBe(true)
   expect(geometry.storageRoute).toBe(true)
   expect(geometry.bedroomRoute).toBe(true)
+  expect(geometry.northRoute).toBe(true)
+  expect(geometry.tubRoute).toBe(true)
+  expect(geometry.kitchenRoute).toBe(true)
   expect(geometry.showerRoute).toBe(true)
   expect(geometry.toiletRoute).toBe(true)
   expect(geometry.showerSweepClear.every(Boolean)).toBe(true)
@@ -105,9 +118,20 @@ test('Raffstores fahren vor der Verglasung und die OG-Raumrevision bleibt bedien
   expect(geometry.showerTop).toBeCloseTo(2.1)
   expect(geometry.showerGlass).toBe(true)
   expect(geometry.showerFittingsAtTWall).toBe(true)
-  expect(geometry.areas.store).toBeCloseTo(2)
-  expect(geometry.areas.playroom).toBeCloseTo(7.10875)
+  expect(geometry.areas.store).toBeCloseTo(2.591781915)
+  expect(geometry.areas.store).toBeGreaterThanOrEqual(2.5)
+  expect(geometry.areas.playroom).toBeUndefined()
+  expect(geometry.areas['child-north']).toBeCloseTo(18.968696809)
+  expect(geometry.areas['child-south']).toBeCloseTo(geometry.areas['child-north'], 10)
+  expect(geometry.areas.bath).toBeCloseTo(10.7115)
   await page.getByRole('button', { name: '3D', exact: true }).click()
+  for (const floor of ['EG', 'OG']) {
+    await page.getByRole('button', { name: floor, exact: true }).click()
+    const pixels = PNG.sync.read(await page.locator('canvas').screenshot({ path: `test-results/${testInfo.project.name}-revised-${floor}-3d.png` }))
+    const colors = new Set<string>()
+    for (let offset = 0; offset < pixels.data.length; offset += 32) colors.add(`${pixels.data[offset] >> 4},${pixels.data[offset + 1] >> 4},${pixels.data[offset + 2] >> 4}`)
+    expect(colors.size).toBeGreaterThan(25)
+  }
   await page.getByRole('button', { name: 'Dach', exact: true }).click()
   await expect(page.locator('.scene-settings')).toBeVisible()
   await page.locator('.scene-settings summary').click()

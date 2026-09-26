@@ -99,18 +99,22 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
   Form und Steigungen unveraendert; Physik-Tritttoleranz 22,5 cm fuer die 19,8-cm-
   Steigungen plus Kollisionsabstand, keine Aenderung der modellierten Stufen.
 - EG: Gaestebad nordwestlich, Eingang nordoestlich, deckenhoher Putzschrank neben Dusche.
-  Geflieste Diele direkt an der Haustuer 6,67 m2; Flur ab vorhandenem
-  Bodenwechsel mit Holzboden 5,21 m2. Keine schraege Trennung zum Wohnen;
+  Geflieste Diele direkt an der Haustuer; Flur ab vorhandenem
+  Bodenwechsel mit Holzboden nun 5,57 m2. Keine schraege Trennung zum Wohnen;
   kurzer gerader Wandstummel suedlich der Treppe bis x=2,65 m.
   Kueche oestlich der Treppe, offener rechtwinkliger Uebergang zum Wohnen, Halbinsel
   nach Sueden. Essplatz im Suedosten, Wohnecke im Suedwesten.
-- Fuenf H-Hochschraenke je 63 cm breit/60 cm tief, deckenhoch 277 cm.
-  Backofen im dritten, Kuehlgeraet im vierten Modul. Arbeitszeilen 92 cm hoch
-  und direkt an die Eckschraenke angeschlossen, keine zusaetzlichen Haengeschraenke.
-  Rechte offene Nische von 92 bis 152 cm mit fortgefuehrter Arbeitsplatte;
-  Toaster dort, Wassersprudler auf der Ostzeile suedlich der Spuele, ausserhalb des Fensterbereichs.
-  Espresso und Cookit links; keine Kuechengeraete in der Diele.
-  Linke Eckfront erst ab 152 cm, blinde Unterbereiche ohne behauptete Bedienfront.
+- Kueche nach aktualisierter Skizze: linke Flurwand und linker Unterschrank
+  entfernt. Hochschrankzeile 3,21 m breit, fuenf schematisch gleiche Module,
+  60 cm tief und 277 cm hoch; keine Hersteller-Modulplanung.
+  Backofen im dritten, Kuehlgeraet im vierten Modul. Arbeitszeile 92 cm hoch,
+  rechts offene Nische von 92 bis 152 cm mit Toaster und Wassersprudler.
+  Espresso und Cookit jetzt auf der Ostzeile; Spuelengroesse erhalten.
+  Keine Kuechengeraete in der Diele, keine zusaetzlichen Haengeschraenke.
+  Hochschrankfront bis Halbinsel 1,86 m; Halbinsel 2,60 x 1,00 m bei z=4,96 m,
+  also 54 cm nach Norden gerueckt. Hocker folgen der Insel. Zum unveraenderten
+  Essplatz 1,79 m statt 1,25 m zwischen den Moebelkanten, vor Beruecksichtigung
+  der Hocker. Wohn-/Koch-/Essbereich 40,18 m2 plus direkt angebundener Flur.
   Halbinsel-Unterbau 40 cm von Sued und 35 cm von West zurueckgesetzt, echte
   freie Knievolumen unter 3 cm Platte; Barhocker mit 65 cm Sitzhoehe.
   Einzelne Frontoeffnungen geometrisch geprueft; gleichzeitige Oeffnungen,
@@ -134,10 +138,10 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
   Eingangsanlage insgesamt 140 cm breit. Normale Innentueren einschliesslich
   Kellerabschluss: 86 x 211 cm inklusive Zarge, Blatt 80 x 208 cm als Annahme.
   DG-Abstellraum und Hebeschiebeanlage bleiben weitere Sondermasse.
-- OG: Bad 9,11 m2, Kind Nord 16,88 m2, Spielzimmer 7,50 m2, Kind Sued 16,73 m2,
-  Flur 3,80 m2, Abstellraum 2,09 m2. Kinderzimmer mit Bett, Schreibtisch und Schrank;
-  Spielzimmer niedrig moebliert. KG behaelt Technik/Lager, Keller und Hobby;
-  DG Buero, Schlafen/Ankleide und Abstellraum. Moebel an neue Huelle angepasst.
+- OG: Bad ca. 10,71 m2, Kind Nord und Kind Sued jeweils 18,97 m2,
+  Flur 3,74 m2, Abstellraum 2,59 m2 (mindestens 2,50 m2). Spielzimmer entfaellt; Kinderzimmer
+  weiterhin mit Bett, Schreibtisch und Schrank. Neue Proportionen grob aus
+  der Skizze, nicht auf deren Flaechenangaben optimiert. KG und DG unveraendert.
 - Geschoss-/Raumhoehen, Dachneigung und Kniehoehe unveraendert. Der First wird
   durch die geringere Haustiefe geometrisch niedriger, nicht durch geaenderte Hoehenparameter.
 - Sofa 250 x 170 cm: lange Seite Sued, Chaiselongue West; Stuehle zum Tisch gedreht.
@@ -155,26 +159,26 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
   Fensterlagen und -groessen aus der neuen Skizze angenaehert, Gartenzugang als
   zweiteilige 2,80-m-Hebeschiebeanlage mit Eckkopplung ohne Mauerstueck:
   innerer westlicher Fluegel 1,25 m beweglich, aeusseres oestliches Feld 1,55 m fest.
-  Beide Ostachsen im OG und DG beginnen bei z=3,30 und 5,70 m, jeweils
-  150 cm breit. Die suedliche Achse ist 60 cm nach Norden verschoben;
-  Oeffnungen und Teilungen sind symmetrisch zum First bei z=5,25 m.
-  DG und OG fluchten seitlich; die DG-Fenster behalten die bodentiefe Oeffnung.
+  DG-Ostachsen weiterhin bei z=3,30 und 5,70 m, jeweils 150 cm breit.
+  OG noerdlich weiterhin z=3,30 m, suedlich jetzt z=5,539 m: rund 16,1 cm
+  nach Norden versetzt, damit die verschobene Kinderzimmerwand frei bleibt.
+  Dort keine genaue OG-/DG-Flucht mehr; DG unveraendert bodentief.
   Die schmalen Fluegel sitzen jeweils an der aeusseren Seite des Fensterpaars.
   EG ueber der Spuele ein einzelnes Fensterband 210 x 75 cm
   von z=3,30 bis 5,40 m mit 165 cm Bruestung und Oberkante 240 cm.
   Nordkante fluchtet mit den noerdlichen OG-/DG-Ostfenstern; das EG-Fenster
   reicht 60 cm weiter nach Sueden. Grosses Festfeld vollstaendig vor der Spuele,
   nominell 60 cm breiter Lueftungsbereich im Sueden, frei vom Hochschrank.
-  Kuechenmoebel unveraendert. Die hohe Bruestung erschwert Einblicke, garantiert
+  Die hohe Bruestung erschwert Einblicke, garantiert
   aber keinen Sichtschutz. Tageslichtversorgung, Sturz, Glasgroesse und Raffstore benoetigen
   Hersteller-/Tragwerkspruefung. OG-Ostfenster 150 x 150 cm mit 90 cm Bruestung,
   ohne Unterlicht: gleiche Hoehe und Bruestung wie die OG-Suedfenster und das OG-Nordfenster,
   aber 150 statt 180 cm breit fuer die durchgehenden Ostachsen.
   Oberkante weiterhin 240 cm.
-  Das Spielzimmerregal steht vor dem Festfeld.
+  Beide OG-Ostfenster gehoeren jetzt zu Kind Nord, dessen Schrank an der inneren Westwand steht.
   DG-Giebelfenster wieder bodentief 150 x 210 cm mit Oberkante 210 cm:
   je ein schmaler oeffnender Fluegel ueber einem 90-cm-Festfeld neben dem
-  durchgehenden Festfeld. Die Achsen fluchten mit den OG-Fenstern;
+  durchgehenden Festfeld. Nur die noerdliche Achse fluchtet noch mit dem OG;
   Tragwerk, Dachanschluss und Raffstoreeinbau sind fachlich zu pruefen.
   DG-Buerofenster 60 cm nach Sueden verschoben, Trennwand zum Schlafzimmer
   30 cm nach Sueden auf z=5,10 m: Buero gewinnt 0,915 m2, Schlafzimmer
@@ -223,27 +227,29 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
   beweglichen Behang-Kollisionskoerper im Rundgang und keine Motor-/Windautomatik.
   Verbleibender Wandquerschnitt, Sturztragwerk, Daemmung, Befestigung, Paketmass,
   Revisionszugang und Rettungswege sind herstellerseitig/fachlich nachzuweisen.
-- OG: Spielzimmer-Suedwand 20 cm nach Norden auf z=8,025 m; Kind Sued hat
-  rechts unten 2,05 m lichte Nord-Sued-Raumtiefe (Schrank steht innerhalb davon).
-  Spielzimmer-Nordwand und Schrank von Kind Nord zusaetzlich 15 cm nach Norden,
-  damit das Ostfenster in der OG-/DG-Achse sitzt und nicht die
-  Raumtrennwand schneidet. Spielzimmer 7,10875 m2; Tisch und Stuhl 20 cm nach Norden; Suedschrank folgt
-  der Wand. Abstellraum genau 2,00 m2, Wand zu Kind Sued nur 12,5 cm statt
-  20 cm, Kinderzimmertuer-Anschluss buendig. Regal passend gekuerzt;
-  Tueren und Zugaenge bleiben nutzbar. Tragende Funktion der Wand ungeprueft.
+- OG: Bad-Ostwand jetzt x=4,00 m; Kind Nord im Norden schmaler und im
+  Hauptbereich 3,10 m breit. Bisheriges Spielzimmer samt Zugang und Moebeln
+  entfernt. Kind Sued rechteckig ueber die gesamte lichte Hausbreite,
+  6,30 x 3,01 m. 12,5-cm-Trennwand jetzt bei z=7,064 m, rund 16,1 cm
+  weiter noerdlich: beide Kinderzimmer exakt flaechengleich. Suedliches
+  OG-Ostfenster folgt der Verschiebung. Flur 105 cm breit, Abstellraum bis
+  zur gleichen Suedgrenze verkuerzt (1,90 x 1,364 m). Betten und Schraenke folgen den neuen Waenden;
+  Tragwerk, Leitungen und Tuerausfuehrung bleiben fachlich ungeprueft.
 - Kellerfenster 90 x 75 cm; oestliches Fenster 1,20 m von der suedlichen
   Aussenkante entfernt. Beide Lichtschaechte
   mittig, 130 x 50 cm im Grundriss (aus Zeichnung angenaehert, kein Herstellermass).
 - EG-Dusche im Suedwesten des Bades, WC/Waschtisch im Norden; Nord-Vorwand 8 cm tief/120 cm hoch
   ist Annahme, von der Raumflaeche abgezogen.
 - OG-Bad nach um 90 Grad gedrehter Skizze: T-Waende 15 cm stark und 242 cm
-  hoch, beide 35 cm unter der Decke endend. Querwand x=1,30-1,45 m,
+  hoch, beide 35 cm unter der Decke endend. Querwand x=1,54-1,69 m,
   z=1,05-2,40 m; Einzelwaschtisch 135 x 50 cm nach Osten mit einem
   60 x 40 cm Becken. Je 37,5 cm Seitenablage und 10 cm hinter dem Becken;
   Spiegelschrank 120 cm breit, 70 cm hoch, 16 cm tief ab 115 cm Bodenhoehe.
   Spiegelfronten als Material, keine berechnete Raumspiegelung.
   Dahinter WC im Nordwesten, bodengleiche
-  Dusche 96 x 141 cm im Suedwesten; T-Steg bei z=1,70 m mit WC-Spuelkasten.
+  Dusche jetzt 120 x 141 cm im Suedwesten; T-Steg bei z=1,70 m mit WC-Spuelkasten.
+  T-Schirm, Glastuer, Waschtisch und Spiegelschrank 24 cm nach Osten gerueckt,
+  WC im verbreiterten Bereich zentriert.
   Duschkopf und Armatur an der noerdlichen T-Installationswand, gegenueber
   der suedlichen Raumwand. Suedlicher Zugang 90 cm breit mit
   beweglicher 8-mm-Glastuer, 210 cm Oberkante, 67 cm zur Decke offen.
@@ -251,15 +257,16 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
   nach aussen oeffnend. Im Modell geoeffnet inklusive Griffen mehr als
   80 cm freier Zugang; geschlossen im Rundgang gesperrt. Beschlaege,
   Sicherheitsglas, Dichtungen, Spritzschutz und Wandbefestigung ungeprueft.
-  WC-Zugang 75 cm, vor dem Waschtisch 70 cm zur Wanne.
-  Wanne 180 x 80 cm im Nordosten, Eingang im Suedosten und Nordlichtband
-  unveraendert. Netto-Badflaeche 9,0975 m2. Leitungen, Abdichtung und
+  WC-Zugang weiterhin 75 cm, vor dem Waschtisch jetzt 101 cm zur Wanne.
+  Wanne 180 x 80 cm im Nordosten um 55 cm nach Osten an die neue Wand
+  gerueckt. T-Konzept, Eingang und Nordlichtband bleiben erhalten.
+  Netto-Badflaeche 10,7115 m2. Leitungen, Abdichtung und
   Bewegungsflaechen sind nicht fachlich geplant oder als barrierefrei nachgewiesen.
 - DG-Abstellraumtuer 73 x 160 cm, rechteckig und ueber den Schwenkweg unter dem
   Dach geprueft. Kein aufrechter Durchgang; der Rundgang hat keine Duckfunktion.
 - Die Planungsannahmen zeigen Modellflaechen und die Beschriftungen der neuen
-  EG-/OG-Vorlage. Keine erfundenen KG-/DG-Referenzflaechen. EG-Diele ca. 13,42 m2
-  statt 12,0 m2 der Skizze; Wandstaerken/Nische fuehren zu Abweichungen.
+  EG-/OG-Vorlage. Keine erfundenen KG-/DG-Referenzflaechen. Skizzenflaechen
+  nur als grobe Orientierung; Wandstaerken, Nischen und Raumzuordnung weichen ab.
   Wohnflaechen: 3 % Abzug; im DG zusaetzlich Hoehengewichtung unter 1 / 2 m.
   Tuerlaibungen nicht eingerechnet. Kein WoFlV-Nachweis.
 - Treppenannahme: 1,90 x 2,00 m, 15 Steigungen, 30 cm gerade Auftritte,
