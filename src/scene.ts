@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js'
-import { atticCeiling, atticCeilingPanels, construction, house, elevations, floorIds, floorSlabs, furnitureVolumes, lightWells, makeFloor, rect, ridgeElevations, roofHeight, roofInnerElevation, roofOuterElevation, roofPanels, roofVerticalThickness, roofWindows, slabThickness, stairFor, stairGuards, stairHandrails, stairSolids, storeyRise, wallSolids } from './model'
+import { atticCeiling, atticCeilingPanels, construction, house, elevations, floorIds, floorSlabs, furnitureVolumes, lightWells, makeFloor, rect, ridgeElevations, roofHeight, roofInnerElevation, roofOuterElevation, roofPanels, roofVerticalThickness, roofWindows, slabThickness, stairFor, stairGuards, stairHandrails, stairInnerWall, stairSolids, storeyRise, wallSolids } from './model'
 import { windowFrame, windowGap, windowJoint, windowMullionStart, windowPanels } from './windowLayout'
 import { kitchenModules, moduleFront } from './kitchenStorage'
 import { terraceFurniture, terraceParts, westTerraceFurniture } from './terrace'
@@ -621,10 +621,9 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
     if (includeSite && id !== 'DG') {
       const rise = storeyRise(id)
       for (const solid of stairSolids(rise)) addStairSolid(solid, base, timber)
+      for (const solid of stairInnerWall(rise)) addStairSolid(solid, base, plaster)
       for (const solid of stairGuards(rise)) addStairSolid(solid, base, plaster)
-      
-        for (const rail of stairHandrails(rise)) beam(new THREE.Vector3(...rail.from).add(new THREE.Vector3(0, base, 0)), new THREE.Vector3(...rail.to).add(new THREE.Vector3(0, base, 0)), .025, timber)
-      
+      for (const rail of stairHandrails(rise)) beam(new THREE.Vector3(...rail.from).add(new THREE.Vector3(0, base, 0)), new THREE.Vector3(...rail.to).add(new THREE.Vector3(0, base, 0)), .025, timber)
     } else if (includeSite) { const core = stairFor(); addBox(rect(core.x + core.width, core.end - core.runWidth, .065, core.runWidth), base, 1, plaster) }
   }
   if (includeSite && !walk && !showRoof && floorId !== 'KG') {

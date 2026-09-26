@@ -114,6 +114,17 @@ export function floorSlabs(id: FloorId): Rect[] {
   const core = stairFor()
   return [rect(0, 0, house.width, core.z), rect(0, core.z, core.x, core.depth), rect(core.x + core.width, core.z, house.width - core.x - core.width, core.depth), rect(0, core.end, house.width, house.depth - core.end)]
 }
+export function stairInnerWall(rise: number): Solid[] {
+  return winderSteps(rise).map(step => {
+    const [start, end] = step.inner, length = Math.hypot(end[0] - start[0], end[1] - start[1])
+    const normal = [(end[1] - start[1]) / length, -(end[0] - start[0]) / length]
+    const thickness = .12
+    const offset = [normal[0] * thickness / 2, normal[1] * thickness / 2]
+    const footprint: StairPoint[] = [[start[0] + offset[0], start[1] + offset[1]], [end[0] + offset[0], end[1] + offset[1]], [end[0] - offset[0], end[1] - offset[1]], [start[0] - offset[0], start[1] - offset[1]]]
+    const east = footprint.map(point => point[0]), south = footprint.map(point => point[1])
+    return { ...rect(Math.min(...east), Math.min(...south), Math.max(...east) - Math.min(...east), Math.max(...south) - Math.min(...south)), footprint, bottom: 0, height: rise, kind: 'wall', id: `inner-wall-${step.id}` }
+  })
+}
 export function stairGuards(rise: number): Solid[] {
   return winderSteps(rise).map(step => {
     const [start, end] = step.inner, length = Math.hypot(end[0] - start[0], end[1] - start[1])

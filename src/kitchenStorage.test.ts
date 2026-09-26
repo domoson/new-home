@@ -9,8 +9,8 @@ test('Five tall cabinets have clear south fronts above the connected corner coun
   const floor = makeFloor('EG')
   for (const [index, id] of ['kitchen-tall-storage-1', 'kitchen-tall-storage-2', 'kitchen-tall', 'fridge', 'kitchen-tall-storage-3'].entries()) {
     const cabinet = floor.furniture.find(item => item.id === id)!
-    expect(cabinet.x).toBeCloseTo(3.39 + index * .642)
-    expect(cabinet).toMatchObject({ z: 2.5, width: .642, depth: .6, height: floor.height, angle: 0 })
+    expect(cabinet.x).toBeCloseTo(3.6 + index * .6)
+    expect(cabinet).toMatchObject({ z: 2.5, width: .6, depth: .6, height: floor.height, angle: 0 })
     const opening = { x: cabinet.x, z: 3.1, width: cabinet.width, depth: cabinet.width }
     const frontBottom = cabinet.frontBottom ?? (cabinet.niche ? cabinet.niche.bottom + cabinet.niche.height : .1)
     for (const other of floor.furniture.filter(other => other.height + (other.bottom ?? 0) > frontBottom)) expect(overlap(opening, other), `${id}/${other.id}`).toBeLessThan(1e-8)

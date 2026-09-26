@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest'
-import { floorSlabs, roofHeight, stair, stairGuards, stairHandrails, stairSolids } from './model'
+import { floorSlabs, roofHeight, stair, stairGuards, stairHandrails, stairInnerWall, stairSolids } from './model'
 import { sectionSpan } from './section'
 
 it('bildet eine kompakte U-Wendeltreppe ohne Podest', () => {
@@ -31,4 +31,13 @@ it('bildet eine kompakte U-Wendeltreppe ohne Podest', () => {
       }
     }
   }
+})
+
+it('setzt die innere Treppenwange als durchgehende Wand von unten bis oben', () => {
+  const wall = stairInnerWall(2.74)
+  expect(wall.length).toBeGreaterThan(0)
+  expect(wall.every(part => part.kind === 'wall')).toBe(true)
+  expect(wall.every(part => part.bottom === 0)).toBe(true)
+  expect(wall.every(part => part.height === 2.74)).toBe(true)
+  expect(wall.some(part => part.width > .08 && part.depth > .08)).toBe(true)
 })
