@@ -18,6 +18,23 @@ freien Port. `npm run build` erstellt `dist/`, das auf einem statischen HTTP-Hos
 betrieben werden kann. `npm run preview` dient der lokalen Build-Vorschau.
 Nicht ueber `file://` oeffnen. WebGL2 ist fuer 3D erforderlich, 2D funktioniert ohne.
 
+## Massstabsfiguren
+
+Im 3D-Szenenmenue lassen sich unter Massstabsfiguren Personen und Bewegung
+separat schalten. Vier bekleidete, schematische Figuren pro Geschoss zeigen
+175, 165, 120 und 95 cm Koerperhoehe. Es sind wiederholte Groessenreferenzen,
+keine Simulation von 16 Bewohnern. Im EG sitzt eine Figur auf dem Sofa;
+OG und DG enthalten Figuren im Bett beziehungsweise am Schreibtisch.
+Im EG und KG gibt es eine kurze Gehbewegung mit Arm- und Beinschwingen.
+Ohne Moebel werden sitzende und liegende Figuren durch stehende ersetzt.
+
+Personen sind anfangs ausgeblendet; beide Einstellungen bleiben beim Ansichts-
+und Geschosswechsel erhalten, nicht beim Neuladen. Reduzierte Bewegung des
+Systems unterbindet die Animation. Figuren nur in 3D, nur in der Osthaelfte,
+ohne Rundgang-Kollisionskoerper oder automatische Wegfindung. Die Hoehen
+sind masshaltig, Koerperproportionen und Posen nur angenaehert; kein
+Ergonomie-, Bewegungsflaechen- oder Barrierefreiheitsnachweis.
+
 ## Traufstreifen
 
 Die Aussenanlagen enthalten einen schlichten, 40 cm breiten grauen Kiesstreifen
@@ -112,8 +129,9 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
   Espresso und Cookit jetzt auf der Ostzeile; Spuelengroesse erhalten.
   Keine Kuechengeraete in der Diele, keine zusaetzlichen Haengeschraenke.
   Hochschrankfront bis Halbinsel 1,86 m; Halbinsel 2,60 x 1,00 m bei z=4,96 m,
-  also 54 cm nach Norden gerueckt. Hocker folgen der Insel. Zum unveraenderten
-  Essplatz 1,79 m statt 1,25 m zwischen den Moebelkanten, vor Beruecksichtigung
+  also 54 cm nach Norden gerueckt. Hocker folgen der Insel. Tisch, Bank und
+  Essstuehle gemeinsam 35 cm nach Norden verschoben; Tisch/Bank ab z=7,40 m.
+  Zum Essplatz 1,44 m zwischen den Moebelkanten, vor Beruecksichtigung
   der Hocker. Wohn-/Koch-/Essbereich 40,18 m2 plus direkt angebundener Flur.
   Halbinsel-Unterbau 40 cm von Sued und 35 cm von West zurueckgesetzt, echte
   freie Knievolumen unter 3 cm Platte; Barhocker mit 65 cm Sitzhoehe.
@@ -137,11 +155,22 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
   nordseitig angeschlagen. Daneben 30 cm breites, tuerhohes Festglas-Seitenteil;
   Eingangsanlage insgesamt 140 cm breit. Normale Innentueren einschliesslich
   Kellerabschluss: 86 x 211 cm inklusive Zarge, Blatt 80 x 208 cm als Annahme.
-  DG-Abstellraum und Hebeschiebeanlage bleiben weitere Sondermasse.
-- OG: Bad ca. 10,71 m2, Kind Nord und Kind Sued jeweils 18,97 m2,
-  Flur 3,74 m2, Abstellraum 2,59 m2 (mindestens 2,50 m2). Spielzimmer entfaellt; Kinderzimmer
+  Hebeschiebeanlage als weiteres Sondermass.
+- OG: Bad ca. 10,71 m2, Kind Nord und Kind Sued jeweils 18,60 m2,
+  Flur 4,35 m2, Abstellraum 2,70 m2 (mindestens 2,50 m2). Spielzimmer entfaellt; Kinderzimmer
   weiterhin mit Bett, Schreibtisch und Schrank. Neue Proportionen grob aus
-  der Skizze, nicht auf deren Flaechenangaben optimiert. KG und DG unveraendert.
+  der Skizze, nicht auf deren Flaechenangaben optimiert. KG unveraendert.
+- DG: Norden Schlafen / Ankleide (15,44 m2), Sueden Buero / Gaeste (22,24 m2).
+  Beide Doppelbetten 180 x 200 cm bleiben an ihren Plaetzen. L-Arbeitsplatz
+  auf der Westseite im Sueden: Tisch z=7,10 m, Stuhl z=6,35 m, Blick nach Sueden.
+  Hinter dem Tisch 75 cm bis zur Kommode. Schrank 265 x 43 x 220 cm nach Norden
+  an die Treppenwand versetzt (x=0,35/z=2,80 m, Front Nord); kleiner 60-cm-Schrank
+  an die nordwestliche Abseite. Verbleibender hoher Suedschrank neben dem Eingang.
+  Nordbettzugang Ost 60 cm, West an der Flurwand 65 cm, Fussraum zum Schrank 87 cm.
+  Tuerschwenk und Fenster frei vom Bett; offener Fensterfluegel engt den
+  oestlichen Bettzugang ein. Kopfende mit eingeschraenkter Stehhoehe.
+  Waende, Fenster und Bettpositionen unveraendert. Schematische Moeblierung,
+  keine Ergonomie- oder Herstellerfreigabe.
 - Geschoss-/Raumhoehen, Dachneigung und Kniehoehe unveraendert. Der First wird
   durch die geringere Haustiefe geometrisch niedriger, nicht durch geaenderte Hoehenparameter.
 - Sofa 250 x 170 cm: lange Seite Sued, Chaiselongue West; Stuehle zum Tisch gedreht.
@@ -160,7 +189,7 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
   zweiteilige 2,80-m-Hebeschiebeanlage mit Eckkopplung ohne Mauerstueck:
   innerer westlicher Fluegel 1,25 m beweglich, aeusseres oestliches Feld 1,55 m fest.
   DG-Ostachsen weiterhin bei z=3,30 und 5,70 m, jeweils 150 cm breit.
-  OG noerdlich weiterhin z=3,30 m, suedlich jetzt z=5,539 m: rund 16,1 cm
+  OG noerdlich weiterhin z=3,30 m, suedlich jetzt z=5,597 m: rund 10,3 cm
   nach Norden versetzt, damit die verschobene Kinderzimmerwand frei bleibt.
   Dort keine genaue OG-/DG-Flucht mehr; DG unveraendert bodentief.
   Die schmalen Fluegel sitzen jeweils an der aeusseren Seite des Fensterpaars.
@@ -228,12 +257,12 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
   Verbleibender Wandquerschnitt, Sturztragwerk, Daemmung, Befestigung, Paketmass,
   Revisionszugang und Rettungswege sind herstellerseitig/fachlich nachzuweisen.
 - OG: Bad-Ostwand jetzt x=4,00 m; Kind Nord im Norden schmaler und im
-  Hauptbereich 3,10 m breit. Bisheriges Spielzimmer samt Zugang und Moebeln
+  Hauptbereich 2,95 m breit. Bisheriges Spielzimmer samt Zugang und Moebeln
   entfernt. Kind Sued rechteckig ueber die gesamte lichte Hausbreite,
-  6,30 x 3,01 m. 12,5-cm-Trennwand jetzt bei z=7,064 m, rund 16,1 cm
+  6,30 x 2,95 m. 12,5-cm-Trennwand jetzt bei z=7,122 m, rund 10,3 cm
   weiter noerdlich: beide Kinderzimmer exakt flaechengleich. Suedliches
-  OG-Ostfenster folgt der Verschiebung. Flur 105 cm breit, Abstellraum bis
-  zur gleichen Suedgrenze verkuerzt (1,90 x 1,364 m). Betten und Schraenke folgen den neuen Waenden;
+  OG-Ostfenster folgt der Verschiebung. Flur 120 cm breit, Abstellraum bis
+  zur gleichen Suedgrenze (1,90 x 1,422 m). Betten und Schraenke folgen den neuen Waenden;
   Tragwerk, Leitungen und Tuerausfuehrung bleiben fachlich ungeprueft.
 - Kellerfenster 90 x 75 cm; oestliches Fenster 1,20 m von der suedlichen
   Aussenkante entfernt. Beide Lichtschaechte
@@ -262,8 +291,12 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
   gerueckt. T-Konzept, Eingang und Nordlichtband bleiben erhalten.
   Netto-Badflaeche 10,7115 m2. Leitungen, Abdichtung und
   Bewegungsflaechen sind nicht fachlich geplant oder als barrierefrei nachgewiesen.
-- DG-Abstellraumtuer 73 x 160 cm, rechteckig und ueber den Schwenkweg unter dem
-  Dach geprueft. Kein aufrechter Durchgang; der Rundgang hat keine Duckfunktion.
+- DG-Abstellraum samt Tuer und Regal entfernt. Suedliche Abseitenwand gerade
+  ueber die gesamte Innenbreite bei z=9,00 m, auf gleicher Linie wie hinter
+  dem Bett; seitlicher Versatz entfaellt. Suedliches Buero / Gaeste jetzt 22,24 m2
+  Grundflaeche, rund 3,45 m2 mehr. Kommode nach hinten gerueckt, 120 cm hoch
+  passend unter die Dachschraege. Hohlraum hinter der Wand ohne Nutzflaeche;
+  Stehhoehe im hinzugewonnenen Bereich durch die Dachschraege eingeschraenkt.
 - Die Planungsannahmen zeigen Modellflaechen und die Beschriftungen der neuen
   EG-/OG-Vorlage. Keine erfundenen KG-/DG-Referenzflaechen. Skizzenflaechen
   nur als grobe Orientierung; Wandstaerken, Nischen und Raumzuordnung weichen ab.

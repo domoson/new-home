@@ -2,6 +2,10 @@ import { expect, it } from 'vitest'
 import { house } from './model'
 import { boundaryDistance, exteriorStyleId, exteriorStyles, finishes, initialAppearance, initialSettings, partner, polygonArea, siteArea, siteBoundary, siteDivision, siteLengths, siteParcels, sunPosition } from './context'
 
+it('blendet Massstabsfiguren standardmaessig aus', () => {
+  expect(initialSettings.people).toBe(false)
+})
+
 it('ordnet Aussenstile den Menuefarben zu und erkennt individuelle Anpassungen', () => {
   expect(exteriorStyleId(initialAppearance)).toBe('silver-terracotta')
   expect(new Set(exteriorStyles.map(style => style.id)).size).toBe(exteriorStyles.length)

@@ -1,6 +1,97 @@
 import { expect, test } from '@playwright/test'
 import { PNG } from 'pngjs'
 
+test('DG Buero und Gaestezimmer bleiben mit Doppelbett begehbar', async ({ page }, testInfo) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: 'DG', exact: true }).click()
+  await expect(page.locator('svg.floor-plan')).toContainText('Büro / Gäste')
+  await expect(page.getByRole('button', { name: '01 Schlafen / Ankleide 15,4 m²', exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: '03 Büro / Gäste 22,2 m²', exact: true })).toBeVisible()
+  await expect(page.locator('[data-furniture="guest-bed"]')).toHaveCount(1)
+  await expect(page.locator('svg.floor-plan')).not.toContainText('Abstellraum')
+  await expect(page.getByRole('button', { name: /Abstellraum/ })).toHaveCount(0)
+  await expect(page.locator('[data-furniture="store-shelf"]')).toHaveCount(0)
+  await page.screenshot({ path: `test-results/${testInfo.project.name}-guest-office-plan.png` })
+  const result = await page.evaluate(async () => {
+    const THREE = await import('/node_modules/.vite/deps/three.js')
+    const { buildScene } = await import('/src/scene.ts')
+    const { makeFloor, elevations } = await import('/src/model.ts')
+    const { initializePhysics, createWalker } = await import('/src/walk.ts')
+    const model = buildScene('DG', false, false, true, true)
+    const floor = makeFloor('DG'), bed = floor.furniture.find(item => item.id === 'guest-bed')
+    const obstacle = new THREE.Box3(new THREE.Vector3(bed.x, elevations.DG, bed.z), new THREE.Vector3(bed.x + bed.width, elevations.DG + bed.height + .35, bed.z + bed.depth))
+    const sweep = []
+    for (const id of ['DG-attic-office', 'DG-gable-office']) {
+      const door = model.doors.find(door => door.id === id)
+      for (let step = 0; step <= 20; step++) {
+        model.setOpening(id, step / 20)
+        sweep.push(!new THREE.Box3().setFromObject(door.pivot).intersectsBox(obstacle))
+      }
+    }
+    model.setOpening('DG-gable-office', 0)
+    await initializePhysics()
+    const camera = new THREE.PerspectiveCamera(45, innerWidth / innerHeight, .05, 80)
+    const walker = createWalker(model, camera, new THREE.Vector3(3.05, elevations.DG, 4.1))
+    const points = [[4.7, 4.1], [4.9, 4.15], [6.3, 4.15], [6.3, 2.8], [6.3, 4.15], [4.7, 4.15], [4.7, 4.1], [3.85, 4.1], [3.85, 3.02], [3.25, 3.02], [3.25, 2.5], [2.3, 2.5], [1.5, 2.4]]
+    const reached = []
+    for (const [east, south] of points) {
+      for (let step = 0; step < 350 && Math.hypot(walker.position().x - east, walker.position().z - south) > .07; step++) {
+        camera.lookAt(east, camera.position.y, south); walker.keys.add('KeyW'); walker.tick(); walker.keys.clear()
+      }
+      reached.push(Math.hypot(walker.position().x - east, walker.position().z - south) < .1)
+    }
+    walker.teleport(new THREE.Vector3(3.5, elevations.DG, 8.1))
+    for (let step = 0; step < 150; step++) {
+      if (Math.abs(walker.position().x - 1.5) < .07) break
+      camera.lookAt(1.5, camera.position.y, 8.1); walker.keys.add('KeyW'); walker.tick(); walker.keys.clear()
+    }
+    const dressingAccessible = Math.abs(walker.position().x - 1.5) < .1
+    walker.teleport(new THREE.Vector3(3.1, elevations.DG, 6.5))
+    for (let step = 0; step < 150; step++) {
+      if (Math.hypot(walker.position().x - 2.15, walker.position().z - 6.75) < .07) break
+      camera.lookAt(2.15, camera.position.y, 6.75); walker.keys.add('KeyW'); walker.tick(); walker.keys.clear()
+    }
+    const deskAccessible = Math.hypot(walker.position().x - 2.15, walker.position().z - 6.75) < .1
+    const storageDoorRemoved = !model.doors.some(door => door.id === 'DG-store')
+    walker.dispose()
+    const canvas = document.createElement('canvas')
+    canvas.id = 'guest-preview'
+    canvas.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;z-index:10000'
+    document.body.append(canvas)
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, preserveDrawingBuffer: true })
+    renderer.setSize(innerWidth, innerHeight)
+    const scene = new THREE.Scene()
+    scene.background = new THREE.Color('#edf1eb')
+    scene.add(new THREE.HemisphereLight('#ffffff', '#777766', 2.5))
+    const light = new THREE.DirectionalLight('#ffffff', 2); light.position.set(3, 12, 8); scene.add(light)
+    model.group.getObjectByName('house-west').visible = false
+    scene.add(model.group)
+    const render = (rotated: boolean) => {
+      camera.position.set(rotated ? -3 : 10, elevations.DG + (innerWidth < 600 ? 19 : 13), 10)
+      camera.lookAt(3.45, elevations.DG, 5.4)
+      renderer.render(scene, camera)
+    }
+    window.__guestPreview = { render, dispose() { model.dispose(); renderer.dispose(); canvas.remove() } }
+    render(false)
+    return { sweep, reached, dressingAccessible, deskAccessible, storageDoorRemoved }
+  })
+  expect(result.sweep.every(Boolean)).toBe(true)
+  expect(result.reached).toEqual(Array(13).fill(true))
+  expect(result.dressingAccessible).toBe(true)
+  expect(result.deskAccessible).toBe(true)
+  expect(result.storageDoorRemoved).toBe(true)
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  const preview = page.locator('#guest-preview')
+  const image = PNG.sync.read(await preview.screenshot({ path: `test-results/${testInfo.project.name}-guest-office-3d.png` }))
+  const colors = new Set<string>()
+  for (let offset = 0; offset < image.data.length; offset += 32) colors.add(`${image.data[offset] >> 4},${image.data[offset + 1] >> 4},${image.data[offset + 2] >> 4}`)
+  expect(colors.size).toBeGreaterThan(25)
+  await page.evaluate(() => window.__guestPreview.render(true))
+  const rotated = await preview.screenshot({ path: `test-results/${testInfo.project.name}-guest-office-rotated.png` })
+  expect(PNG.sync.read(rotated).data.equals(image.data)).toBe(false)
+  await page.evaluate(() => { window.__guestPreview.dispose(); delete window.__guestPreview })
+})
+
 test('Badewannenarmatur sitzt an der Ostwand und ragt ueber die Wanne', async ({ page }) => {
   await page.goto('/')
   const placement = await page.evaluate(async () => {
@@ -118,10 +209,10 @@ test('Raffstores fahren vor der Verglasung und die OG-Raumrevision bleibt bedien
   expect(geometry.showerTop).toBeCloseTo(2.1)
   expect(geometry.showerGlass).toBe(true)
   expect(geometry.showerFittingsAtTWall).toBe(true)
-  expect(geometry.areas.store).toBeCloseTo(2.591781915)
+  expect(geometry.areas.store).toBeCloseTo(2.701594595)
   expect(geometry.areas.store).toBeGreaterThanOrEqual(2.5)
   expect(geometry.areas.playroom).toBeUndefined()
-  expect(geometry.areas['child-north']).toBeCloseTo(18.968696809)
+  expect(geometry.areas['child-north']).toBeCloseTo(18.604581081)
   expect(geometry.areas['child-south']).toBeCloseTo(geometry.areas['child-north'], 10)
   expect(geometry.areas.bath).toBeCloseTo(10.7115)
   await page.getByRole('button', { name: '3D', exact: true }).click()

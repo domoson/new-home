@@ -35,7 +35,7 @@ export const woodTones = [{ name: 'Lärche natur', color: '#b99e74' }, { name: '
 export const woodProfiles = [{ id: 'boards', name: 'Vertikale Bretter' }, { id: 'slats', name: 'Schmale Lamellen' }, { id: 'open-slats', name: 'Lamellenfelder auf Putz' }] as const
 export type WoodProfile = typeof woodProfiles[number]['id']
 export type HouseAppearance = { facade: string; roof: string; roofTrim: string; entryDoor: string; frame: string; frameInside: string; composition: FacadeComposition; woodTone: number; woodProfile: WoodProfile }
-export type SceneSettings = HouseAppearance & { interiorDoor: string; hour: number; season: 'summer' | 'spring' | 'winter'; west: HouseAppearance; surroundings: boolean; landscaping: boolean; transparentGround: boolean; lights: Record<string, boolean>; lightingMode: 'room' | 'global'; raffstoreExtension: number; raffstoreTilt: number }
+export type SceneSettings = HouseAppearance & { people: boolean; peopleMoving: boolean; interiorDoor: string; hour: number; season: 'summer' | 'spring' | 'winter'; west: HouseAppearance; surroundings: boolean; landscaping: boolean; transparentGround: boolean; lights: Record<string, boolean>; lightingMode: 'room' | 'global'; raffstoreExtension: number; raffstoreTilt: number }
 export const initialAppearance: HouseAppearance = { facade: finishes.facade[3].color, roof: finishes.roof[4].color, roofTrim: finishes.roofTrim[1].color, entryDoor: finishes.entryDoor[1].color, frame: finishes.frame[7].color, frameInside: finishes.frame[0].color, composition: 'plaster', woodTone: 3, woodProfile: 'boards' }
 type ExteriorAppearance = Omit<HouseAppearance, 'frameInside'>
 const originalExterior: ExteriorAppearance = { facade: finishes.facade[3].color, roof: finishes.roof[0].color, roofTrim: finishes.roofTrim[0].color, entryDoor: finishes.entryDoor[0].color, frame: finishes.frame[6].color, composition: 'entry', woodTone: 3, woodProfile: 'boards' }
@@ -50,7 +50,7 @@ export const exteriorStyles: { id: string; name: string; appearance: ExteriorApp
 export function exteriorStyleId(appearance: HouseAppearance) {
   return exteriorStyles.find(style => (Object.keys(style.appearance) as (keyof ExteriorAppearance)[]).every(key => appearance[key] === style.appearance[key]))?.id ?? 'custom'
 }
-export const initialSettings: SceneSettings = { ...initialAppearance, interiorDoor: finishes.interiorDoor[1].color, west: { ...initialAppearance }, hour: 14, season: 'summer', surroundings: true, landscaping: true, transparentGround: false, lights: {}, lightingMode: 'global', raffstoreExtension: 0, raffstoreTilt: 30 }
+export const initialSettings: SceneSettings = { ...initialAppearance, people: false, peopleMoving: true, interiorDoor: finishes.interiorDoor[1].color, west: { ...initialAppearance }, hour: 14, season: 'summer', surroundings: true, landscaping: true, transparentGround: false, lights: {}, lightingMode: 'global', raffstoreExtension: 0, raffstoreTilt: 30 }
 export function sunPosition(hour: number, season: SceneSettings['season']) {
   const [month, day, offset] = { summer: [5, 21, 2], spring: [2, 20, 1], winter: [11, 21, 1] }[season]
   const date = new Date(Date.UTC(2026, month, day, 0, Math.round((hour - offset) * 60)))

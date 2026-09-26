@@ -10,7 +10,7 @@ describe('Fassadenfenster', () => {
       const floor = makeFloor(floorId)
       const windows = floor.walls.find(wall => wall.id === 'east')!.openings.filter(opening => opening.kind === 'window' && !opening.id.includes('fixed'))
       expect(windows[0].start).toBeCloseTo(3.3)
-      if (floorId !== 'EG') expect(windows[1].start).toBeCloseTo(floorId === 'OG' ? 5.539095745 : 5.7)
+      if (floorId !== 'EG') expect(windows[1].start).toBeCloseTo(floorId === 'OG' ? 5.596891892 : 5.7)
       expect(windows.map(opening => opening.width)).toEqual(floorId === 'EG' ? [2.4] : [1.5, 1.5])
       if (floorId === 'DG') expect(windows[0].start + windows[1].start + windows[0].width).toBeCloseTo(house.depth)
       for (const opening of windows) {
@@ -70,13 +70,14 @@ describe('Fassadenfenster', () => {
     expect(office.parts[1].z + office.parts[1].depth).toBeCloseTo(partition.z)
     expect(bedroom.parts[0].z).toBeCloseTo(partition.z + partition.depth)
     expect(roomArea(office, 'DG').floor).toBeCloseTo(14.529 + .915)
-    expect(roomArea(bedroom, 'DG').floor).toBeCloseTo(19.707252 - .915)
+    expect(roomArea(bedroom, 'DG').floor).toBeCloseTo(22.23875)
     const cabinet = attic.furniture.find(item => item.id === 'office-south-storage')!
     expect(cabinet.width).toBe(1.2)
     expect(cabinet.z).toBeCloseTo(4.62)
     expect(house.east - cabinet.x - cabinet.width).toBeGreaterThan(window.width / 2)
     const bedroomCabinet = attic.furniture.find(item => item.id === 'parents-north-storage')!
-    expect(bedroomCabinet.z - partition.z - partition.depth).toBeCloseTo(.03)
+    expect(bedroomCabinet.z + bedroomCabinet.depth).toBeLessThan(attic.walls.find(wall => wall.id === 'hall-north')!.z)
+    expect(bedroomCabinet.front).toBe('north')
   })
   it('uses a 30 cm module for window widths, positions and clear spacing', () => {
     for (const floorId of ['EG', 'OG', 'DG'] as const) {
@@ -168,7 +169,7 @@ describe('Fassadenfenster', () => {
     expect(cornerSolids.some(solid => solid.bottom < terrace.height && solid.x + solid.width > house.east - .01 && solid.z + solid.depth > house.south - .01)).toBe(false)
     const playWindow = upper.walls.find(wall => wall.id === 'east')!.openings.find(opening => opening.id === 'play-window')!
     expect(playWindow).toMatchObject({ width: 1.5, sill: upperWindow.sill, height: upperWindow.height })
-    expect(playWindow.start).toBeCloseTo(5.539095745)
+    expect(playWindow.start).toBeCloseTo(5.596891892)
     expect(upper.walls.find(wall => wall.id === 'children-divider')!.z - playWindow.start - playWindow.width).toBeCloseTo(.025)
     expect(playWindow.windowLayout?.lowerFixed).toBeUndefined()
     expect(playWindow.width * playWindow.height).toBeCloseTo(2.25)

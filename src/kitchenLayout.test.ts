@@ -19,14 +19,16 @@ test('New kitchen has five towers, low counters, clear west access and east dini
   const floor = makeFloor('EG'), furniture = floor.furniture
   const island = furniture.find(item => item.id === 'peninsula')!
   expect(island.x - 2.8).toBeCloseTo(1.2)
-  expect(furniture.find(item => item.id === 'dining-bench')!.z - island.z - island.depth).toBeCloseTo(1.79)
+  expect(furniture.find(item => item.id === 'dining-bench')!.z - island.z - island.depth).toBeCloseTo(1.44)
   expect(island).toMatchObject({ width: 2.6, depth: 1, z: 4.96 })
   const towers = furniture.filter(item => item.id === 'fridge' || item.id.startsWith('kitchen-tall'))
   expect(Math.max(...towers.map(item => item.x + item.width)) - Math.min(...towers.map(item => item.x))).toBeCloseTo(3.21)
   expect(island.z - towers[0].z - towers[0].depth).toBeCloseTo(1.86)
   expect(floor.walls.some(wall => wall.id === 'kitchen-west')).toBe(false)
   expect(furniture.some(item => item.id === 'coffee-counter')).toBe(false)
-  expect(furniture.find(item => item.id === 'dining')).toMatchObject({ x: 5.2, z: 7.75, width: .9, depth: 1.8 })
+  expect(furniture.find(item => item.id === 'dining')!.z).toBeCloseTo(7.4)
+  expect(furniture.find(item => item.id === 'dining-bench')!.z).toBeCloseTo(7.4)
+  for (const [index, south] of [7.55, 8.15, 8.75].entries()) expect(furniture.find(item => item.id === `dining-chair-${index}`)!.z).toBeCloseTo(south)
   expect(furniture.filter(item => item.id === 'fridge' || item.id.startsWith('kitchen-tall'))).toHaveLength(5)
   for (const id of ['fridge', 'kitchen-tall']) expect(furniture.find(item => item.id === id)!.height).toBe(floor.height)
   expect(furniture.some(item => item.id === 'kitchen-upper')).toBe(false)
