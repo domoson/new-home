@@ -1,6 +1,46 @@
 import { expect, test } from '@playwright/test'
 import { PNG } from 'pngjs'
 
+test('Türen starten im Rundgang geschlossen', async ({ page }) => {
+  await page.goto('/')
+  const states = await page.evaluate(async () => {
+    const { buildScene } = await import('/src/scene.ts')
+    const model = buildScene('EG', true, false, false)
+    const doors = model.doors.filter(door => door.kind === 'door').map(door => {
+      const initialPosition = door.pivot.position.toArray()
+      const initialRotation = door.pivot.rotation.toArray()
+      const amount = door.amount, open = door.open
+      const acceptedClosed = model.setOpening(door.id, 0)
+      const sameAsClosed = initialPosition.every((value, index) => Math.abs(value - door.pivot.position.toArray()[index]) < 1e-8)
+        && initialRotation.slice(0, 3).every((value, index) => Math.abs(value - door.pivot.rotation.toArray()[index]) < 1e-8)
+      const acceptedOpen = model.setOpening(door.id, 1)
+      return {
+        id: door.id,
+        amount,
+        open,
+        acceptedClosed,
+        sameAsClosed,
+        opensFromClosed: acceptedOpen && door.amount === 1 && door.open,
+      }
+    })
+    model.dispose()
+    return doors
+  })
+  expect(states.length).toBeGreaterThan(0)
+  expect(states.every(door => door.amount === 0 && !door.open && door.acceptedClosed && door.sameAsClosed && door.opensFromClosed)).toBe(true)
+  for (const id of ['EG-entrance', 'EG-terrace', 'OG-bath', 'DG-attic-office', 'west-EG-entrance']) {
+    expect(states.some(door => door.id === id), id).toBe(true)
+  }
+})
+
+test('Der EG-2D-Plan zeigt keinen Eingangsmarker', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: '2D', exact: true }).click()
+  await page.getByRole('button', { name: 'EG', exact: true }).click()
+  await expect(page.locator('svg.floor-plan')).toBeVisible()
+  await expect(page.locator('[data-entrance-marker]')).toHaveCount(0)
+})
+
 test('DG Buero und Gaestezimmer bleiben mit Doppelbett begehbar', async ({ page }, testInfo) => {
   await page.goto('/')
   await page.getByRole('button', { name: 'DG', exact: true }).click()
@@ -549,14 +589,7 @@ test('Anbieterplaene, Flächenabgleich und bewegtes 3D-Modell', async ({ page },
       await expect(page.locator('[data-coat-hooks] path')).toHaveCount(7)
       await expect(page.locator('[data-tall-cabinet]')).toHaveCount(5)
       await expect(page.locator('[data-concealed-fittings="true"]')).toHaveCount(3)
-      const entranceCenter = await page.evaluate(async () => {
-        const { makeFloor } = await import('/src/model.ts')
-        const openings = makeFloor('EG').walls.find(wall => wall.id === 'east').openings.filter(opening => ['entrance', 'entrance-fixed'].includes(opening.id))
-        const start = Math.min(...openings.map(opening => opening.start))
-        const end = Math.max(...openings.map(opening => opening.start + opening.width))
-        return (start + end) / 2
-      })
-      await expect(page.locator('[data-entrance-marker]')).toHaveAttribute('transform', `translate(0 ${entranceCenter})`)
+      await expect(page.locator('[data-entrance-marker]')).toHaveCount(0)
     }
     if (floor === 'DG') await expect(page.locator('[data-bed-head="south"] [data-furniture="parents-bed"]')).toHaveCount(1)
     await expect(page.locator('[data-stair-start]')).toHaveCount(1)

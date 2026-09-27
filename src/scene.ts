@@ -601,14 +601,15 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
             addBox(rect(.1, -.08, .025, .025), Math.min(.8, openHeight - .25), .2, dark, false, false, pivot)
             addBox(rect(east, south - .09, opening.width * (sliding ? 2 : 1), .18), base, .012, frameMaterial, false)
           }
-          const open = true
+          const amount = 0
+          const open = amount > 0
           const direction = (['store-north', 'parents-entry-south'].includes(wall.id) ? -1 : 1) * (reverseHinge ? -1 : 1) * (opening.swing === 'reverse' ? -1 : 1)
           const position = pivot.position.clone()
-          pivot.rotation.y = closedAngle + (sliding ? 0 : direction * Math.PI / 2)
-          if (sliding) { pivot.position.x += opening.width; pivot.position.z -= .07; pivot.position.y += .012 }
+          pivot.rotation.y = closedAngle + (sliding ? 0 : direction * amount * Math.PI / 2)
+          if (sliding) { pivot.position.x += amount * opening.width; pivot.position.z -= Math.min(1, amount * 10) * .07; pivot.position.y += Math.min(1, amount * 10) * .012 }
           const names: Record<string, string> = { entrance: 'Eingang', terrace: 'Terrasse', shower: 'Dusche', wc: 'Dusch-WC', bath: 'Bad / Technik', 'child-north': 'Kind Nord / Waschen', 'child-south': 'Kind Süd / Hobby', store: 'Abstellraum', pantry: 'Speisekammer', bedroom: 'Büro / Gäste', office: 'Eltern', 'attic-office': 'Büro / Gäste', 'attic-parents': 'Eltern', 'low-storage': 'Dachstauraum' }
           const roomName = floor.rooms.find(room => room.id === opening.id)?.name ?? ({ 'attic-parents-south': 'Eltern / Ankleide', 'stair-lower': 'Treppe nach oben', 'stair-upper': 'Treppe nach unten' }[opening.id])
-          doors.push({ id: `${id}-${opening.id}`, label: `${id} · ${sliding ? 'Hebeschiebetür' : opening.glazed ? 'Glastür' : 'Tür'} ${roomName ?? (opening.id === 'basement-stair' ? 'Kellertreppe' : names[opening.id]) ?? opening.id}`, kind: 'door', pivot, closedAngle, direction, amount: 1, open, size: new THREE.Vector3(leafWidth, leafHeight, leafThickness), center: mesh.position.clone(), position, object: mesh, sliding })
+          doors.push({ id: `${id}-${opening.id}`, label: `${id} · ${sliding ? 'Hebeschiebetür' : opening.glazed ? 'Glastür' : 'Tür'} ${roomName ?? (opening.id === 'basement-stair' ? 'Kellertreppe' : names[opening.id]) ?? opening.id}`, kind: 'door', pivot, closedAngle, direction, amount, open, size: new THREE.Vector3(leafWidth, leafHeight, leafThickness), center: mesh.position.clone(), position, object: mesh, sliding })
         }
       }
     }
