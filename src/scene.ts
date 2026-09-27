@@ -639,11 +639,13 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
     }
     const thickness = roofVerticalThickness
     const roofAt = roofInnerElevation
-    for (const part of roofPanels()) { const bottom: [number, number] = [roofAt(part.z), roofAt(part.z + part.depth)]; const panel = wedge(part, bottom, [bottom[0] + thickness, bottom[1] + thickness], [roofTrimMaterial, roofMaterial, roofMaterial, roofMaterial, roofMaterial, roofMaterial]); panel.name = 'main-roof-panel' }
+    const skylights = includeSite ? roofWindows : []
+    const panels = roofPanels(skylights)
+    for (const part of panels) { const bottom: [number, number] = [roofAt(part.z), roofAt(part.z + part.depth)]; const panel = wedge(part, bottom, [bottom[0] + thickness, bottom[1] + thickness], [roofTrimMaterial, roofMaterial, roofMaterial, roofMaterial, roofMaterial, roofMaterial]); panel.name = 'main-roof-panel' }
     const ridge = new THREE.Mesh(new THREE.CylinderGeometry(construction.ridgeCapAllowance, construction.ridgeCapAllowance, house.width + .35, 20), roofMaterial)
     ridge.rotation.z = Math.PI / 2; ridge.position.set((house.width + .15) / 2, ridgeElevations.roofSurface, house.depth / 2)
     ridge.name = 'main-ridge-cap'; ridge.castShadow = true; ridge.receiveShadow = true; group.add(ridge)
-    const tileCourses = new THREE.Mesh(roofTileGeometry(roofPanels(), roofAt, thickness), roofCourseMaterial)
+    const tileCourses = new THREE.Mesh(roofTileGeometry(panels, roofAt, thickness), roofCourseMaterial)
     tileCourses.name = 'roof-tile-courses'; tileCourses.castShadow = true; tileCourses.receiveShadow = true; group.add(tileCourses)
     const roofEdge = mat('#d6dbdc', .34)
     roofEdge.metalness = .35
@@ -665,14 +667,21 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
       const connector = beam(new THREE.Vector3(pipeX + .04, gutterY, side === 'north' ? wallZ - bendRadius : wallZ + bendRadius), new THREE.Vector3(pipeX + .04, gutterY, south), tubeRadius, roofEdge)
       connector.name = `main-downpipe-${side}-gutter-connector`
     }
-    for (const skylight of roofWindows) {
+    for (const skylight of skylights) {
       const southSlope = skylight.z >= house.depth / 2
-      const pivot = new THREE.Group(); pivot.position.set(skylight.x, roofAt(skylight.z + skylight.depth), skylight.z + skylight.depth); const pitch = Math.PI / 2 + (southSlope ? 1 : -1) * 35 * Math.PI / 180; pivot.rotation.x = pitch; group.add(pivot)
-      const length = skylight.depth / Math.cos(35 * Math.PI / 180)
-      const mesh = addBox(rect(0, -.015, skylight.width, .03), -length, length, glass, false, false, pivot)
-      for (const edge of [0, skylight.width - .05]) addBox(rect(edge, -.04, .05, .08), -length, length, frameMaterial, false, false, pivot)
-      for (const bottom of [-length, -.05]) addBox(rect(0, -.04, skylight.width, .08), bottom, .05, frameMaterial, false, false, pivot)
-      doors.push({ id: skylight.id, label: `DG · ${skylight.name}`, kind: 'window', pivot, closedAngle: 0, closedPitch: pitch, amount: 0, open: false, size: new THREE.Vector3(skylight.width, length, .03), center: mesh.position.clone(), position: pivot.position.clone(), object: mesh, sliding: false })
+      const border = .04, end = skylight.z + skylight.depth
+      for (const part of [rect(skylight.x, skylight.z, border, skylight.depth), rect(skylight.x + skylight.width - border, skylight.z, border, skylight.depth), rect(skylight.x + border, skylight.z, skylight.width - 2 * border, border), rect(skylight.x + border, end - border, skylight.width - 2 * border, border)]) {
+        const frame = wedge(part, [roofAt(part.z), roofAt(part.z + part.depth)], [roofOuterElevation(part.z) + .02, roofOuterElevation(part.z + part.depth) + .02], frameInsideMaterial)
+        frame.name = `${skylight.id}-lining`
+      }
+      const centerZ = skylight.z + skylight.depth / 2
+      const pivot = new THREE.Group(); pivot.name = skylight.id; pivot.position.set(skylight.x, roofOuterElevation(centerZ) + .055, centerZ); const pitch = Math.PI / 2 + (southSlope ? 1 : -1) * house.pitch * Math.PI / 180; pivot.rotation.x = pitch; group.add(pivot)
+      const length = skylight.length, leafWidth = skylight.width - .1, leafLength = length - .1
+      const mesh = addBox(rect(.05, -.015, leafWidth, .03), -leafLength / 2, leafLength, glass, false, false, pivot)
+      mesh.name = `${skylight.id}-glass`
+      for (const edge of [.05, skylight.width - .1]) addBox(rect(edge, -.025, .05, .05), -leafLength / 2, leafLength, frameMaterial, false, false, pivot)
+      for (const bottom of [-leafLength / 2, leafLength / 2 - .05]) addBox(rect(.1, -.025, skylight.width - .2, .05), bottom, .05, frameMaterial, false, false, pivot)
+      doors.push({ id: skylight.id, label: `DG · ${skylight.name}`, kind: 'window', pivot, closedAngle: 0, closedPitch: pitch, direction: southSlope ? -1 : 1, amount: 0, open: false, size: new THREE.Vector3(leafWidth, leafLength, .05), center: mesh.position.clone(), position: pivot.position.clone(), object: mesh, sliding: false })
     }
   }
   if (walk || showRoof || floorId === 'EG') {
@@ -739,7 +748,7 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
     const door = doors.find(door => door.id === id); if (!door || !Number.isFinite(value)) return false
     const amount = THREE.MathUtils.clamp(value, 0, 1)
     door.amount = amount; door.open = amount > 0; door.pivot.position.copy(door.position)
-    door.pivot.rotation.set(door.closedPitch === undefined ? 0 : door.closedPitch - amount * Math.PI / 5, door.closedAngle + (!door.sliding && door.closedPitch === undefined ? amount * (door.direction ?? 1) * Math.PI / 2 : 0), 0)
+    door.pivot.rotation.set(door.closedPitch === undefined ? 0 : door.closedPitch - amount * (door.direction ?? 1) * Math.PI / 5, door.closedAngle + (!door.sliding && door.closedPitch === undefined ? amount * (door.direction ?? 1) * Math.PI / 2 : 0), 0)
     if (door.sliding) { door.pivot.position.x += amount * door.size.x; door.pivot.position.z -= Math.min(1, amount * 10) * .07; door.pivot.position.y += Math.min(1, amount * 10) * .012 }
     door.pivot.updateMatrixWorld(true); return true
   }, setFinish(key, color, house = 'east') {

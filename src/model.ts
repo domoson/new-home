@@ -43,9 +43,23 @@ export const basementWindow = { width: .9, height: .75, southGap: 1.2 }
 export const lightWellSize = { width: 1.3, depth: .5 }
 const wellOverhang = (lightWellSize.width - basementWindow.width) / 2
 export const lightWells = [rect(house.width, house.depth - basementWindow.southGap - basementWindow.width - wellOverhang, lightWellSize.depth, lightWellSize.width), rect(house.west + .9 - wellOverhang, -lightWellSize.depth, lightWellSize.width, lightWellSize.depth)]
-export const roofWindows: (Rect & { id: string; name: string; length: number })[] = []
-export function roofPanels(): Rect[] {
-  return [rect(-.1, -.25, house.width + .35, house.depth / 2 + .25), rect(-.1, house.depth / 2, house.width + .35, house.depth / 2 + .25)]
+const roofWindowWidth = .94
+const roofWindowLength = 1.4
+const roofWindowDepth = roofWindowLength * Math.cos(house.pitch * Math.PI / 180)
+const roofWindowX = (house.west + house.east - roofWindowWidth) / 2
+export const roofWindows: (Rect & { id: string; name: string; length: number })[] = [
+  { ...rect(roofWindowX, 1.75, roofWindowWidth, roofWindowDepth), id: 'DG-north-skylight', name: 'Dachfenster Nord', length: roofWindowLength },
+  { ...rect(roofWindowX, house.depth - 1.75 - roofWindowDepth, roofWindowWidth, roofWindowDepth), id: 'DG-south-skylight', name: 'Dachfenster S\u00fcd', length: roofWindowLength },
+]
+export function roofPanels(windows = roofWindows): Rect[] {
+  const eastCuts = [...new Set([-.1, house.width + .25, ...windows.flatMap(window => [window.x, window.x + window.width])])].sort((left, right) => left - right)
+  const southCuts = [...new Set([-.25, house.depth / 2, house.depth + .25, ...windows.flatMap(window => [window.z, window.z + window.depth])])].sort((left, right) => left - right)
+  const panels: Rect[] = []
+  for (let eastIndex = 0; eastIndex < eastCuts.length - 1; eastIndex++) for (let southIndex = 0; southIndex < southCuts.length - 1; southIndex++) {
+    const x = eastCuts[eastIndex], z = southCuts[southIndex], width = eastCuts[eastIndex + 1] - x, depth = southCuts[southIndex + 1] - z
+    if (!windows.some(window => x + width / 2 > window.x && x + width / 2 < window.x + window.width && z + depth / 2 > window.z && z + depth / 2 < window.z + window.depth)) panels.push(rect(x, z, width, depth))
+  }
+  return panels
 }
 export const area = (parts: Rect[]) => parts.reduce((sum, part) => sum + (part.footprint ? Math.abs(part.footprint.reduce((value, point, index, points) => { const next = points[(index + 1) % points.length]; return value + point[0] * next[1] - next[0] * point[1] }, 0)) / 2 : part.width * part.depth), 0)
 export const roofHeight = (south: number) => house.knee + Math.min(south - house.north, house.south - south) * Math.tan(house.pitch * Math.PI / 180)

@@ -112,6 +112,13 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
   Das Aussenwandmauerwerk ist im Grundriss schematisch im 30-cm-Raster dargestellt.
   Zentrale Querwaende an Treppe/Flur 20 cm; kein statischer Nachweis.
   DG-Innenwaende enden an der Unterkante der Spitzbodendecke.
+- Osthaelfte: je ein Dachfenster Nord und Sued, Nennmass 94 x 140 cm entlang
+  der Dachflaeche; Grundrissprojektion ca. 94 x 115 cm. Beide auf der Raummitte
+  x=3,45 m, Nord z=1,75..2,90 m, Sued z=7,60..8,75 m. Dachunterseite an den
+  Fensterkanten ca. 1,52..2,32 m ueber DG-Fussboden; der aussenliegende Rahmen
+  bleibt unter der 2,77-m-Decke, ohne Oeffnung zum Spitzboden.
+  Westhaelfte unveraendert. Laibungen und bewegliche Fluegel sind schematisch;
+  Sparren/Wechsel, Eindeckrahmen, Abdichtung und Hersteller-Einbaumasse ungeprueft.
 - Treppe auf allen Geschossen 58,5 cm nach Norden verschoben, Kern z=3,50..5,50 m.
   Form und Steigungen unveraendert; Physik-Tritttoleranz 22,5 cm fuer die 19,8-cm-
   Steigungen plus Kollisionsabstand, keine Aenderung der modellierten Stufen.
