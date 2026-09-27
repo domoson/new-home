@@ -1,6 +1,99 @@
 import { expect, test } from '@playwright/test'
 import { PNG } from 'pngjs'
 
+test('Eine gerade Treppenmittelwand verbindet die Laeufe ohne rundliche Doppelwangen', async ({ page }, testInfo) => {
+  await page.goto('/')
+  const errors: string[] = []; page.on('pageerror', error => errors.push(error.message))
+  for (const id of ['KG', 'EG', 'OG', 'DG']) {
+    await page.getByRole('button', { name: id, exact: true }).click()
+    const wall = page.locator('[data-stair-center-wall]')
+    await expect(wall).toHaveCount(1)
+    expect(Number(await wall.getAttribute('width'))).toBeCloseTo(1)
+    expect(Number(await wall.getAttribute('height'))).toBeCloseTo(.2)
+    await expect(page.locator('[data-stair-eye-guard]')).toHaveCount(0)
+  }
+  await page.screenshot({ path: `test-results/${testInfo.project.name}-center-wall-plan.png` })
+  const result = await page.evaluate(async () => {
+    const THREE = await import('/node_modules/.vite/deps/three.js')
+    const { buildScene } = await import('/src/scene.ts')
+    const { stairWalkingLine } = await import('/src/winderStair.ts')
+    const { elevations, storeyRise } = await import('/src/model.ts')
+    const { initializePhysics, createWalker } = await import('/src/walk.ts')
+    await initializePhysics()
+    const model = buildScene('EG', true, true, true)
+    for (const door of model.doors) if (door.kind === 'door') model.setOpening(door.id, 1)
+    const walls = model.group.children.filter(object => object.name === 'stair-center-wall').map(object => {
+      const bounds = new THREE.Box3().setFromObject(object)
+      return { min: bounds.min.toArray(), max: bounds.max.toArray() }
+    })
+    const guards = model.group.children.filter(object => object.name === 'stair-center-wall-guard').length
+    const oldWalls = model.group.children.filter(object => object.name.startsWith('stair-inner-wall-') || object.name === 'stair-eye-guard').length
+    const camera = new THREE.PerspectiveCamera(), walker = createWalker(model, camera, new THREE.Vector3(2.8, 0, 5.075))
+    const routes = []
+    for (const id of ['KG', 'EG', 'OG']) for (const reverse of [false, true]) {
+      const points = stairWalkingLine(storeyRise(id)).map(([east, , south]) => [east, south])
+      if (reverse) points.reverse()
+      walker.teleport(new THREE.Vector3(points[0][0], elevations[id] + (reverse ? storeyRise(id) : 0), points[0][1]))
+      let blocked = false
+      for (const [east, south] of points.slice(1)) {
+        let frames = 0
+        while (Math.hypot(walker.position().x - east, walker.position().z - south) > .055 && frames++ < 300) {
+          camera.lookAt(east, camera.position.y, south); walker.keys.add('KeyW'); walker.tick(); walker.keys.clear()
+        }
+        if (frames >= 300) { blocked = true; break }
+      }
+      for (let frame = 0; frame < 20; frame++) walker.tick()
+      routes.push({ id, reverse, blocked, height: walker.position().y - .9, expected: elevations[id] + (reverse ? 0 : storeyRise(id)) })
+    }
+    walker.teleport(new THREE.Vector3(2.8, elevations.EG, 4.5))
+    for (let frame = 0; frame < 120; frame++) { camera.lookAt(1.75, camera.position.y, 4.5); walker.keys.add('KeyW'); walker.tick(); walker.keys.clear() }
+    const wallBlocks = walker.position().x > 2.4
+    walker.dispose(); model.dispose()
+    const preview = buildScene('EG', false, false, false)
+    for (const child of preview.group.children) child.visible = child.name.startsWith('stair-')
+    const scene = new THREE.Scene(); scene.background = new THREE.Color('#e7ebed'); scene.add(preview.group)
+    scene.add(new THREE.HemisphereLight('#ffffff', '#718078', 2))
+    const light = new THREE.DirectionalLight('#ffffff', 2); light.position.set(6, 9, 3); scene.add(light)
+    const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true })
+    renderer.setSize(innerWidth, innerHeight); renderer.setPixelRatio(1)
+    renderer.domElement.id = 'center-wall-preview'; renderer.domElement.style.cssText = 'position:fixed;inset:0;z-index:10000'; document.body.append(renderer.domElement)
+    camera.aspect = innerWidth / innerHeight; camera.fov = 45; camera.updateProjectionMatrix()
+    const render = (rotated: boolean) => {
+      const distance = innerWidth < 600 ? 1.4 : 1
+      camera.position.set(1.4 + (rotated ? -4.8 : 5) * distance, 2 + 2.7 * distance, 4.5 + (rotated ? -5 : 5) * distance)
+      camera.lookAt(1.3, 1.8, 4.5); renderer.render(scene, camera)
+    }
+    render(false)
+    Object.assign(window, { centerWallPreview: { render, dispose() { preview.dispose(); renderer.dispose(); renderer.domElement.remove() } } })
+    return { walls, guards, oldWalls, routes, wallBlocks }
+  })
+  expect(result.walls).toHaveLength(3)
+  expect(result.guards).toBe(1)
+  expect(result.oldWalls).toBe(0)
+  expect(result.wallBlocks).toBe(true)
+  for (const [index, wall] of result.walls.entries()) {
+    expect(wall.min[0]).toBeCloseTo(1.2)
+    expect(wall.max[0]).toBeCloseTo(2.2)
+    expect(wall.min[2]).toBeCloseTo(4.4)
+    expect(wall.max[2]).toBeCloseTo(4.6)
+    if (index) expect(wall.min[1]).toBeCloseTo(result.walls[index - 1].max[1])
+  }
+  for (const route of result.routes) {
+    expect(route.blocked, `${route.id} ${route.reverse ? 'ab' : 'auf'}`).toBe(false)
+    expect(Math.abs(route.height - route.expected)).toBeLessThan(.07)
+  }
+  const canvas = page.locator('#center-wall-preview')
+  const first = PNG.sync.read(await canvas.screenshot({ path: `test-results/${testInfo.project.name}-center-wall-3d.png` }))
+  const colors = new Set<string>()
+  for (let offset = 0; offset < first.data.length; offset += 32) colors.add(`${first.data[offset] >> 4},${first.data[offset + 1] >> 4},${first.data[offset + 2] >> 4}`)
+  expect(colors.size).toBeGreaterThan(25)
+  await page.evaluate(() => (window as any).centerWallPreview.render(true))
+  const rotated = PNG.sync.read(await canvas.screenshot({ path: `test-results/${testInfo.project.name}-center-wall-rotated.png` }))
+  expect(rotated.data.equals(first.data)).toBe(false)
+  await page.evaluate(() => { (window as any).centerWallPreview.dispose(); delete (window as any).centerWallPreview })
+  expect(errors).toEqual([])
+})
+
 test('Türen starten im Rundgang geschlossen', async ({ page }) => {
   await page.goto('/')
   const states = await page.evaluate(async () => {

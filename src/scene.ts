@@ -469,9 +469,10 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
     }
   }
   const addStairSolid = (solid: Solid, base: number, material: THREE.Material, collide = true) => {
-    const { vertices, indices } = stairPrism(solid.footprint!, base + solid.bottom, solid.height)
+    const footprint = solid.footprint ?? [[solid.x, solid.z], [solid.x + solid.width, solid.z], [solid.x + solid.width, solid.z + solid.depth], [solid.x, solid.z + solid.depth]]
+    const { vertices, indices } = stairPrism(footprint, base + solid.bottom, solid.height)
     const mesh = new THREE.Mesh(flatGeometry(vertices, indices), material)
-    mesh.name = `stair-${solid.id}`; mesh.castShadow = true; mesh.receiveShadow = true; group.add(mesh)
+    mesh.name = solid.id === 'stair-center-wall' ? solid.id : `stair-${solid.id}`; mesh.castShadow = true; mesh.receiveShadow = true; group.add(mesh)
     if (collide) triangles.push({ vertices, indices })
   }
   const renderedFloors = walk || showRoof ? floorIds : [floorId]
@@ -614,18 +615,16 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
       }
     }
     if (furnished) for (const item of floor.furniture) addFurniture(item, base)
-    if (includeSite && id !== 'KG') {
-      const core = stairFor()
-      const edge = addBox(rect(core.x + core.width, core.z + core.runWidth, .04, core.depth - 2 * core.runWidth), base, 1, frameMaterial)
-      edge.name = 'stair-eye-guard'
-    }
     if (includeSite && id !== 'DG') {
       const rise = storeyRise(id)
       for (const solid of stairSolids(rise)) addStairSolid(solid, base, timber)
       for (const solid of stairInnerWall(rise)) addStairSolid(solid, base, plaster)
-      for (const solid of stairGuards(rise)) addStairSolid(solid, base, plaster)
-      for (const rail of stairHandrails(rise)) beam(new THREE.Vector3(...rail.from).add(new THREE.Vector3(0, base, 0)), new THREE.Vector3(...rail.to).add(new THREE.Vector3(0, base, 0)), .025, timber)
-    } else if (includeSite) { const core = stairFor(); addBox(rect(core.x + core.width, core.end - core.runWidth, .065, core.runWidth), base, 1, plaster) }
+      if (!renderedFloors.includes(floorIds[floorIds.indexOf(id) + 1])) for (const solid of stairGuards(rise)) addStairSolid(solid, base, plaster)
+      for (const rail of stairHandrails(rise)) beam(new THREE.Vector3(...rail.from).add(new THREE.Vector3(0, base, 0)), new THREE.Vector3(...rail.to).add(new THREE.Vector3(0, base, 0)), .025, timber).name = 'stair-handrail'
+    } else if (includeSite) {
+      for (const solid of stairGuards(0)) addStairSolid(solid, base, plaster)
+      const core = stairFor(); addBox(rect(core.x + core.width, core.end - core.runWidth, .065, core.runWidth), base, 1, plaster)
+    }
   }
   if (includeSite && !walk && !showRoof && floorId !== 'KG') {
     const lowerId = floorIds[floorIds.indexOf(floorId) - 1]

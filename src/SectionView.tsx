@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Ruler, Trash2 } from 'lucide-react'
-import { atticCeiling, atticCeilingPanels, ceilingHeight, construction, elevations, house, floorIds, floorSlabs, makeFloor, ridgeElevations, roofHeight, roofInnerElevation, roofOuterElevation, roofPanels, roofVerticalThickness, roofWindows, slabThickness, stairFor, stairSolids, storeyRise, wallSolids } from './model'
+import { atticCeiling, atticCeilingPanels, ceilingHeight, construction, elevations, house, floorIds, floorSlabs, makeFloor, ridgeElevations, roofHeight, roofInnerElevation, roofOuterElevation, roofPanels, roofVerticalThickness, roofWindows, slabThickness, stairFor, stairGuards, stairInnerWall, stairSolids, storeyRise, wallSolids } from './model'
 import type { FloorId, Rect } from './model'
 import { distance, furnitureName, metres } from './measure'
 import type { PlanPoint } from './measure'
@@ -51,6 +51,7 @@ export default function SectionView({ furnished, zoom, floorId, onZoom }: { furn
             return <polygon key={`${wall.id}-${index}`} points={`${interval[0]},${-low} ${interval[1]},${-low} ${interval[1]},${-Math.max(low, top(interval[1]))} ${peak}${interval[0]},${-Math.max(low, top(interval[0]))}`} fill="#9eaaa0" stroke="#536358" strokeWidth=".015"><title>{id} Wand; Länge {metres(interval[1] - interval[0])}, Unterkante {metres(low)}, Höhe bis {metres(Math.max(top(interval[0]), top(interval[1])) - base)}</title></polygon>
           }))}
           {id !== 'DG' && stairSolids(storeyRise(id)).map(solid => block(solid, base + solid.bottom, solid.height, '#c7ab7f', `${id} ${solid.id.startsWith('landing') ? 'Podest' : 'Stufe'}`, `${id}-${solid.id}`))}
+          {(id === 'DG' ? stairGuards(0) : stairInnerWall(storeyRise(id))).map(solid => block(solid, base + solid.bottom, solid.height, '#9eaaa0', `${id} Treppenmittelwand`, `${id}-${solid.id}`))}
           {furnished && floor.furniture.map(item => block(item, base + (item.bottom ?? 0), item.height, '#d6dfd0', furnitureName(item), `${id}-${item.id}`))}
           <line x1="-.6" x2={length + .15} y1={-base} y2={-base} stroke="#8da49c" strokeWidth=".01" strokeDasharray=".12 .06" />
           <text x="-.2" y={-base - .1} textAnchor="end" fontSize=".4" fill="#2c4a3b">{id}<tspan x="-.2" dy=".44">{base > 0 ? '+' : ''}{metres(base)}</tspan></text>

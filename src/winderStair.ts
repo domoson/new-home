@@ -1,5 +1,5 @@
 export type StairPoint = [number, number]
-export const winderCore = { x: .3, z: 3.5, width: 1.9, depth: 2, end: 5.5, tread: .3, risers: 15, runWidth: .85, turnSize: 1, arrivalDepth: 1.1 }
+export const winderCore = { x: .3, z: 3.5, width: 1.9, depth: 2, end: 5.5, tread: .3, risers: 15, runWidth: .9, walkingOuterOffset: .425, turnSize: 1, arrivalDepth: 1.1 }
 export type WinderStep = { id: string; footprint: StairPoint[]; inner: [StairPoint, StairPoint]; height: number }
 
 export function stairPrism(footprint: StairPoint[], bottom: number, height: number) {
@@ -25,7 +25,8 @@ export function winderSteps(rise: number): WinderStep[] {
   for (let index = 0; index < 8; index++) {
     const start = -Math.PI / 2 - index * Math.PI / 8, end = start - Math.PI / 8
     const outer = (angle: number) => point(angle, turnSize / Math.max(Math.abs(Math.cos(angle)), Math.abs(Math.sin(angle))))
-    const innerStart = point(start, turnSize - core.runWidth), innerEnd = point(end, turnSize - core.runWidth)
+    const inner = (angle: number) => point(angle, (turnSize - core.runWidth) / Math.max(Math.abs(Math.cos(angle)), Math.abs(Math.sin(angle))))
+    const innerStart = inner(start), innerEnd = inner(end)
     result.push({ id: `winder-${index}`, footprint: [innerStart, outer(start), outer(end), innerEnd], inner: [innerStart, innerEnd], height: (index + 4) * rise / core.risers })
   }
   for (let index = 0; index < 3; index++) {
@@ -39,7 +40,7 @@ export function winderSteps(rise: number): WinderStep[] {
 
 export function stairWalkingLine(rise: number): [number, number, number][] {
   const core = winderCore, center = [core.x + core.turnSize, core.z + core.turnSize]
-  const halfRun = core.runWidth / 2, radius = core.turnSize - halfRun
+  const halfRun = core.walkingOuterOffset, radius = core.turnSize - halfRun
   const points: [number, number, number][] = [[core.x + core.width + .6, 0, core.z + halfRun], [center[0], rise * 3 / core.risers, core.z + halfRun]]
   for (let index = 1; index <= 16; index++) {
     const angle = -Math.PI / 2 - index * Math.PI / 16

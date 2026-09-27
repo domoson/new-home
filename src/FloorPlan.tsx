@@ -2,7 +2,7 @@ import { useState } from 'react'
 import type { PointerEvent } from 'react'
 import { Ruler, Trash2, X } from 'lucide-react'
 import type { Floor, Furniture, Wall } from './model'
-import { construction, house, format, heightLine, lightWells, roofWindows, roomArea, stairFor, stairOpeningParts, stairSolids, storeyRise } from './model'
+import { construction, house, format, heightLine, lightWells, roofWindows, roomArea, stairFor, stairInnerWall, stairOpeningParts, stairSolids, storeyRise } from './model'
 import { stairWalkingLine } from './winderStair'
 import { contains, distance, metres, planObjects, snapPoint } from './measure'
 import type { Measurable, PlanPoint } from './measure'
@@ -140,7 +140,7 @@ export default function FloorPlan({ floor, selected, onSelect, dimensions, furni
       <circle data-stair-start="true" cx={walkingLine[0][0]} cy={walkingLine[0][2]} r=".065" fill="none" stroke="#746e61" strokeWidth=".025" />
       <path d="M-.18 -.1 L0 0 L-.18 .1" transform={`translate(${arrowEnd[0]} ${arrowEnd[2]}) rotate(${arrowAngle})`} fill="none" stroke="#746e61" strokeWidth=".025" opacity=".45" />
       {floor.id === 'DG' && <rect x={core.x + core.width} y={core.end - core.runWidth} width=".065" height={core.runWidth} fill="#777d73" />}
-      {floor.id !== 'KG' && <rect data-stair-eye-guard="true" x={core.x + core.width} y={core.z + core.runWidth} width=".04" height={core.depth - 2 * core.runWidth} fill="#777d73" />}
+      {stairInnerWall(storeyRise(floor.id)).map(wall => <rect key={wall.id} data-stair-center-wall="true" x={wall.x} y={wall.z} width={wall.width} height={wall.depth} fill="#647064" />)}
       <text x={core.x + .72} y={core.z + core.depth / 2} textAnchor="middle" fontSize=".105" fill="#655f51">½</text>
       <text x={core.x + .6} y={core.z + .15} textAnchor="middle" fontSize=".13" fill="#655f51">{floor.id === 'DG' ? '↑ von OG' : '↑ ' + (floor.id === 'KG' ? 'EG' : floor.id === 'EG' ? 'OG' : 'DG')}</text>
     </g>

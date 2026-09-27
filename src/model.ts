@@ -129,26 +129,20 @@ export function floorSlabs(id: FloorId): Rect[] {
   return [rect(0, 0, house.width, core.z), rect(0, core.z, core.x, core.depth), rect(core.x + core.width, core.z, house.width - core.x - core.width, core.depth), rect(0, core.end, house.width, house.depth - core.end)]
 }
 export function stairInnerWall(rise: number): Solid[] {
-  return winderSteps(rise).map(step => {
-    const [start, end] = step.inner, length = Math.hypot(end[0] - start[0], end[1] - start[1])
-    const normal = [(end[1] - start[1]) / length, -(end[0] - start[0]) / length]
-    const thickness = .12
-    const offset = [normal[0] * thickness / 2, normal[1] * thickness / 2]
-    const footprint: StairPoint[] = [[start[0] + offset[0], start[1] + offset[1]], [end[0] + offset[0], end[1] + offset[1]], [end[0] - offset[0], end[1] - offset[1]], [start[0] - offset[0], start[1] - offset[1]]]
-    const east = footprint.map(point => point[0]), south = footprint.map(point => point[1])
-    return { ...rect(Math.min(...east), Math.min(...south), Math.max(...east) - Math.min(...east), Math.max(...south) - Math.min(...south)), footprint, bottom: 0, height: rise, kind: 'wall', id: `inner-wall-${step.id}` }
-  })
+  return [{ ...rect(stairRecess.x - stairRecess.depth / 2, stairRecess.z, stairRecess.width + stairRecess.depth / 2, stairRecess.depth), bottom: 0, height: rise, kind: 'wall', id: 'stair-center-wall' }]
 }
 export function stairGuards(rise: number): Solid[] {
-  return winderSteps(rise).map(step => {
-    const [start, end] = step.inner, length = Math.hypot(end[0] - start[0], end[1] - start[1])
-    const offset = [(end[1] - start[1]) / length * .015, -(end[0] - start[0]) / length * .015]
-    const footprint: StairPoint[] = [[start[0] + offset[0], start[1] + offset[1]], [end[0] + offset[0], end[1] + offset[1]], [end[0] - offset[0], end[1] - offset[1]], [start[0] - offset[0], start[1] - offset[1]]]
-    const east = footprint.map(point => point[0]), south = footprint.map(point => point[1])
-    return { ...rect(Math.min(...east), Math.min(...south), Math.max(...east) - Math.min(...east), Math.max(...south) - Math.min(...south)), footprint, bottom: step.height, height: .95, kind: 'rail', id: `guard-${step.id}` }
-  })
+  return stairInnerWall(1).map(wall => ({ ...wall, bottom: rise, kind: 'rail', id: 'center-wall-guard' }))
 }
 export const format = (value: number) => value.toLocaleString('de-DE', { minimumFractionDigits: 1, maximumFractionDigits: 1 })
 export function stairHandrails(rise: number): { from: [number, number, number]; to: [number, number, number] }[] {
-  return winderSteps(rise).map(step => ({ from: [step.inner[0][0], step.height + .97, step.inner[0][1]], to: [step.inner[1][0], step.height + .97, step.inner[1][1]] }))
+  const wall = stairInnerWall(rise)[0]
+  const point = ([east, south]: StairPoint, height: number): [number, number, number] => [
+    east - (Math.abs(east - wall.x) < 1e-8 ? .06 : 0),
+    height + .97,
+    south + (Math.abs(south - wall.z) < 1e-8 ? -.06 : Math.abs(south - wall.z - wall.depth) < 1e-8 ? .06 : 0),
+  ]
+  return winderSteps(rise).map(step => {
+    return { from: point(step.inner[0], step.height), to: point(step.inner[1], step.height - rise / stair.risers) }
+  })
 }

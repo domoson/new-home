@@ -120,7 +120,16 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
   Westhaelfte unveraendert. Laibungen und bewegliche Fluegel sind schematisch;
   Sparren/Wechsel, Eindeckrahmen, Abdichtung und Hersteller-Einbaumasse ungeprueft.
 - Treppe auf allen Geschossen 58,5 cm nach Norden verschoben, Kern z=3,50..5,50 m.
-  Form und Steigungen unveraendert; Physik-Tritttoleranz 22,5 cm fuer die 19,8-cm-
+  Eine massive, gerade Treppenmittelwand statt zweier gerundeter Innenwangen:
+  x=1,20..2,20 m, z=4,40..4,60 m, 100 cm lang und 20 cm stark.
+  Beide geraden Laeufe mit 90 cm Stufenbreite im unveraenderten 2-m-Kern;
+  Handlaeufe reduzieren die nutzbare lichte Breite.
+  Von KG bis DG geschossweise buendig durchgehend, im DG mit 1 m hoher
+  Abschlussbruestung. Wendelstufen schliessen an den rechteckigen Wandkopf
+  an; radiale Stufentrennungen, aeussere Stufenkanten, Lauflinie und Steigungen unveraendert.
+  Tragende Ausfuehrung als Entwurfsannahme, kein Nachweis fuer Material,
+  Bewehrung, Treppen-/Deckenauflager oder Gruendung.
+  Physik-Tritttoleranz 22,5 cm fuer die 19,8-cm-
   Steigungen plus Kollisionsabstand, keine Aenderung der modellierten Stufen.
 - EG: Gaestebad nordwestlich, Eingang nordoestlich, deckenhoher Putzschrank neben Dusche.
   Geflieste Diele direkt an der Haustuer; Flur ab vorhandenem
