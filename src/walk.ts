@@ -1,6 +1,8 @@
 import RAPIER from '@dimforge/rapier3d-compat'
 import * as THREE from 'three'
 import type { SceneModel } from './scene'
+import { siteBoundary } from './context'
+import { construction } from './model'
 
 let ready: Promise<void> | undefined
 export const initializePhysics = () => ready ??= RAPIER.init()
@@ -9,6 +11,8 @@ export function createWalker(model: SceneModel, camera: THREE.PerspectiveCamera,
   world.timestep = 1 / 60
   for (const collider of model.colliders) world.createCollider(RAPIER.ColliderDesc.cuboid(collider.size.x / 2, collider.size.y / 2, collider.size.z / 2).setTranslation(collider.position.x, collider.position.y, collider.position.z).setRotation(collider.rotation))
   for (const triangle of model.triangles) world.createCollider(RAPIER.ColliderDesc.trimesh(triangle.vertices, triangle.indices))
+  const siteBounds = new THREE.Box2().setFromPoints(siteBoundary.map(([east, south]) => new THREE.Vector2(east, south)))
+  const outsideGround = world.createCollider(new RAPIER.ColliderDesc(new RAPIER.HalfSpace({ x: 0, y: 1, z: 0 })).setTranslation(0, construction.terrain, 0))
   const doorColliders = model.doors.map(door => {
     const center = door.center.clone().applyMatrix4(door.pivot.matrixWorld)
     return world.createCollider(RAPIER.ColliderDesc.cuboid(door.size.x / 2, door.size.y / 2, door.size.z / 2).setTranslation(center.x, center.y, center.z).setRotation(door.pivot.getWorldQuaternion(new THREE.Quaternion())))
@@ -42,7 +46,9 @@ export function createWalker(model: SceneModel, camera: THREE.PerspectiveCamera,
     const movement = direction.multiplyScalar(forward).addScaledVector(right, sideways).multiplyScalar(2.7 / 60)
     falling = controller.computedGrounded() ? -.6 : Math.max(-5, falling - 9.81 / 60)
     movement.y = falling / 60
-    controller.computeColliderMovement(capsule, movement, undefined, undefined, collider => collider.handle !== capsule.handle)
+    const current = body.translation()
+    const outsideSite = current.x < siteBounds.min.x || current.x > siteBounds.max.x || current.z < siteBounds.min.y || current.z > siteBounds.max.y
+    controller.computeColliderMovement(capsule, movement, undefined, undefined, collider => collider.handle !== capsule.handle && (collider.handle !== outsideGround.handle || outsideSite))
     const translation = body.translation(), corrected = controller.computedMovement()
     body.setNextKinematicTranslation({ x: translation.x + corrected.x, y: translation.y + corrected.y, z: translation.z + corrected.z }); world.step()
     const next = body.translation(); camera.position.set(next.x, next.y + .775, next.z)

@@ -124,6 +124,11 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
   x=1,20..2,20 m, z=4,40..4,60 m, 100 cm lang und 20 cm stark.
   Beide geraden Laeufe mit 90 cm Stufenbreite im unveraenderten 2-m-Kern;
   Handlaeufe reduzieren die nutzbare lichte Breite.
+  Handlauf in allen drei Treppenverbindungen aussen entlang Nord-, West-
+  und Suedseite, nicht an der Mittelwand. Durchgehende Eckanschluesse,
+  Achse 6 cm von der aeusseren Stufenkante, Durchmesser 5 cm;
+  Hoehenfuehrung unveraendert. Befestigung und normgerechte Wandabstaende
+  sind fachlich zu planen; die Mittelwand bleibt unveraendert.
   Von KG bis DG geschossweise buendig durchgehend, im DG mit 1 m hoher
   Abschlussbruestung. Wendelstufen schliessen an den rechteckigen Wandkopf
   an; radiale Stufentrennungen, aeussere Stufenkanten, Lauflinie und Steigungen unveraendert.
@@ -144,13 +149,20 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
   rechts offene Nische von 92 bis 152 cm mit Toaster und Wassersprudler.
   Espresso und Cookit jetzt auf der Ostzeile; Spuelengroesse erhalten.
   Keine Kuechengeraete in der Diele, keine zusaetzlichen Haengeschraenke.
-  Hochschrankfront bis Halbinsel 1,86 m; Halbinsel 2,60 x 1,00 m bei z=4,96 m,
-  also 54 cm nach Norden gerueckt. Hocker folgen der Insel. Tisch, Bank und
+  Hochschrankfront bis Halbinsel 1,86 m; Halbinsel 2,65 x 1,00 m bei z=4,96 m,
+  Westkante x=3,95 m: Platte um 5 cm nach Westen erweitert. Tisch, Bank und
   Essstuehle gemeinsam 35 cm nach Norden verschoben; Tisch/Bank ab z=7,40 m.
   Zum Essplatz 1,44 m zwischen den Moebelkanten, vor Beruecksichtigung
   der Hocker. Wohn-/Koch-/Essbereich 40,18 m2 plus direkt angebundener Flur.
-  Halbinsel-Unterbau 40 cm von Sued und 35 cm von West zurueckgesetzt, echte
-  freie Knievolumen unter 3 cm Platte; Barhocker mit 65 cm Sitzhoehe.
+  Unter der 3 cm starken Platte sechs Schrankmodule statt freier Randbereiche:
+  westlich zwei 40 cm tiefe, je 50 cm breite Schraenke; nordseitig 60 cm
+  Vorbereitungsauszug und 105 cm Kochfeldauszug. Suedlich ein 45 cm breiter,
+  40 cm tiefer Schrank plus 60 cm breiter tiefer Eckschrank, von Sueden
+  zugaenglich, da die Ostzeile den Nordzugang blockiert. Insgesamt neun
+  Unterschrankmodule einschliesslich Ostzeile. Nur die Hockernische
+  x=4,35 bis 5,55 m bleibt frei: 120 cm breit und 40 cm tief.
+  Zwei Barhocker mit 65 cm Sitzhoehe mittig auf 60-cm-Sitzplaetze verteilt.
+  Westlicher Abstand zur bisherigen Flurlauflinie 1,15 m; zum Essplatz unveraendert.
   Einzelne Frontoeffnungen geometrisch geprueft; gleichzeitige Oeffnungen,
   Toaster-Waermeabstaende/Lueftung und Herstellerfreigaben bleiben offen.
 - Nordseitig im Eingang nur sieben Wandhaken auf flacher Leiste, ohne Schrank.
@@ -167,7 +179,7 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
   Couchtisch rund, Durchmesser 90 cm, Hoehe 35 cm, weisse Platte und vier
   Holzbeine; Mittelpunkt x=1,95/z=8,50 m. Fernseher direkt an der Treppenwand,
   Sideboard unveraendert.
-- Haustuer 110 x 250 cm inklusive 3-cm-Rahmen, nach innen oeffnend und
+- Haustuer 110 x 225 cm inklusive 3-cm-Rahmen, nach innen oeffnend und
   nordseitig angeschlagen. Daneben 30 cm breites, tuerhohes Festglas-Seitenteil;
   Eingangsanlage insgesamt 140 cm breit. Normale Innentueren einschliesslich
   Kellerabschluss: 86 x 211 cm inklusive Zarge, Blatt 80 x 208 cm als Annahme.
@@ -176,6 +188,13 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
   Flur 4,35 m2, Abstellraum 2,70 m2 (mindestens 2,50 m2). Spielzimmer entfaellt; Kinderzimmer
   weiterhin mit Bett, Schreibtisch und Schrank. Neue Proportionen grob aus
   der Skizze, nicht auf deren Flaechenangaben optimiert. KG unveraendert.
+  Beide 140 x 60 cm grossen Schreibtische mittig unter den normalen Fenstern
+  bei x=4,70 bis 6,10 m: Kind Nord an der Nordwand, um 90 Grad gedreht;
+  Kind Sued an der Suedwand. Stuehle zur jeweiligen Tischkante ausgerichtet.
+  Bett Kind Nord in der Suedostecke, x=5,55 bis 6,55 m, rund z=5,072 bis
+  7,072 m, Kopfende im Sueden; damit rechts neben dem bodentiefen Ostfenster.
+  Monitore mit Standfuss und Tastatur folgen der Tischrichtung; Bildschirm
+  56 x 32 cm, Oberkante 117 cm, ohne Kollision mit den Fensterfluegeln.
 - DG: Norden Schlafen / Ankleide (15,44 m2), Sueden Buero / Gaeste (22,24 m2).
   Beide Doppelbetten 180 x 200 cm bleiben an ihren Plaetzen. L-Arbeitsplatz
   auf der Westseite im Sueden: Tisch z=7,10 m, Stuhl z=6,35 m, Blick nach Sueden.
@@ -185,78 +204,73 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
   Nordbettzugang Ost 60 cm, West an der Flurwand 65 cm, Fussraum zum Schrank 87 cm.
   Tuerschwenk und Fenster frei vom Bett; offener Fensterfluegel engt den
   oestlichen Bettzugang ein. Kopfende mit eingeschraenkter Stehhoehe.
-  Waende, Fenster und Bettpositionen unveraendert. Schematische Moeblierung,
+  Waende und Bettpositionen unveraendert. Schematische Moeblierung,
   keine Ergonomie- oder Herstellerfreigabe.
 - Geschoss-/Raumhoehen, Dachneigung und Kniehoehe unveraendert. Der First wird
   durch die geringere Haustiefe geometrisch niedriger, nicht durch geaenderte Hoehenparameter.
 - Sofa 250 x 170 cm: lange Seite Sued, Chaiselongue West; Stuehle zum Tisch gedreht.
   Sideboard 180 x 45 x 60 cm erhalten; Regal auf 110 cm gekuerzt.
-- Fensterhoehen beider Haushaelften auf das naechstgelegene 12,5-cm-Raster
-  angepasst: 60 -> 62,5 cm, 90 -> 87,5 cm, 210 -> 212,5 cm und 240 -> 237,5 cm.
-  Kellerfenster 75 cm und OG-Fenster 150 cm bleiben unveraendert.
-  Haustuer samt Seitenteil 250 statt 252 cm; Terrassentuer und angrenzende
-  Verglasung gemeinsam 237,5 cm. Breiten, Positionen, Bruestungen und feste
-  Unterlichter unveraendert; Oberkanten verschieben sich entsprechend.
+- Fensterhoehen beider Haushaelften im 12,5-cm-Raster.
+  Kellerfenster 75 cm; Haustuer samt Seitenteil 225 cm.
+  Bodentiefe Fenster, Terrassentueren und angrenzende Verglasung 212,5 cm hoch.
   Standard-Dachfenster bleiben 94 x 140 cm, Innentueren unveraendert.
   Modell-Oeffnungshoehen, keine freigegebenen Rohbau- oder Bestellmasse;
   Fugen, Rahmenanschluesse, Stuerze und Raffstoreeinbau fachlich abzustimmen.
-- Neue Fensterordnung: zweiteilige Fenster mit 150 cm Breite: 60 cm
+- Neue Fensterordnung: Bodentiefe Fenster einheitlich 120 x 212,5 cm,
+  unten ueber die volle Breite fest bis zur Teilung bei 90 cm,
+  darueber ein nach innen oeffnender Fluegel. Keine senkrechte Teilung.
+  Suedwest in EG und OG identisch bei x=1,50 bis 2,70 m, gemessen ab
+  westlicher Aussenkante/Haustrennlinie; 120 cm ab innerer Wandkante.
+  DG-Ostfenster z=3,30 bis 4,50 m und z=6,00 bis 7,20 m:
+  jeweils 330 cm ab noerdlicher bzw. suedlicher Aussenkante,
+  jeweils 30 cm weiter von der Mitte weg. Bei der reduzierten Fensterhoehe
+  bleiben oberhalb des 24-cm-Raffstorekastens rund 24 cm bis zur Dachunterseite.
+  Kind Nord im OG hat nur ein Ostfenster bei z=3,30 bis 4,50 m,
+  beide Seitenkanten buendig mit dem DG-Schlafzimmerfenster, ebenfalls 120 x 212,5 cm mit
+  90-cm-Festteil. Beide bisherigen OG-Ostfenster entfallen.
+  Breite Fenster mit 150 cm Breite: 60 cm
   Lueftungsbereich und 90 cm Festfeld; bei 180 cm Breite: 60 cm
   Lueftungsbereich und 120 cm Festfeld (bewegliches Blatt nach
-  Rahmen/Fugen etwa 51 cm breit). Nur unter dessen Fluegel liegt bei bodentiefen
-  Fenstern ein festes Unterlicht: EG-Suedwest und DG jeweils 90 cm.
-  Das grosse Festfeld bleibt ohne Querholm. Oeffnungsbreiten und Fensterabstaende
-  der neuen EG-/OG-/DG-Fenster folgen dem 30-cm-Raster (ausgenommen das hohe EG-Kuechenband,
-  Kellerfenster, Eingangsfestfeld und die 2,80 m breite Terrassenanlage mit
-  1,25/1,55-m-Feldern sowie die dazu gleich hohe Eckverglasung). Rasterfugen sind schematisch.
-  Teilungshoehe und Profile angenaehert; keine Hersteller-/Absturzsicherungsfreigabe.
-  Fensterlagen und -groessen aus der neuen Skizze angenaehert, Gartenzugang als
+  Rahmen/Fugen etwa 51 cm breit). Das grosse Festfeld bleibt ohne Querholm.
+  EG-Kuechenfenster 180 x 75 cm von z=3,30 bis 5,10 m, um 30 cm nach
+  Norden versetzt, Nordkante buendig mit OG und DG. Bruestung weiterhin
+  137,5 cm, Oberkante 212,5 cm.
+  Oben um 25 cm gekuerzt; die Bruestung bleibt fuer den Abstand zur
+  Espressomaschine erhalten. Wasserhahn vor dem Festfeld; der Holm liegt
+  ueber den letzten 3 cm der Spuele, der Lueftungsfluegel beginnt suedlich davon.
+  Keine seitliche Terrassentuer: Die Ostwand zwischen Halbinsel und Sitzbank
+  ist bei z=6,10 bis 7,30 m wieder geschlossen, ohne Raffstore.
+  Teilungshoehe 90 cm ist eine Entwurfsannahme, keine bestaetigte
+  Absturzsicherung: Sicherheitsglas, Befestigung und erforderliche Hoehen
+  muessen fachlich nachgewiesen werden. Keine Herstellerfreigabe.
+  Suedlicher Gartenzugang weiterhin als
   zweiteilige 2,80-m-Hebeschiebeanlage mit Eckkopplung ohne Mauerstueck:
   innerer westlicher Fluegel 1,25 m beweglich, aeusseres oestliches Feld 1,55 m fest.
-  DG-Ostachsen weiterhin bei z=3,30 und 5,70 m, jeweils 150 cm breit.
-  OG noerdlich weiterhin z=3,30 m, suedlich jetzt z=5,597 m: rund 10,3 cm
-  nach Norden versetzt, damit die verschobene Kinderzimmerwand frei bleibt.
-  Dort keine genaue OG-/DG-Flucht mehr; DG unveraendert bodentief.
-  Die schmalen Fluegel sitzen jeweils an der aeusseren Seite des Fensterpaars.
-  EG ueber der Spuele ein einzelnes Fensterband 240 x 87,5 cm
-  von z=3,30 bis 5,70 m mit 150 cm Bruestung und Oberkante 237,5 cm.
-  Nordkante fluchtet mit den noerdlichen OG-/DG-Ostfenstern; das EG-Fenster
-  reicht 90 cm weiter nach Sueden. Grosses Festfeld vollstaendig vor der Spuele,
-  nominell 60 cm breiter Lueftungsbereich im Sueden, frei vom Hochschrank.
-  Die hohe Bruestung erschwert Einblicke, garantiert
-  aber keinen Sichtschutz. Tageslichtversorgung, Sturz, Glasgroesse und Raffstore benoetigen
-  Hersteller-/Tragwerkspruefung. OG-Ostfenster 150 x 150 cm mit 90 cm Bruestung,
-  ohne Unterlicht: gleiche Hoehe und Bruestung wie die OG-Suedfenster und das OG-Nordfenster,
-  aber 150 statt 180 cm breit fuer die durchgehenden Ostachsen.
-  Oberkante weiterhin 240 cm.
-  Beide OG-Ostfenster gehoeren jetzt zu Kind Nord, dessen Schrank an der inneren Westwand steht.
-  DG-Giebelfenster bodentief 150 x 212,5 cm mit Oberkante 212,5 cm:
-  je ein schmaler oeffnender Fluegel ueber einem 90-cm-Festfeld neben dem
-  durchgehenden Festfeld. Nur die noerdliche Achse fluchtet noch mit dem OG;
-  Tragwerk, Dachanschluss und Raffstoreeinbau sind fachlich zu pruefen.
-  DG-Buerofenster 60 cm nach Sueden verschoben, Trennwand zum Schlafzimmer
-  30 cm nach Sueden auf z=5,10 m: Buero gewinnt 0,915 m2, Schlafzimmer
-  entsprechend kleiner. Schraenke beidseits folgen der Wand; niedriger
-  Bueroschrank auf 120 cm gekuerzt, um den Fensterfluegel freizuhalten.
+  DG-Trennwand unveraendert bei z=5,10 m; niedriger Schrank 120 cm breit.
   Verglasung, Beschlaege, Tageslicht und Rettungswege fachlich zu planen;
   die schmalen Lueftungsfluegel sind kein Rettungsfensternachweis.
   EG-Suedostecke fest verglast ab z=9,30 m, 30 cm nach Norden verlaengert:
   90 cm bis zur inneren Suedwandkante plus 30 cm geoeffnete Wandtiefe.
   Beide Glasflaechen treffen sich in der Wandmitte am 8-cm-Eckprofil bei
-  x=6,75/z=10,35 m, Oberkante 237,5 cm wie die Hebeschiebeanlage.
+  x=6,75/z=10,35 m, Oberkante 212,5 cm wie die Hebeschiebeanlage.
   Mauerecke unter dem Sturz entfernt; kein nachgewiesenes Tragwerk,
   keine Herstellerfreigabe. Die unveraenderte Sitzbank steht teilweise vor dem Festglas.
-  Nordbadfenster im EG wie das Dielenfenster 150 x 62,5 cm mit 180 cm Bruestung;
-  OG-Lichtband 240 x 87,5 cm mit grossem Festfeld und schmalem Lueftungsfluegel,
-  weiterhin 150 cm Bruestung bei Oberkante 237,5 cm.
-  Suedwestliche EG-/OG-Fenster fluchten 60 cm von der Trennwand entfernt
-  uebereinander. Die beiden Fenster von Kind Sued sind je 180 x 150 cm mit
-  90 cm Bruestung; das oestliche endet 30 cm vor der Ostkante der
-  Terrassenverglasung. Das EG-Dielenfenster ist ein 150 x 62,5 cm grosses Band
-  bei x=4,50 bis 6,00 m, beide Seitenkanten buendig mit dem OG-Fenster darueber.
+  Nordbadfenster im EG weiterhin 150 x 62,5 cm, Bruestung jetzt 155 cm;
+  OG-Badfenster wie Kueche 180 x 75 cm mit 137,5 cm Bruestung,
+  Oberkante 212,5 cm. Westkante unveraendert bei x=0,60 m und damit
+  buendig mit dem Gaestebadfenster darunter. Lueftungsfluegel im Osten
+  wie bei den anderen Nordfenstern; voll geoeffnet blockiert er den
+  geprueften WC-Zugang. Bei geschlossenem Badfenster ist dieser frei.
+  Nicht bodentiefe Kinderzimmerfenster im OG: Nord und Suedost 180 x 100 cm.
+  Jeweils weiterhin 115 cm Bruestung; Oberkante jetzt 215 cm.
+  Es bleiben 40 cm Abstand ueber einer 75-cm-Tischplatte.
+  Das Suedostfenster endet 30 cm vor der Ostkante der
+  Terrassenverglasung. Das EG-Dielenfenster ist ein 180 x 62,5 cm grosses Band
+  bei x=4,50 bis 6,30 m, beide Seitenkanten buendig mit dem OG-Fenster darueber.
+  Beide Nordfenster sind bei unveraenderter Westkante 30 cm nach Osten erweitert.
   Nach Osten versetzt, nicht mehr mittig ueber der Garderoben-Hakenleiste.
-  Bruestung 180 cm und Oberkante 242,5 cm wie beim EG-Badfenster;
-  Hakenleiste unveraendert, 12 cm unter der Bruestung. Grosses Festfeld
+  Bruestung 155 cm und Oberkante 217,5 cm wie beim EG-Badfenster;
+  Hakenleiste unveraendert, seitlich neben dem Oeffnungsfluegel. Grosses Festfeld
   und schmaler Lueftungsfluegel. Der bisherige Fensterplatz im schmalen
   Flur ist geschlossen; Tageslichtversorgung bleibt fachlich ungeprueft.
   Der Schrank in Kind
@@ -294,6 +308,12 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
   mittig, 130 x 50 cm im Grundriss (aus Zeichnung angenaehert, kein Herstellermass).
 - EG-Dusche im Suedwesten des Bades, WC/Waschtisch im Norden; Nord-Vorwand 8 cm tief/120 cm hoch
   ist Annahme, von der Raumflaeche abgezogen.
+- EG-Dusche: bisherige feste seitliche Glasscheibe entfernt. Zugang von Norden
+  mit 210 cm hoher Glastuer, westlich angeschlagen und nach innen in die
+  Dusche oeffnend. Armaturen an der suedlichen Rueckwand zur Treppe;
+  Kopfbrause auf 223 cm, Wandarm auf 225 cm, frei ueber dem Tuerschwenkbereich.
+  Duschwanne unveraendert. Beschlaege, Sicherheitsglas, Abdichtung und
+  Rettungsmoeglichkeit bei ausschliesslicher Innenoeffnung fachlich pruefen.
 - OG-Bad nach um 90 Grad gedrehter Skizze: T-Waende 15 cm stark und 242 cm
   hoch, beide 35 cm unter der Decke endend. Querwand x=1,54-1,69 m,
   z=1,05-2,40 m; Einzelwaschtisch 135 x 50 cm nach Osten mit einem
@@ -308,7 +328,7 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
   der suedlichen Raumwand. Suedlicher Zugang 90 cm breit mit
   beweglicher 8-mm-Glastuer, 210 cm Oberkante, 67 cm zur Decke offen.
   Seitliche Anschlussprofile ohne oberen Abschluss; suedlicher Anschlag,
-  nach aussen oeffnend. Im Modell geoeffnet inklusive Griffen mehr als
+  nach innen in die Dusche oeffnend. Im Modell geoeffnet inklusive Griffen mehr als
   80 cm freier Zugang; geschlossen im Rundgang gesperrt. Beschlaege,
   Sicherheitsglas, Dichtungen, Spritzschutz und Wandbefestigung ungeprueft.
   WC-Zugang weiterhin 75 cm, vor dem Waschtisch jetzt 101 cm zur Wanne.
@@ -381,6 +401,9 @@ Planungsannahmen in der Anwendung. Umgebungsmodelle bleiben weiterverwendet.
   optional auf 1,05 m hohe Schnittwaende um. Dach einschalten
   zeigt das gesamte Gebaeude mit voller Wandhoehe und Satteldach.
 - Rundgang: WASD oder Pfeiltasten bewegen; Mausziehen aendert die Blickrichtung.
+  Ausserhalb des Grundstuecks traegt eine unendliche Physikebene auf Gelaendehoehe.
+  Lokales Bodennetz mit Aussparungen fuer beide Haeuser und Lichtschachte;
+  Keller und Treppen bleiben frei. Die sichtbare Umgebung wird nicht vergroessert.
   Der Mauszeigerknopf aktiviert optional Pointer Lock; Escape gibt die Maus frei.
   E bzw. der Tuerknopf schaltet die naechste Tuer innerhalb von 2,1 m um.
   Mausrad am Fadenkreuz: hoch oeffnet, herunter schliesst die avisierte Tuer bzw.

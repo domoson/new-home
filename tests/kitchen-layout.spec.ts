@@ -2,6 +2,65 @@ import { expect, test } from '@playwright/test'
 import { writeFile } from 'node:fs/promises'
 import { PNG } from 'pngjs'
 
+test('Inselunterschraenke fuellen die Platte mit freier Hockernische', async ({ page }, testInfo) => {
+  await page.goto('/')
+  await expect(page.locator('[data-furniture="peninsula"] [data-kitchen-module]')).toHaveCount(6)
+  const result = await page.evaluate(async () => {
+    const THREE = await import('/node_modules/.vite/deps/three.js')
+    const { buildScene } = await import('/src/scene.ts')
+    const { makeFloor } = await import('/src/model.ts')
+    const { kitchenModules } = await import('/src/kitchenStorage.ts')
+    const model = buildScene('EG', false, false, true), island = makeFloor('EG').furniture.find(item => item.id === 'peninsula')
+    model.group.updateMatrixWorld(true)
+    const boxes = model.colliders.map(collider => new THREE.Box3().setFromCenterAndSize(collider.position, collider.size))
+    const modules = kitchenModules(island).map(module => {
+      const body = model.group.getObjectByName(`${module.id}-base`), front = model.group.getObjectByName(`kitchen-module-${module.id}`)
+      const bounds = new THREE.Box3().setFromObject(body), center = new THREE.Vector3(module.x + module.width / 2, .45, module.z + module.depth / 2)
+      return { id: module.id, front: front.userData.kitchenModule.front, filled: bounds.containsPoint(center), collides: boxes.some(box => box.containsPoint(center)), height: bounds.max.y, x: bounds.min.x, z: bounds.min.z }
+    })
+    const niche = []
+    for (const east of [4.4, 4.65, 4.95, 5.25, 5.5]) for (const south of [5.61, 5.75, 5.84]) niche.push(!boxes.some(box => box.containsPoint(new THREE.Vector3(east, .45, south))))
+    const scene = new THREE.Scene(); scene.background = new THREE.Color('#e5ebe7')
+    scene.add(model.group, new THREE.HemisphereLight('#ffffff', '#b8b8ac', 2))
+    const light = new THREE.DirectionalLight('#ffffff', 2.5); light.position.set(4, 8, 7); scene.add(light)
+    const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true })
+    const width = innerWidth > 600 ? 1200 : 390, height = innerWidth > 600 ? 850 : 720
+    renderer.setSize(width, height)
+    const camera = new THREE.PerspectiveCamera(innerWidth > 600 ? 60 : 80, width / height, .03, 80)
+    const captures = [
+      { name: 'south-west', position: [3.15, 1.6, 7.4], target: [5, .65, 5.45] },
+      { name: 'stools', position: [5.2, 1.25, 7.6], target: [4.95, .6, 5.65] },
+      { name: 'cooking', position: [4.8, 1.5, 3.75], target: [5.1, .65, 5.45] },
+    ].map(view => {
+      camera.position.set(...view.position); camera.lookAt(...view.target); renderer.render(scene, camera)
+      return { name: view.name, image: renderer.domElement.toDataURL().split(',')[1] }
+    })
+    model.dispose(); renderer.dispose()
+    return { modules, niche, captures }
+  })
+  expect(result.modules).toHaveLength(6)
+  for (const module of result.modules) {
+    expect(module.filled, module.id).toBe(true)
+    expect(module.collides, module.id).toBe(true)
+    expect(module.height).toBeCloseTo(.89)
+  }
+  expect(result.modules.filter(module => module.front === 'west')).toHaveLength(2)
+  expect(result.modules.filter(module => module.front === 'south')).toHaveLength(2)
+  expect(result.niche.every(Boolean)).toBe(true)
+  const images = []
+  for (const capture of result.captures) {
+    const buffer = Buffer.from(capture.image, 'base64'), image = PNG.sync.read(buffer), colors = new Set<number>()
+    for (let offset = 0; offset < image.data.length; offset += 16) colors.add((image.data[offset] >> 4) * 256 + (image.data[offset + 1] >> 4) * 16 + (image.data[offset + 2] >> 4))
+    expect(colors.size).toBeGreaterThan(30)
+    await writeFile(`test-results/${testInfo.project.name}-island-${capture.name}.png`, buffer)
+    images.push(image)
+  }
+  let changed = 0
+  for (let offset = 0; offset < images[0].data.length; offset += 16) if (Math.abs(images[0].data[offset] - images[1].data[offset]) > 30) changed++
+  expect(changed).toBeGreaterThan(200)
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+})
+
 test('Kitchen devices, ceiling cupboards and moving windows fit both houses', async ({ page }) => {
   await page.goto('/')
   const result = await page.evaluate(async () => {

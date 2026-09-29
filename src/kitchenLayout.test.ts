@@ -8,7 +8,7 @@ const overlap = (first: Rect, second: Rect) => Math.max(0, Math.min(first.x + fi
 test('Open kitchen has disjoint connected tops and a genuinely free prep rectangle', () => {
   const furniture = makeFloor('EG').furniture
   const tops = furniture.filter(item => item.kind === 'counter')
-  expect(area(tops)).toBeCloseTo(3.716)
+  expect(area(tops)).toBeCloseTo(3.766)
   for (const [index, top] of tops.entries()) for (const other of tops.slice(index + 1)) expect(overlap(top, other)).toBeCloseTo(0)
   expect(overlap(kitchenPrep, tops.find(item => item.id === 'peninsula')!)).toBeCloseTo(.286)
   for (const obstacle of [...kitchenDeviceZones, ...furniture.filter(item => ['hob', 'sink'].includes(item.kind))]) expect(overlap(kitchenPrep, obstacle)).toBeCloseTo(0)
@@ -18,9 +18,9 @@ test('Open kitchen has disjoint connected tops and a genuinely free prep rectang
 test('New kitchen has five towers, low counters, clear west access and east dining', () => {
   const floor = makeFloor('EG'), furniture = floor.furniture
   const island = furniture.find(item => item.id === 'peninsula')!
-  expect(island.x - 2.8).toBeCloseTo(1.2)
+  expect(island.x - 2.8).toBeCloseTo(1.15)
   expect(furniture.find(item => item.id === 'dining-bench')!.z - island.z - island.depth).toBeCloseTo(1.44)
-  expect(island).toMatchObject({ width: 2.6, depth: 1, z: 4.96 })
+  expect(island).toMatchObject({ x: 3.95, width: 2.65, depth: 1, z: 4.96 })
   const towers = furniture.filter(item => item.id === 'fridge' || item.id.startsWith('kitchen-tall'))
   expect(Math.max(...towers.map(item => item.x + item.width)) - Math.min(...towers.map(item => item.x))).toBeCloseTo(3.21)
   expect(island.z - towers[0].z - towers[0].depth).toBeCloseTo(1.86)

@@ -1,6 +1,26 @@
 import { expect, it } from 'vitest'
 import { area, floorSlabs, roofHeight, stair, stairGuards, stairHandrails, stairInnerWall, stairSolids } from './model'
 import { sectionSpan } from './section'
+import { winderSteps } from './winderStair'
+
+it('fuehrt den Handlauf aussen entlang aller Laeufe und Wendungen', () => {
+  for (const rise of [2.45, 2.97]) {
+    const rails = stairHandrails(rise), steps = winderSteps(rise)
+    for (const [index, rail] of rails.entries()) {
+      expect(rail.from[1]).toBeCloseTo(steps[index].height + .97)
+      expect(rail.to[1]).toBeCloseTo(steps[index].height - rise / stair.risers + .97)
+      for (const [east, , south] of [rail.from, rail.to]) {
+        expect(Math.min(Math.abs(east - stair.x - .06), Math.abs(south - stair.z - .06), Math.abs(south - stair.end + .06))).toBeLessThan(1e-8)
+        expect(east).toBeGreaterThanOrEqual(stair.x + .06 - 1e-8)
+        expect(south).toBeGreaterThanOrEqual(stair.z + .06 - 1e-8)
+        expect(south).toBeLessThanOrEqual(stair.end - .06 + 1e-8)
+      }
+      if (index) for (let axis = 0; axis < 3; axis++) expect(rail.to[axis]).toBeCloseTo(rails[index - 1].from[axis])
+    }
+    expect(rails.some(rail => Math.abs(rail.from[0] - stair.x - .06) < 1e-8 && Math.abs(rail.from[2] - stair.z - .06) < 1e-8)).toBe(true)
+    expect(rails.some(rail => Math.abs(rail.from[0] - stair.x - .06) < 1e-8 && Math.abs(rail.from[2] - stair.end + .06) < 1e-8)).toBe(true)
+  }
+})
 
 it('bildet eine kompakte U-Wendeltreppe ohne Podest', () => {
   expect(stair.width * stair.depth).toBeCloseTo(3.8)

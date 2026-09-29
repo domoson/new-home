@@ -7,7 +7,7 @@ import { createRaffstore } from './raffstoreScene'
 describe('Raffstoredetails', () => {
   it('stacks lamellas inside the housing and lowers the rail to the sill', () => {
     const floor = makeFloor('OG'), material = new THREE.MeshStandardMaterial()
-    const blind = raffstores(floor).find(blind => blind.id === 'OG-play-window')!
+    const blind = raffstores(floor).find(blind => blind.id === 'OG-east-north')!
     const rendered = createRaffstore(blind, floor.elevation, material, material)
     const blades = rendered.group.getObjectByName(`${blind.id}-raffstore-lamellas`)!
     const raised = new THREE.Box3().setFromObject(blades)
@@ -39,7 +39,8 @@ describe('Raffstoredetails', () => {
   it('uses one south curtain over the slider and fixed pane with a shared corner guide', () => {
     const blinds = raffstores(makeFloor('EG'))
     expect(blinds).toHaveLength(6)
-    expect(raffstores(makeFloor('OG'))).toHaveLength(6)
+    expect(blinds.some(blind => blind.id === 'EG-garden-door-east')).toBe(false)
+    expect(raffstores(makeFloor('OG'))).toHaveLength(5)
     expect(raffstores(makeFloor('DG'))).toHaveLength(2)
     expect(raffstores(makeFloor('KG'))).toEqual([])
     expect(blinds.some(blind => blind.id.includes('entrance'))).toBe(false)

@@ -7,7 +7,7 @@ export function raffstores(floor: Floor): Raffstore[] {
   if (floor.id === 'KG') return []
   return floor.walls.filter(wall => ['north', 'east', 'south'].includes(wall.id)).flatMap(wall => {
     const terrace = wall.openings.find(opening => opening.id === 'terrace')
-    return wall.openings.filter(opening => opening.kind === 'window' && opening.id !== 'entrance-fixed' && !(terrace && opening.id === 'garden-fixed') || opening.id === 'terrace').map(opening => {
+    return wall.openings.filter(opening => opening.kind === 'window' && opening.id !== 'entrance-fixed' && !(terrace && opening.id === 'garden-fixed') || opening.id === 'terrace' || opening.id.startsWith('garden-door')).map(opening => {
       const companion = opening.id === 'terrace' ? wall.openings.find(other => other.id === 'garden-fixed') : undefined
       const corner = !!(opening.cornerGlazing || companion?.cornerGlazing)
       const north = wall.id === 'north'

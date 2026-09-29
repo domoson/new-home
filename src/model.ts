@@ -1,6 +1,7 @@
 import { winderCore, winderSteps } from './winderStair'
 import type { StairPoint } from './winderStair'
 import { buildProviderFloor } from './providerPlan'
+import { kitchenModules } from './kitchenStorage'
 
 export type FloorId = 'KG' | 'EG' | 'OG' | 'DG'
 export type Rect = { x: number; z: number; width: number; depth: number; footprint?: StairPoint[] }
@@ -22,6 +23,8 @@ export const storeyRise = (id: FloorId) => id === 'KG' ? elevations.EG - elevati
 export const rect = (x: number, z: number, width: number, depth: number): Rect => ({ x, z, width, depth })
 export function furnitureVolumes(item: Furniture): (Rect & { bottom: number; height: number })[] {
   const { x, z, width, depth, height } = item
+  const modules = kitchenModules(item)
+  if (modules.length) return [...modules.map(module => ({ ...module, bottom: 0, height: height - .03 })), { ...rect(x, z, width, depth), bottom: height - .03, height: .03 }]
   if (item.niche) {
     const { bottom, height: nicheHeight } = item.niche
     return [
@@ -136,13 +139,13 @@ export function stairGuards(rise: number): Solid[] {
 }
 export const format = (value: number) => value.toLocaleString('de-DE', { minimumFractionDigits: 1, maximumFractionDigits: 1 })
 export function stairHandrails(rise: number): { from: [number, number, number]; to: [number, number, number] }[] {
-  const wall = stairInnerWall(rise)[0]
   const point = ([east, south]: StairPoint, height: number): [number, number, number] => [
-    east - (Math.abs(east - wall.x) < 1e-8 ? .06 : 0),
+    east + (Math.abs(east - stair.x) < 1e-8 ? .06 : 0),
     height + .97,
-    south + (Math.abs(south - wall.z) < 1e-8 ? -.06 : Math.abs(south - wall.z - wall.depth) < 1e-8 ? .06 : 0),
+    south + (Math.abs(south - stair.z) < 1e-8 ? .06 : Math.abs(south - stair.end) < 1e-8 ? -.06 : 0),
   ]
   return winderSteps(rise).map(step => {
-    return { from: point(step.inner[0], step.height), to: point(step.inner[1], step.height - rise / stair.risers) }
+    const outer = step.id.startsWith('winder') ? [step.footprint[1], step.footprint[2]] : step.inner.map(([east, south]): StairPoint => [east, south < stair.z + stair.depth / 2 ? stair.z : stair.end])
+    return { from: point(outer[0], step.height), to: point(outer[1], step.height - rise / stair.risers) }
   })
 }

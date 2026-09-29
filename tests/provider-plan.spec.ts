@@ -1,4 +1,212 @@
 import { expect, test } from '@playwright/test'
+
+test('Kinderzimmer haben Fensterarbeitsplaetze mit korrekt ausgerichteten Monitoren', async ({ page }, testInfo) => {
+  await page.goto('/')
+  const result = await page.evaluate(async () => {
+    const THREE = await import('/node_modules/.vite/deps/three.js')
+    const { OBB } = await import('/node_modules/three/examples/jsm/math/OBB.js')
+    const { buildScene } = await import('/src/scene.ts')
+    const { makeFloor, elevations } = await import('/src/model.ts')
+    const { initializePhysics, createWalker } = await import('/src/walk.ts')
+    const model = buildScene('OG', true, true, true)
+    model.group.updateMatrixWorld(true)
+    const equipment = [], monitors = []
+    model.group.traverse(object => { if (object instanceof THREE.Mesh && /-(monitor-|keyboard)/.test(object.name)) equipment.push(object) })
+    for (const [floorId, deskId, chairId] of [['OG', 'desk-north', 'desk-chair-north'], ['OG', 'desk-south', 'desk-chair-south'], ['DG', 'office-desk', 'office-chair']]) {
+      const floor = makeFloor(floorId), desk = floor.furniture.find(item => item.id === deskId), chair = floor.furniture.find(item => item.id === chairId)
+      const screen = model.group.getObjectByName(`${deskId}-monitor-screen`), frame = model.group.getObjectByName(`${deskId}-monitor-frame`)
+      const bounds = new THREE.Box3().setFromObject(frame), size = bounds.getSize(new THREE.Vector3()), center = screen.getWorldPosition(new THREE.Vector3())
+      const towardChair = new THREE.Vector3(chair.x + chair.width / 2 - center.x, 0, chair.z + chair.depth / 2 - center.z).normalize()
+      const facing = new THREE.Vector3(0, 0, 1).applyQuaternion(screen.getWorldQuaternion(new THREE.Quaternion()))
+      monitors.push({ id: deskId, facing: facing.dot(towardChair), width: size.x, thickness: size.z, centered: bounds.getCenter(new THREE.Vector3()).x - desk.x - desk.width / 2, top: bounds.max.y - floor.elevation })
+    }
+    const collisions = []
+    for (const door of model.doors.filter(door => door.kind === 'window')) for (let step = 0; step <= 20; step++) {
+      model.setOpening(door.id, step / 20)
+      door.object.geometry.computeBoundingBox()
+      const moving = new OBB().fromBox3(door.object.geometry.boundingBox).applyMatrix4(door.object.matrixWorld)
+      for (const object of equipment) if (moving.intersectsOBB(new OBB().fromBox3(new THREE.Box3().setFromObject(object)))) collisions.push(`${door.id}/${object.name}/${step}`)
+    }
+    for (const door of model.doors) model.setOpening(door.id, door.kind === 'door' ? 1 : 0)
+    await initializePhysics()
+    const camera = new THREE.PerspectiveCamera(), walker = createWalker(model, camera, new THREE.Vector3(2.85, elevations.OG, 4.4))
+    const routes = []
+    for (const points of [[[2.85, 4.4], [4.6, 4.4], [4.6, 1.9], [5.4, 1.9]], [[4.6, 4.4], [4.9, 4.8], [5.1, 6.1]], [[2.85, 8.5], [3.95, 8.5], [5.4, 8.5]]]) {
+      walker.teleport(new THREE.Vector3(points[0][0], elevations.OG, points[0][1]))
+      for (const [east, south] of points.slice(1)) {
+        for (let step = 0; step < 300 && Math.hypot(walker.position().x - east, walker.position().z - south) > .07; step++) {
+          camera.lookAt(east, camera.position.y, south); walker.keys.add('KeyW'); walker.tick(); walker.keys.clear()
+        }
+        routes.push(Math.hypot(walker.position().x - east, walker.position().z - south) < .1)
+      }
+    }
+    walker.dispose(); model.dispose()
+    const preview = buildScene('OG', false, false, true)
+    const scene = new THREE.Scene(); scene.background = new THREE.Color('#e7ebed'); scene.add(preview.group)
+    scene.add(new THREE.HemisphereLight('#ffffff', '#9eacb1', 2.5))
+    const light = new THREE.DirectionalLight('#ffffff', 3); light.position.set(3, 10, 6); scene.add(light)
+    const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true }); renderer.setSize(innerWidth, innerHeight)
+    renderer.domElement.id = 'child-desk-preview'; renderer.domElement.style.cssText = 'position:fixed;inset:0;z-index:9999'; document.body.append(renderer.domElement)
+    camera.fov = 65; camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix()
+    window.__childDeskPreview = { render(north) { camera.position.set(4.7, elevations.OG + 2.4, north ? 3.1 : 7.8); camera.lookAt(5.4, elevations.OG + .85, north ? .7 : 9.85); renderer.render(scene, camera) }, dispose() { preview.dispose(); renderer.dispose(); renderer.domElement.remove() } }
+    return { monitors, collisions, routes }
+  })
+  for (const monitor of result.monitors) {
+    expect(monitor.facing, monitor.id).toBeGreaterThan(.9)
+    expect(monitor.width).toBeCloseTo(.56)
+    expect(monitor.thickness).toBeCloseTo(.045)
+    expect(monitor.centered).toBeCloseTo(0)
+    expect(monitor.top).toBeCloseTo(1.17)
+  }
+  expect(result.collisions).toEqual([])
+  expect(result.routes.every(Boolean)).toBe(true)
+  for (const north of [true, false]) {
+    await page.evaluate(north => window.__childDeskPreview.render(north), north)
+    const image = PNG.sync.read(await page.locator('#child-desk-preview').screenshot({ path: `test-results/${testInfo.project.name}-child-desk-${north ? 'north' : 'south'}.png` }))
+    const colors = new Set<string>()
+    for (let offset = 0; offset < image.data.length; offset += 16) colors.add(`${image.data[offset] >> 4},${image.data[offset + 1] >> 4},${image.data[offset + 2] >> 4}`)
+    expect(colors.size).toBeGreaterThan(25)
+  }
+  await page.evaluate(() => { window.__childDeskPreview.dispose(); delete window.__childDeskPreview })
+})
+
+test('Duschtueren oeffnen nach innen und EG-Armaturen sitzen an der Rueckwand', async ({ page }, testInfo) => {
+  await page.goto('/')
+  for (const floorId of ['EG', 'OG']) {
+    const result = await page.evaluate(async floorId => {
+      const THREE = await import('/node_modules/.vite/deps/three.js')
+      const { buildScene } = await import('/src/scene.ts')
+      const { makeFloor, wallSolids, furnitureVolumes } = await import('/src/model.ts')
+      const { initializePhysics, createWalker } = await import('/src/walk.ts')
+      const floor = makeFloor(floorId), model = buildScene(floorId, false, false, true)
+      const showerId = floorId === 'EG' ? 'guest-shower' : 'bath-shower'
+      const shower = floor.furniture.find(item => item.id === showerId)
+      const door = model.doors.find(door => door.id === `${floorId}-shower`)
+      const bounds = object => new THREE.Box3().setFromObject(object)
+      const obstacles = [...floor.walls.flatMap(wall => wallSolids(wall, floor.height)), ...floor.furniture.filter(item => item.id !== showerId).flatMap(furnitureVolumes)].map(solid => new THREE.Box3(new THREE.Vector3(solid.x, floor.elevation + solid.bottom, solid.z), new THREE.Vector3(solid.x + solid.width, floor.elevation + solid.bottom + solid.height, solid.z + solid.depth)))
+      const control = bounds(model.group.getObjectByName(`${showerId}-concealed-control`))
+      const arm = floorId === 'EG' ? bounds(model.group.getObjectByName(`${showerId}-rain-arm`)) : null
+      const backWall = floor.walls.find(wall => wall.id === (floorId === 'EG' ? 'stair-north' : 'bath-installation'))
+      const fittingsOnWall = floorId === 'EG' ? control.min.z < backWall.z && control.max.z > backWall.z && arm.max.z > backWall.z : control.min.z >= backWall.z + backWall.depth && control.min.z < backWall.z + backWall.depth + .05
+      const fittingBoxes = [control, bounds(model.group.getObjectByName(`${showerId}-rain-head`)), ...(arm ? [arm] : [])]
+      const sweepClear = []
+      for (let step = 0; step <= 20; step++) {
+        model.setOpening(door.id, step / 20)
+        const moving = bounds(door.pivot)
+        sweepClear.push([...obstacles, ...fittingBoxes].every(obstacle => !moving.intersectsBox(obstacle)))
+      }
+      const open = bounds(door.object)
+      model.setOpening(door.id, 0)
+      const closed = bounds(door.object)
+      const inward = floorId === 'EG' ? open.max.z > closed.max.z + .7 : open.min.x < closed.min.x - .7
+      const trayVolume = new THREE.Box3(new THREE.Vector3(shower.x, floor.elevation + .1, shower.z), new THREE.Vector3(shower.x + shower.width, floor.elevation + 1.9, shower.z + shower.depth))
+      let staticGlass = 0
+      model.group.traverse(object => {
+        if (!(object instanceof THREE.Mesh) || door.pivot.getObjectById(object.id)) return
+        const materials = Array.isArray(object.material) ? object.material : [object.material]
+        if (materials.some(material => material.transparent && material.opacity < .8) && bounds(object).intersectsBox(trayVolume)) staticGlass++
+      })
+      await initializePhysics()
+      const camera = new THREE.PerspectiveCamera(70, innerWidth / innerHeight, .05, 100)
+      const start = floorId === 'EG' ? [.8, 1.65] : [2.1, 2.85]
+      const target = floorId === 'EG' ? [.8, 2.65] : [.8, 2.85]
+      const walker = createWalker(model, camera, new THREE.Vector3(start[0], floor.elevation, start[1]))
+      const canEnter = () => {
+        walker.teleport(new THREE.Vector3(start[0], floor.elevation, start[1]))
+        for (let step = 0; step < 150; step++) {
+          if (Math.hypot(walker.position().x - target[0], walker.position().z - target[1]) < .08) return true
+          camera.lookAt(target[0], camera.position.y, target[1]); walker.keys.add('KeyW'); walker.tick(); walker.keys.clear()
+        }
+        return false
+      }
+      const closedBlocks = !canEnter()
+      model.setOpening(door.id, 1)
+      const openPasses = canEnter()
+      walker.dispose()
+      const scene = new THREE.Scene(); scene.background = new THREE.Color('#e7ebed'); scene.add(model.group)
+      scene.add(new THREE.HemisphereLight('#ffffff', '#9eacb1', 2.5))
+      const light = new THREE.DirectionalLight('#ffffff', 3); light.position.set(3, 8, 1); scene.add(light)
+      const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true }); renderer.setSize(innerWidth, innerHeight)
+      renderer.domElement.id = 'shower-preview'; renderer.domElement.style.cssText = 'position:fixed;inset:0;z-index:9999'; document.body.append(renderer.domElement)
+      camera.position.set(floorId === 'EG' ? .9 : 3.4, floor.elevation + 2.4, floorId === 'EG' ? .7 : 3); camera.lookAt(.85, floor.elevation + 1.05, 2.7)
+      window.__showerPreview = { render(amount) { model.setOpening(door.id, amount); renderer.render(scene, camera) }, dispose() { model.dispose(); renderer.dispose(); renderer.domElement.remove() } }
+      window.__showerPreview.render(0)
+      return { inward, fittingsOnWall, sweepClear, staticGlass, closedBlocks, openPasses, glass: door.object.material.transparent }
+    }, floorId)
+    expect(result.inward).toBe(true)
+    expect(result.fittingsOnWall).toBe(true)
+    expect(result.sweepClear.every(Boolean)).toBe(true)
+    expect(result.staticGlass).toBe(0)
+    expect(result.closedBlocks).toBe(true)
+    expect(result.openPasses).toBe(true)
+    expect(result.glass).toBe(true)
+    const closedImage = PNG.sync.read(await page.locator('#shower-preview').screenshot({ path: `test-results/${testInfo.project.name}-${floorId}-shower-closed.png` }))
+    await page.evaluate(() => window.__showerPreview.render(1))
+    const openImage = PNG.sync.read(await page.locator('#shower-preview').screenshot({ path: `test-results/${testInfo.project.name}-${floorId}-shower-open.png` }))
+    const colors = new Set<string>(); let changed = 0
+    for (let offset = 0; offset < openImage.data.length; offset += 16) {
+      colors.add(`${openImage.data[offset] >> 4},${openImage.data[offset + 1] >> 4},${openImage.data[offset + 2] >> 4}`)
+      if (Math.abs(openImage.data[offset] - closedImage.data[offset]) + Math.abs(openImage.data[offset + 1] - closedImage.data[offset + 1]) + Math.abs(openImage.data[offset + 2] - closedImage.data[offset + 2]) > 30) changed++
+    }
+    expect(colors.size).toBeGreaterThan(25)
+    expect(changed).toBeGreaterThan(200)
+    await page.evaluate(() => { window.__showerPreview.dispose(); delete window.__showerPreview })
+  }
+})
+
+test('Rundgang bleibt auch weit ausserhalb des Grundstuecks auf dem Boden', async ({ page }) => {
+  await page.goto('/')
+  const result = await page.evaluate(async () => {
+    const THREE = await import('/node_modules/.vite/deps/three.js')
+    const { buildScene } = await import('/src/scene.ts')
+    const { construction, elevations, lightWells } = await import('/src/model.ts')
+    const { siteBoundary } = await import('/src/context.ts')
+    const { initializePhysics, createWalker } = await import('/src/walk.ts')
+    const model = buildScene('EG', true, true, true)
+    await initializePhysics()
+    const camera = new THREE.PerspectiveCamera()
+    const walker = createWalker(model, camera, new THREE.Vector3(3, 0, 6))
+    const east = Math.max(...siteBoundary.map(([east]: number[]) => east))
+    const west = Math.min(...siteBoundary.map(([east]: number[]) => east))
+    const north = Math.min(...siteBoundary.map(([, south]: number[]) => south))
+    const south = Math.max(...siteBoundary.map(([, south]: number[]) => south))
+    const ground = []
+    for (const [eastward, southward, directionX, directionZ] of [[east + 2, 5, 1, 0], [west - 2, 5, -1, 0], [0, north - 2, 0, -1], [0, south + 2, 0, 1], [500, 500, 0, 1], [-500, -500, 0, 1], [9000, -9000, 0, 1]]) {
+      walker.teleport(new THREE.Vector3(eastward, construction.terrain, southward))
+      camera.lookAt(eastward + directionX * 10, camera.position.y, southward + directionZ * 10)
+      walker.keys.add('KeyW')
+      for (let step = 0; step < 180; step++) walker.tick()
+      walker.keys.clear()
+      ground.push({ height: walker.position().y - .9, distance: (walker.position().x - eastward) * directionX + (walker.position().z - southward) * directionZ })
+    }
+    walker.teleport(new THREE.Vector3(0, construction.terrain, south - 1))
+    const boundaryHeights = []
+    for (const direction of [1, -1]) {
+      camera.lookAt(0, camera.position.y, walker.position().z + direction * 10)
+      walker.keys.add('KeyW')
+      for (let step = 0; step < 120; step++) { walker.tick(); boundaryHeights.push(walker.position().y - .9) }
+      walker.keys.clear()
+    }
+    const boundaryReturn = walker.position().z
+    walker.teleport(new THREE.Vector3(3, elevations.KG, 6))
+    for (let step = 0; step < 90; step++) walker.tick()
+    const basement = walker.position().y - .9
+    const well = lightWells[0]
+    walker.teleport(new THREE.Vector3(well.x + well.width / 2, -1, well.z + well.depth / 2))
+    for (let step = 0; step < 90; step++) walker.tick()
+    const lightWell = walker.position().y - .9
+    walker.dispose(); model.dispose()
+    return { ground, terrain: construction.terrain, boundaryHeights, boundaryReturn, boundaryStart: south - 1, basement, basementFloor: elevations.KG, lightWell }
+  })
+  for (const point of result.ground) {
+    expect(point.height).toBeCloseTo(result.terrain, 1)
+    expect(point.distance, JSON.stringify(result)).toBeGreaterThan(7)
+  }
+  for (const height of result.boundaryHeights) expect(height).toBeCloseTo(result.terrain, 1)
+  expect(result.boundaryReturn).toBeCloseTo(result.boundaryStart, 1)
+  expect(result.basement).toBeCloseTo(result.basementFloor, 1)
+  expect(result.lightWell).toBeLessThan(-1)
+})
 import { PNG } from 'pngjs'
 
 test('Eine gerade Treppenmittelwand verbindet die Laeufe ohne rundliche Doppelwangen', async ({ page }, testInfo) => {
@@ -28,6 +236,10 @@ test('Eine gerade Treppenmittelwand verbindet die Laeufe ohne rundliche Doppelwa
     })
     const guards = model.group.children.filter(object => object.name === 'stair-center-wall-guard').length
     const oldWalls = model.group.children.filter(object => object.name.startsWith('stair-inner-wall-') || object.name === 'stair-eye-guard').length
+    const handrails = model.group.children.filter(object => object.name === 'stair-handrail').map(object => {
+      const bounds = new THREE.Box3().setFromObject(object), center = bounds.getCenter(new THREE.Vector3())
+      return { outer: Math.min(Math.abs(center.x - .36), Math.abs(center.z - 3.56), Math.abs(center.z - 5.44)) < .001, min: bounds.min.toArray(), max: bounds.max.toArray() }
+    })
     const camera = new THREE.PerspectiveCamera(), walker = createWalker(model, camera, new THREE.Vector3(2.8, 0, 5.075))
     const routes = []
     for (const id of ['KG', 'EG', 'OG']) for (const reverse of [false, true]) {
@@ -65,11 +277,18 @@ test('Eine gerade Treppenmittelwand verbindet die Laeufe ohne rundliche Doppelwa
     }
     render(false)
     Object.assign(window, { centerWallPreview: { render, dispose() { preview.dispose(); renderer.dispose(); renderer.domElement.remove() } } })
-    return { walls, guards, oldWalls, routes, wallBlocks }
+    return { walls, guards, oldWalls, handrails, routes, wallBlocks }
   })
   expect(result.walls).toHaveLength(3)
   expect(result.guards).toBe(1)
   expect(result.oldWalls).toBe(0)
+  expect(result.handrails).toHaveLength(42)
+  for (const rail of result.handrails) {
+    expect(rail.outer).toBe(true)
+    expect(rail.min[0]).toBeGreaterThan(.3)
+    expect(rail.min[2]).toBeGreaterThan(3.5)
+    expect(rail.max[2]).toBeLessThan(5.5)
+  }
   expect(result.wallBlocks).toBe(true)
   for (const [index, wall] of result.walls.entries()) {
     expect(wall.min[0]).toBeCloseTo(1.2)
@@ -254,10 +473,10 @@ test('Raffstores fahren vor der Verglasung und die OG-Raumrevision bleibt bedien
   await page.goto('/')
   await page.getByRole('button', { name: 'EG', exact: true }).click()
   await expect(page.locator('[data-furniture="coffee-counter"]')).toHaveCount(0)
-  await expect(page.locator('[data-furniture="peninsula"]')).toHaveAttribute('transform', 'translate(4 4.96)')
+  await expect(page.locator('[data-furniture="peninsula"]')).toHaveAttribute('transform', 'translate(3.95 4.96)')
   await page.screenshot({ path: `test-results/${testInfo.project.name}-revised-eg-plan.png` })
   await page.getByRole('button', { name: 'OG', exact: true }).click()
-  await expect(page.locator('[data-raffstore]')).toHaveCount(6)
+  await expect(page.locator('[data-raffstore]')).toHaveCount(5)
   await expect(page.locator('svg.floor-plan')).not.toContainText('Spielzimmer')
   await expect(page.locator('[data-furniture="play-table"]')).toHaveCount(0)
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
@@ -297,12 +516,16 @@ test('Raffstores fahren vor der Verglasung und die OG-Raumrevision bleibt bedien
       return true
     }
     const storageRoute = route([[2.85, 6.2], [1.25, 6.2]])
-    const bedroomRoute = route([[2.85, 6.2], [2.85, 8.5], [3.95, 8.5], [3.95, 9.25], [5.5, 9.25]])
+    const bedroomRoute = route([[2.85, 6.2], [2.85, 8.5], [3.95, 8.5], [5.4, 8.5]])
     const northRoute = route([[2.85, 4.4], [4.6, 4.4], [5.1, 4.4], [5.1, 6.7], [5.1, 4.4], [4.6, 4.4], [4.6, 2.8]])
     const tubRoute = route([[2.85, 3.9], [2.6, 2.8], [2.6, .7]])
     const kitchenRoute = route([[2.8, 3.9], [4.8, 3.9], [4.8, 4.55], [3.65, 4.55], [3.65, 6.7]], elevations.EG)
     const showerRoute = route([[2.85, 3.9], [2.85, 2.95], [2.25, 2.95], [.8, 2.95]])
-    const toiletRoute = route([[2.6, 2.95], [2.6, .68], [.9, .68]])
+    const toiletRouteOpen = route([[2.6, 2.95], [2.6, .68], [1.05, .68]])
+    const bathWindow = model.doors.find((door: { id: string }) => door.id.startsWith('OG-bath-window'))!
+    model.setOpening(bathWindow.id, 0)
+    const toiletRoute = route([[2.6, 2.95], [2.6, .68], [1.05, .68]])
+    model.setOpening(bathWindow.id, 1)
     const upper = makeFloor('OG')
     const showerStem = upper.walls.find(wall => wall.id === 'bath-installation')
     const showerHead = bounds('bath-shower-rain-head'), showerControl = bounds('bath-shower-concealed-control')
@@ -323,9 +546,9 @@ test('Raffstores fahren vor der Verglasung und die OG-Raumrevision bleibt bedien
     const showerClearWidth = openGlass.min.z - upper.walls.find(wall => wall.id === 'bath-screen').z - upper.walls.find(wall => wall.id === 'bath-screen').depth
     const areas = Object.fromEntries(upper.rooms.map(room => [room.id, roomArea(room, 'OG').floor]))
     walker.dispose(); model.dispose()
-    return { count: groups.length, curtainStates, cornerClear: !east.intersectsBox(south), raised, storageRoute, bedroomRoute, northRoute, tubRoute, kitchenRoute, showerRoute, toiletRoute, areas, showerSweepClear, closedBlocksShower, showerClearWidth, showerFittingsAtTWall, showerTop: closedGlass.max.y - elevations.OG, showerGlass: showerDoor.object.material.transparent }
+    return { count: groups.length, curtainStates, cornerClear: !east.intersectsBox(south), raised, storageRoute, bedroomRoute, northRoute, tubRoute, kitchenRoute, showerRoute, toiletRouteOpen, toiletRoute, areas, showerSweepClear, closedBlocksShower, showerClearWidth, showerFittingsAtTWall, showerTop: closedGlass.max.y - elevations.OG, showerGlass: showerDoor.object.material.transparent }
   })
-  expect(geometry.count).toBe(28)
+  expect(geometry.count).toBe(26)
   expect(geometry.curtainStates.every(state => state.extension === 1 && state.tilt === 75)).toBe(true)
   expect(geometry.cornerClear).toBe(true)
   expect(geometry.raised.every(Boolean)).toBe(true)
@@ -335,6 +558,7 @@ test('Raffstores fahren vor der Verglasung und die OG-Raumrevision bleibt bedien
   expect(geometry.tubRoute).toBe(true)
   expect(geometry.kitchenRoute).toBe(true)
   expect(geometry.showerRoute).toBe(true)
+  expect(geometry.toiletRouteOpen).toBe(false)
   expect(geometry.toiletRoute).toBe(true)
   expect(geometry.showerSweepClear.every(Boolean)).toBe(true)
   expect(geometry.closedBlocksShower).toBe(true)
@@ -466,7 +690,7 @@ test('Detailkorrekturen haben echte freie Volumen, Zargen und einen schließende
   expect(result.closed).toBeGreaterThan(2.5)
   expect(result.opened).toBeLessThan(1.86)
   expect(result.twoPane).toBe(true)
-  expect(result.transoms).toEqual(['EG-garden-west-transom-1', 'EG-garden-west-transom-1'])
+  expect(result.transoms).toEqual(['EG-garden-west-transom-0', 'EG-garden-west-transom-0'])
 })
 
 test('Gartenschiebeflügel bleibt innerhalb der 2,80 Meter breiten Verglasung mit Eckkopplung', async ({ page }) => {
@@ -499,7 +723,7 @@ test('Gartenschiebeflügel bleibt innerhalb der 2,80 Meter breiten Verglasung mi
   expect(result.fixed).toBe(true)
   expect(result.cornerFixed).toBe(true)
   expect(result.coupled).toBe(true)
-  expect(result.cornerTop).toBeCloseTo(2.375 - .05)
+  expect(result.cornerTop).toBeCloseTo(2.125 - .05)
   expect(result.width).toBe(1.25)
   for (const bounds of result.positions) {
     expect(bounds.min).toBeGreaterThanOrEqual(result.apertureStart - .01)
@@ -511,6 +735,83 @@ test('Gartenschiebeflügel bleibt innerhalb der 2,80 Meter breiten Verglasung mi
   expect(result.positions[2].max).toBeCloseTo(result.apertureEnd - .3)
   expect(result.apertureEnd - result.apertureStart).toBeCloseTo(2.8)
   expect(result.apertureEnd).toBeCloseTo(result.innerEast)
+})
+
+test('Fensterrevision zeigt stimmige Fassaden und eine geschlossene seitliche Terrassenwand', async ({ page }, testInfo) => {
+  const errors: string[] = []
+  page.on('pageerror', error => errors.push(error.message))
+  await page.goto('/')
+  await expect(page.locator('[data-opening="garden-door-east"]')).toHaveCount(0)
+  await expect(page.locator('[data-raffstore]')).toHaveCount(6)
+  for (const floor of ['EG', 'OG', 'DG']) {
+    await page.getByRole('button', { name: floor, exact: true }).click()
+    if (floor === 'OG') {
+      await expect(page.locator('[data-opening="play-window"]')).toHaveCount(0)
+      await expect(page.locator('[data-opening="east-north"]')).toHaveCount(1)
+      await expect(page.locator('[data-raffstore]')).toHaveCount(5)
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+    await page.screenshot({ path: `test-results/${testInfo.project.name}-window-revision-${floor}-plan.png` })
+  }
+  const result = await page.evaluate(async () => {
+    const THREE = await import('/node_modules/.vite/deps/three.js')
+    const { buildScene } = await import('/src/scene.ts')
+    const { initializePhysics, createWalker } = await import('/src/walk.ts')
+    const model = buildScene('EG', true, true, true)
+    const noDoor = !model.doors.some(door => door.id.includes('garden-door-east'))
+    const noBlind = !model.group.getObjectByName('EG-garden-door-east-raffstore-lamellas')
+    await initializePhysics()
+    const camera = new THREE.PerspectiveCamera(), walker = createWalker(model, camera, new THREE.Vector3(5.7, 0, 6.85))
+    for (let step = 0; step < 180; step++) {
+      camera.lookAt(7.4, camera.position.y, 6.85); walker.keys.add('KeyW'); walker.tick(); walker.keys.clear()
+    }
+    const stoppedAt = walker.position().x
+    walker.dispose()
+    for (const name of ['house-west', 'neighborhood', 'landscaping']) model.group.getObjectByName(name)!.visible = false
+    const scene = new THREE.Scene(); scene.background = new THREE.Color('#e7ebed'); scene.add(model.group)
+    scene.add(new THREE.HemisphereLight('#ffffff', '#829181', 2))
+    const sun = new THREE.DirectionalLight('#fff5e6', 2); sun.position.set(12, 20, 15); scene.add(sun)
+    const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true })
+    const width = Math.min(900, innerWidth - 16), height = Math.min(720, innerHeight - 16), aspect = width / height
+    renderer.setSize(width, height); renderer.setPixelRatio(1); renderer.toneMapping = THREE.ACESFilmicToneMapping
+    renderer.domElement.id = 'window-revision-preview'; renderer.domElement.style.cssText = 'position:fixed;left:8px;top:8px;z-index:9999'; document.body.append(renderer.domElement)
+    const halfWidth = Math.max(6.4, 6.4 * aspect), halfHeight = halfWidth / aspect
+    const viewCamera = new THREE.OrthographicCamera(-halfWidth, halfWidth, halfHeight, -halfHeight, .05, 100)
+    const render = (view: string) => {
+      if (view === 'east') { viewCamera.position.set(24, 5.1, 5.25); viewCamera.lookAt(6.6, 5.1, 5.25) }
+      else if (view === 'south') { viewCamera.position.set(3.45, 5.1, 28); viewCamera.lookAt(3.45, 5.1, 5.25) }
+      else if (view === 'north') { viewCamera.position.set(3.45, 5.1, -20); viewCamera.lookAt(3.45, 5.1, 5.25) }
+      else { viewCamera.position.set(20, 12, 22); viewCamera.lookAt(3.45, 4.8, 5.25) }
+      renderer.render(scene, viewCamera)
+    }
+    render('east')
+    Object.assign(window, { windowRevision: { render, dispose() { model.dispose(); renderer.dispose(); renderer.domElement.remove() } } })
+    return { noDoor, noBlind, stoppedAt }
+  })
+  expect(result.noDoor).toBe(true)
+  expect(result.noBlind).toBe(true)
+  expect(result.stoppedAt).toBeGreaterThan(6.2)
+  expect(result.stoppedAt).toBeLessThan(6.4)
+  const canvas = page.locator('#window-revision-preview')
+  let previous: PNG | undefined
+  for (const view of ['east', 'south', 'north', 'rotated']) {
+    await page.evaluate(view => (window as any).windowRevision.render(view), view)
+    const image = PNG.sync.read(await canvas.screenshot({ path: `test-results/${testInfo.project.name}-window-revision-${view}.png` }))
+    const colors = new Set<string>()
+    for (let offset = 0; offset < image.data.length; offset += 32) colors.add(image.data.subarray(offset, offset + 3).toString('hex'))
+    expect(colors.size).toBeGreaterThan(60)
+    let foreground = 0
+    for (let offset = 0; offset < image.data.length; offset += 4) if (Math.abs(image.data[offset] - image.data[0]) + Math.abs(image.data[offset + 1] - image.data[1]) + Math.abs(image.data[offset + 2] - image.data[2]) > 30) foreground++
+    expect(foreground / (image.width * image.height)).toBeGreaterThan(.08)
+    if (previous) {
+      let changed = 0
+      for (let offset = 0; offset < image.data.length; offset += 4) if (Math.abs(image.data[offset] - previous.data[offset]) > 8) changed++
+      expect(changed).toBeGreaterThan(200)
+    }
+    previous = image
+  }
+  await page.evaluate(() => { (window as any).windowRevision.dispose(); delete (window as any).windowRevision })
+  expect(errors).toEqual([])
 })
 
 test('Fensterflügel öffnen einzeln nach innen und lassen Festfelder und Unterlichter stehen', async ({ page }) => {

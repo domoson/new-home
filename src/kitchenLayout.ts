@@ -13,7 +13,7 @@ export function kitchenFurniture(ceiling: number): Furniture[] {
   return [
     ...['kitchen-tall-storage-1', 'kitchen-tall-storage-2', 'kitchen-tall', 'fridge', 'kitchen-tall-storage-3'].map((id, index) => ({ ...item(id, 'cabinet', 3.6 + index * .6, 2.5, .6, .6, ceiling), ...(index === 4 ? { niche: { bottom: .92, height: .6 } } : {}) })),
     item('kitchen', 'counter', 6, 3.1, .6, 1.86, .92),
-    { ...item('peninsula', 'counter', 4, 4.96, 2.6, 1, .92), baseInset: { west: .35, south: .4 } },
+    item('peninsula', 'counter', 3.95, 4.96, 2.65, 1, .92),
     { ...item('kitchen-sink', 'sink', 6.03, 3.7, .54, .8, .92), angle: Math.PI / 2 },
     item('induction', 'hob', 4.98, 5, .8, .52, .025, .92),
     item('espresso', 'espresso', 6.07, 4.54, .38, .4, .4, .92),

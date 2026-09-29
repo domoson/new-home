@@ -9,8 +9,12 @@ export function kitchenModules(item: Furniture): KitchenModule[] {
     { id: 'south-storage', x: x + .9, z, width: width - .9, depth: item.depth, front: 'north', use: 'cupboard' },
   ]
   if (item.id === 'peninsula') return [
-    { id: 'prep-drawers', x: x + .35, z, width: .6, depth: .6, front: 'north', use: 'drawers' },
-    { id: 'hob-drawers', x: x + .95, z, width: .85, depth: .6, front: 'north', use: 'drawers' },
+    { id: 'west-storage-north', x, z, width: .4, depth: .5, front: 'west', use: 'cupboard' },
+    { id: 'west-storage-south', x, z: z + .5, width: .4, depth: item.depth - .5, front: 'west', use: 'cupboard' },
+    { id: 'prep-drawers', x: x + .4, z, width: .6, depth: .6, front: 'north', use: 'drawers' },
+    { id: 'hob-drawers', x: x + 1, z, width: 1.05, depth: .6, front: 'north', use: 'drawers' },
+    { id: 'rear-storage', x: x + 1.6, z: z + .6, width: .45, depth: item.depth - .6, front: 'south', use: 'cupboard' },
+    { id: 'corner-storage', x: x + 2.05, z, width: width - 2.05, depth: item.depth, front: 'south', use: 'cupboard' },
   ]
   if (item.id === 'kitchen') return [
     { id: 'dishwasher', x, z, width, depth: .6, front: 'west', use: 'dishwasher' },
