@@ -499,7 +499,7 @@ test('Gartenschiebeflügel bleibt innerhalb der 2,80 Meter breiten Verglasung mi
   expect(result.fixed).toBe(true)
   expect(result.cornerFixed).toBe(true)
   expect(result.coupled).toBe(true)
-  expect(result.cornerTop).toBeGreaterThan(2.4)
+  expect(result.cornerTop).toBeCloseTo(2.375 - .05)
   expect(result.width).toBe(1.25)
   for (const bounds of result.positions) {
     expect(bounds.min).toBeGreaterThanOrEqual(result.apertureStart - .01)
@@ -547,7 +547,7 @@ test('Fensterflügel öffnen einzeln nach innen und lassen Festfelder und Unterl
           }
         }
         const opened = door.pivot.localToWorld(door.center.clone())
-        checks.push({ id: door.id, inward: wall.id === 'north' ? opened.z > closed.z : wall.id === 'south' ? opened.z < closed.z : opened.x < closed.x, width: door.size.x, expectedWidth: panel.width - 2 * windowGap })
+        checks.push({ id: door.id, inward: wall.id === 'north' ? opened.z > closed.z : wall.id === 'south' ? opened.z < closed.z : opened.x < closed.x, width: door.size.x, expectedWidth: panel.width - 2 * windowGap, height: door.size.y, expectedHeight: panel.height - 2 * windowGap })
         model.setOpening(door.id, 0)
       }
       if (opening.windowLayout.columns === 2) {
@@ -565,6 +565,7 @@ test('Fensterflügel öffnen einzeln nach innen und lassen Festfelder und Unterl
   for (const check of result) {
     for (const key of ['fixed', 'inward', 'divided', 'lowerFixed', 'mirrored', 'narrowLeaf', 'stationaryFixed', 'uninterrupted', 'furnitureClear']) if (key in check) expect(check[key], `${check.id} ${key}`).toBe(true)
     if ('width' in check) expect(check.width).toBeCloseTo(check.expectedWidth)
+    if ('height' in check) expect(check.height).toBeCloseTo(check.expectedHeight)
   }
 })
 

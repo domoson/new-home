@@ -98,9 +98,9 @@ describe('Anbieterentwurf', () => {
     const entranceWall = floor.walls.find(wall => wall.id === 'east')!
     const entrance = entranceWall.openings.find(opening => opening.id === 'entrance')!
     const sidelight = entranceWall.openings.find(opening => opening.id === 'entrance-fixed')!
-    expect(entrance).toMatchObject({ start: .6, width: 1.1, height: 2.52, frame: .03, swing: 'reverse' })
+    expect(entrance).toMatchObject({ start: .6, width: 1.1, height: 2.5, frame: .03, swing: 'reverse' })
     expect(entrance.hinge).toBeUndefined()
-    expect(sidelight).toMatchObject({ start: .3, width: .3, height: 2.52, sill: 0, kind: 'window' })
+    expect(sidelight).toMatchObject({ start: .3, width: .3, height: 2.5, sill: 0, kind: 'window' })
     expect(sidelight.start + sidelight.width).toBeCloseTo(entrance.start)
     expect(floor.walls.find(wall => wall.id === 'north')!.openings.some(opening => opening.id === 'wc-window')).toBe(true)
     expect(floor.walls.some(wall => wall.id === 'living-diagonal')).toBe(false)
