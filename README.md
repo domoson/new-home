@@ -127,7 +127,7 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
   ausserhalb des Plans. Dazu die Ausfuehrung: Anzahl der Oeffnungsfluegel,
   ggf. Festfeld und festes Unterlicht mit Teilungshoehe. Festfelder zaehlen nicht
   als Oeffnungsfluegel; Dreh-Kipp-Beschlaege werden nicht pauschal zugesichert.
-  Dachfenster erhalten ihr Nennmass entlang der Dachflaeche und den Hinweis Schwingfluegel.
+  Dachfenster erhalten ihr Nennmass entlang der Dachflaeche und den Hinweis Klapp-/Schwingfenster.
   Die Hebeschiebetuer ist als Gesamtanlage 280 x 250 cm beschriftet,
   mit 125 cm beweglichem Fluegel und 155 cm Festfeld. Modell-, keine Bestellmasse;
   die Eckkopplung wird geometrisch an die dickere Wand angepasst.
@@ -138,6 +138,9 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
   x=3,45 m, Nord z=1,75..2,90 m, Sued z=7,60..8,75 m. Dachunterseite an den
   Fensterkanten ca. 1,52..2,32 m ueber DG-Fussboden; der aussenliegende Rahmen
   bleibt unter der 2,77-m-Decke, ohne Oeffnung zum Spitzboden.
+  Ausfuehrung als Klapp-/Schwingfenster: Die 3D-Ansicht zeigt die Schwingoeffnung
+  um die mittlere Achse bis modellhaft 36 Grad, untere Fluegelhaelfte nach innen.
+  Die zusaetzliche Klappfunktion ist vorgesehen, aber nicht separat animiert.
   Westhaelfte unveraendert. Laibungen und bewegliche Fluegel sind schematisch;
   Sparren/Wechsel, Eindeckrahmen, Abdichtung und Hersteller-Einbaumasse ungeprueft.
 - Treppe auf allen Geschossen 58,5 cm nach Norden verschoben, Kern z=3,50..5,50 m.
@@ -451,7 +454,8 @@ Planungsannahmen in der Anwendung. Umgebungsmodelle bleiben weiterverwendet.
   Oeffnen oder Schliessen durch den eigenen Koerper wird verhindert.
 - Szene: Tueren und oeffenbare Fenster direkt anklicken zum Oeffnen/Schliessen.
   Im Rundgang stellt das Mausrad die avisierte Oeffnung stufenweise ein.
-  Fassadenfenster schwenken nach innen, Dachfenster kippen modellhaft nach innen.
+  Fassadenfenster schwenken nach innen, Dachfenster schwingen um die mittlere
+  Achse modellhaft bis 36 Grad, mit der unteren Fluegelhaelfte nach innen.
   Die EG-Hebeschiebetuer hebt geringfuegig an und verschiebt sich im Osthaus bis
   1,20 m, im Westhaus bis 1,50 m vor das
   Festfeld. Festverglasungen bleiben fest. 2D zeigt das statische Oeffnungsschema,

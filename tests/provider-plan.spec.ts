@@ -1275,7 +1275,8 @@ test('Fenstermasse stehen mit Hinweislinien ausserhalb des Grundrisses', async (
     if (floor === 'DG') {
       await expect(plan.locator('[data-opening-label="DG-north-skylight"]')).toContainText('94 × 140 cm')
       await expect(plan.locator('[data-opening-label="DG-south-skylight"]')).toContainText('94 × 140 cm')
-      await expect(plan.locator('[data-opening-label="DG-north-skylight"]')).toContainText('Schwingflügel')
+      await expect(plan.locator('[data-opening-label="DG-north-skylight"]')).toContainText('Klapp-/Schwingfenster')
+      await expect(plan.locator('[data-opening-label="DG-south-skylight"]')).toContainText('Klapp-/Schwingfenster')
     }
     const failures = await plan.evaluate(svg => {
       const view = (svg as SVGSVGElement).viewBox.baseVal

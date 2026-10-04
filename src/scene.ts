@@ -693,11 +693,12 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
       const centerZ = skylight.z + skylight.depth / 2
       const pivot = new THREE.Group(); pivot.name = skylight.id; pivot.position.set(skylight.x, roofOuterElevation(centerZ) + .055, centerZ); const pitch = Math.PI / 2 + (southSlope ? 1 : -1) * house.pitch * Math.PI / 180; pivot.rotation.x = pitch; group.add(pivot)
       const length = skylight.length, leafWidth = skylight.width - .1, leafLength = length - .1
-      const mesh = addBox(rect(.05, -.015, leafWidth, .03), -leafLength / 2, leafLength, glass, false, false, pivot)
+      const leafBottom = -leafLength / 2
+      const mesh = addBox(rect(.05, -.015, leafWidth, .03), leafBottom, leafLength, glass, false, false, pivot)
       mesh.name = `${skylight.id}-glass`
-      for (const edge of [.05, skylight.width - .1]) addBox(rect(edge, -.025, .05, .05), -leafLength / 2, leafLength, frameMaterial, false, false, pivot)
-      for (const bottom of [-leafLength / 2, leafLength / 2 - .05]) addBox(rect(.1, -.025, skylight.width - .2, .05), bottom, .05, frameMaterial, false, false, pivot)
-      doors.push({ id: skylight.id, label: `DG · ${skylight.name}`, kind: 'window', pivot, closedAngle: 0, closedPitch: pitch, direction: southSlope ? -1 : 1, amount: 0, open: false, size: new THREE.Vector3(leafWidth, leafLength, .05), center: mesh.position.clone(), position: pivot.position.clone(), object: mesh, sliding: false })
+      for (const edge of [.05, skylight.width - .1]) addBox(rect(edge, -.025, .05, .05), leafBottom, leafLength, frameMaterial, false, false, pivot)
+      for (const bottom of [leafBottom, leafBottom + leafLength - .05]) addBox(rect(.1, -.025, skylight.width - .2, .05), bottom, .05, frameMaterial, false, false, pivot)
+      doors.push({ id: skylight.id, label: `DG · ${skylight.name} · Klapp-/Schwingfenster`, kind: 'window', pivot, closedAngle: 0, closedPitch: pitch, direction: southSlope ? -1 : 1, amount: 0, open: false, size: new THREE.Vector3(leafWidth, leafLength, .05), center: mesh.position.clone(), position: pivot.position.clone(), object: mesh, sliding: false })
     }
   }
   if (walk || showRoof || floorId === 'EG') {

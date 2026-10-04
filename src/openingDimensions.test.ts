@@ -15,7 +15,7 @@ describe('opening dimension chain', () => {
     expect(skylights).toHaveLength(2)
     expect(skylights.every(label => label.size === '94 \u00d7 140 cm')).toBe(true)
   })
-  it('describes actual opening leaves, fixed fields, fixed lower lights and pivoting skylights', () => {
+  it('describes actual opening leaves, fixed fields, fixed lower lights and top-hung/pivot skylights', () => {
     const ground = openingLabels(makeFloor('EG'))
     expect(ground.find(label => label.id === 'wc-window')).toMatchObject({ size: '60 \u00d7 100 cm', execution: ['1 \u00d6ffnungsfl\u00fcgel'] })
     expect(ground.find(label => label.id === 'wc-window')!.x).toBeCloseTo(.9)
@@ -28,7 +28,7 @@ describe('opening dimension chain', () => {
     expect(openingLabels(makeFloor('OG')).find(label => label.id === 'bath-window')!.x).toBeCloseTo(2.1)
     expect(ground.find(label => label.id === 'living-corner-fixed')!.execution).toEqual(['nicht \u00f6ffenbar'])
     expect(ground.find(label => label.id === 'terrace')!.execution).toEqual(['1 Schiebefl\u00fcgel + Festfeld'])
-    expect(openingLabels(makeFloor('DG')).filter(label => label.id.includes('skylight')).every(label => label.execution[0] === 'Schwingfl\u00fcgel')).toBe(true)
+    expect(openingLabels(makeFloor('DG')).filter(label => label.id.includes('skylight')).every(label => label.execution[0] === 'Klapp-/Schwingfenster')).toBe(true)
     const floor = makeFloor('KG')
     const opening = floor.walls.find(wall => wall.id === 'north')!.openings[0]
     opening.windowLayout = { columns: 2 }

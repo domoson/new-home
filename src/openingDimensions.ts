@@ -34,7 +34,7 @@ export function openingLabels(floor: Floor): OpeningLabel[] {
       }
     })
   })
-  if (floor.id === 'DG') labels.push(...roofWindows.map(window => ({ id: window.id, side: window.id.includes('north') ? 'north' as const : 'south' as const, x: window.x + window.width / 2, z: window.z + window.depth / 2, title: window.name, size: openingSize(window.width, window.length), execution: ['Schwingfl\u00fcgel'] })))
+  if (floor.id === 'DG') labels.push(...roofWindows.map(window => ({ id: window.id, side: window.id.includes('north') ? 'north' as const : 'south' as const, x: window.x + window.width / 2, z: window.z + window.depth / 2, title: window.name, size: openingSize(window.width, window.length), execution: ['Klapp-/Schwingfenster'] })))
   return labels
 }
 

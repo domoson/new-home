@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test'
 import { PNG } from 'pngjs'
 
-test('Standard-Dachfenster bleiben mittig unter der Spitzbodendecke und frei beweglich', async ({ page }, testInfo) => {
+test('Standard-Dachfenster schwingen an der mittleren Achse nach innen frei auf', async ({ page }, testInfo) => {
   const errors: string[] = []; page.on('pageerror', error => errors.push(error.message))
   await page.goto('/')
   await page.getByRole('button', { name: 'DG', exact: true }).click()
@@ -13,22 +13,34 @@ test('Standard-Dachfenster bleiben mittig unter der Spitzbodendecke und frei bew
     const { buildScene } = await import('/src/scene.ts')
     const { roofWindows, roofInnerElevation, roofOuterElevation, elevations, atticCeiling, atticCeilingPanels, makeFloor, furnitureVolumes } = await import('/src/model.ts')
     const model = buildScene('DG', false, true, true)
+    const building = model.group.getObjectByName('house-east')!
     const obstacles = makeFloor('DG').furniture.flatMap(item => furnitureVolumes(item).map(part => ({ id: item.id, box: new OBB(new THREE.Vector3(part.x + part.width / 2, elevations.DG + part.bottom + part.height / 2, part.z + part.depth / 2), new THREE.Vector3(part.width / 2, part.height / 2, part.depth / 2)) })))
     const collisions: string[] = [], hidden: string[] = []
     let maxHeight = 0
     const windows = model.doors.filter(door => door.id.endsWith('-skylight'))
     for (const window of roofWindows) {
       const door = windows.find(door => door.id === window.id)!
+      const southSlope = window.z > 5.25
+      const hingeZ = window.z + window.depth / 2
+      if (Math.abs(door.position.z - hingeZ) > 1e-6 || Math.abs(door.center.y) > 1e-6) collisions.push(`${door.id}:not-center-pivot`)
+      const hinge = door.pivot.getWorldPosition(new THREE.Vector3())
       for (let step = 0; step <= 20; step++) {
         model.setOpening(door.id, step / 20); model.group.updateMatrixWorld(true)
-        const leaf = new OBB(new THREE.Vector3(), door.size.clone().multiplyScalar(.5)).applyMatrix4(door.pivot.matrixWorld)
-        leaf.center.copy(door.center).applyMatrix4(door.pivot.matrixWorld)
+        if (door.pivot.getWorldPosition(new THREE.Vector3()).distanceTo(hinge) > 1e-6) collisions.push(`${door.id}:${step}:moving-hinge`)
+        const expectedPitch = door.closedPitch! + (southSlope ? 1 : -1) * step / 20 * Math.PI / 5
+        if (Math.abs(door.pivot.rotation.x - expectedPitch) > 1e-6) collisions.push(`${door.id}:${step}:opening-angle`)
+        if (step > 0) {
+          const lowerEdge = new THREE.Vector3(door.center.x, (southSlope ? 1 : -1) * door.size.y / 2, 0).applyMatrix4(door.pivot.matrix)
+          if (lowerEdge.y >= roofOuterElevation(lowerEdge.z) + .055) collisions.push(`${door.id}:${step}:not-inward`)
+        }
+        const leaf = new OBB(new THREE.Vector3(), door.size.clone().multiplyScalar(.5)).applyMatrix4(door.pivot.matrix)
+        leaf.center.copy(door.center).applyMatrix4(door.pivot.matrix)
         for (const obstacle of obstacles) if (leaf.intersectsOBB(obstacle.box)) collisions.push(`${door.id}:${step}:${obstacle.id}`)
         door.pivot.traverse(object => {
           if (!object.isMesh) return
           const points = object.geometry.getAttribute('position')
           for (let index = 0; index < points.count; index++) {
-            const point = new THREE.Vector3().fromBufferAttribute(points, index).applyMatrix4(object.matrixWorld)
+            const point = building.worldToLocal(new THREE.Vector3().fromBufferAttribute(points, index).applyMatrix4(object.matrixWorld))
             if (step === 0) maxHeight = Math.max(maxHeight, point.y - elevations.DG)
             if (point.y >= elevations.DG + atticCeiling.height && atticCeilingPanels().some(part => point.x >= part.x && point.x <= part.x + part.width && point.z >= part.z && point.z <= part.z + part.depth)) collisions.push(`${door.id}:${step}:ceiling`)
             const inside = point.x > window.x + .04 && point.x < window.x + window.width - .04 && point.z > window.z + .04 && point.z < window.z + window.depth - .04
@@ -40,7 +52,7 @@ test('Standard-Dachfenster bleiben mittig unter der Spitzbodendecke und frei bew
       const center = door.object.getWorldPosition(new THREE.Vector3())
       const normal = new THREE.Vector3(0, Math.cos(35 * Math.PI / 180), (window.z < 5.25 ? -1 : 1) * Math.sin(35 * Math.PI / 180))
       const ray = new THREE.Raycaster(center.clone().addScaledVector(normal, -.8), normal, 0, .79)
-      const roofParts = model.group.children.filter(object => object.name === 'main-roof-panel' || object.name === 'attic-ceiling' || object.name === `${door.id}-lining`)
+      const roofParts = building.children.filter(object => object.name === 'main-roof-panel' || object.name === 'attic-ceiling' || object.name === `${door.id}-lining`)
       if (ray.intersectObjects(roofParts).length) hidden.push(door.id)
     }
     const westPanels = model.group.getObjectByName('house-west')!.children.filter(object => object.name === 'main-roof-panel').length
