@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { boundaryX, boundaryZ, initialAppearance, partner, siteBoundary, woodTones } from './context'
+import { boundaryX, boundaryZ, initialAppearance, partnerEnvelope, siteBoundary, siteHouseEnvelope, woodTones } from './context'
 import { flatGeometry } from './geometry'
 import { carportRoof, carportScreen, parkingEntrance, rectCorners, siteParking } from './parking'
 import { neighbor8, neighbor8GarageLocalPoint, neighbor8GaragePoint, neighbor8Point } from './neighbor8'
@@ -349,7 +349,7 @@ export function createSurroundings() {
       carParking = createCarParking(car, streetZ(car.position.x) + 3.9)
     }
   }
-  for (const [start, end] of [[Math.max(boundaryZ(-.225, 0), boundaryZ(.225, 0)), 0], [partner.z + partner.depth, Math.min(boundaryZ(-.225, 2), boundaryZ(.225, 2))]]) {
+  for (const [start, end] of [[Math.max(boundaryZ(-.225, 0), boundaryZ(.225, 0)), siteHouseEnvelope().z], [partnerEnvelope().z + partnerEnvelope().depth, Math.min(boundaryZ(-.225, 2), boundaryZ(.225, 2))]]) {
     const hedge = box(garden, -.225, -.14, start, .45, 1.45, end - start, foliage[0]); hedge.name = 'division-hedge'
   }
   for (const side of [1, 3] as const) for (let south = 13.8; south < 20; south += 1.1) {

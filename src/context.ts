@@ -1,5 +1,6 @@
 import * as SunCalc from 'suncalc'
-import { house } from './model'
+import { house, houseEnvelope, housePlacement } from './model'
+import type { Rect } from './model'
 
 export const siteBoundary: [number, number][] = [[-10.056098883413, -1.667802356868], [10.250012281990, -4.480603334238], [13.648101413502, 20.791970540504], [-14.323750719705, 23.472546642384]]
 export const siteLengths = [20.5, 25.5, 28.1, 25.5] as const
@@ -20,6 +21,9 @@ export function boundaryDistance(point: [number, number], side: number) {
   return (east * (point[1] - start[1]) - south * (point[0] - start[0])) / Math.hypot(east, south)
 }
 export const partner = { x: -house.width, z: .9, width: house.width, depth: house.depth }
+export const siteHouseRect = (bounds: Rect, side: 'east' | 'west' = 'east'): Rect => ({ ...bounds, x: side === 'east' ? bounds.x + housePlacement.x : -bounds.x - bounds.width - housePlacement.x, z: bounds.z + housePlacement.z + (side === 'west' ? partner.z : 0) })
+export const siteHouseEnvelope = () => siteHouseRect(houseEnvelope())
+export const partnerEnvelope = () => siteHouseRect(houseEnvelope(), 'west')
 export const finishes = {
   interiorDoor: [{ name: 'Eiche natur', color: '#dfd6c2' }, { name: 'Reinweiß', color: '#ffffff' }, { name: 'Gebrochenes Weiß', color: '#f2efe6' }, { name: 'Hellgrau', color: '#c4c7c4' }],
   facade: [{ name: 'Kreideweiß', color: '#fafafa' }, { name: 'Lichtgrau', color: '#d3d7d6' }, { name: 'Salbeigrau', color: '#bfc9bd' }, { name: 'Muschelweiß', color: '#eeeae0' }, { name: 'Nebelblau', color: '#bdcdd3' }, { name: 'Mineralgrün', color: '#9eaea4' }, { name: 'Steingrau', color: '#b4b4b0' }, { name: 'Kohle', color: '#666b68' }, { name: 'Cremeweiß', color: '#eee8d8' }],

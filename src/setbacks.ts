@@ -1,10 +1,10 @@
 import { construction, elevations, house } from './model'
-import { partner } from './context'
+import { partner, siteHouseEnvelope } from './context'
 
 export type SetbackPoint = [number, number]
-export type SetbackParameters = { width: number; depth: number; wall: number; attic: number; knee: number; pitch: number; roofNormal: number; ridgeAllowance: number; terrain: number; partnerOffset: number }
+export type SetbackParameters = { width: number; depth: number; wall: number; attic: number; knee: number; pitch: number; roofNormal: number; ridgeAllowance: number; terrain: number; partnerOffset: number; north?: number }
 export type SetbackFace = { id: string; name: string; points: SetbackPoint[]; wall: SetbackPoint[]; outer: SetbackPoint[]; minimum: number; maximum: number }
-export const currentSetbackParameters = (): SetbackParameters => ({ width: house.width, depth: house.depth, wall: construction.exteriorWall, attic: elevations.DG, knee: house.knee, pitch: house.pitch, roofNormal: construction.roofNormal, ridgeAllowance: construction.ridgeCapAllowance, terrain: construction.terrain, partnerOffset: partner.z })
+export const currentSetbackParameters = (): SetbackParameters => ({ width: siteHouseEnvelope().width, depth: siteHouseEnvelope().depth, north: siteHouseEnvelope().z, wall: construction.exteriorWall, attic: elevations.DG, knee: house.knee, pitch: house.pitch, roofNormal: construction.roofNormal, ridgeAllowance: construction.ridgeCapAllowance, terrain: construction.terrain, partnerOffset: partner.z })
 
 export function houseSetbacks(side: 'east' | 'west', parameters = currentSetbackParameters()) {
   const { width, depth, wall, attic, knee, pitch, roofNormal, ridgeAllowance, terrain, partnerOffset } = parameters
@@ -14,7 +14,7 @@ export function houseSetbacks(side: 'east' | 'west', parameters = currentSetback
   const eaves = roofAt(0), ridge = roofAt(depth / 2) + ridgeAllowance
   const traufDepth = Math.max(3, .4 * (eaves - terrain + (ridge - eaves) * (pitch <= 70 ? 1 / 3 : 1)))
   const gableRaw = (south: number) => .4 * (roofAt(south) + ridgeAllowance - terrain)
-  const transform = ([east, south]: SetbackPoint): SetbackPoint => side === 'east' ? [east, south] : [-east, south + partnerOffset]
+  const transform = ([east, south]: SetbackPoint): SetbackPoint => side === 'east' ? [east, south + (parameters.north ?? 0)] : [-east, south + (parameters.north ?? 0) + partnerOffset]
   const faces: SetbackFace[] = []
   const add = (id: string, name: string, wallPoints: SetbackPoint[], normal: SetbackPoint, depths: number[]) => {
     const wall = wallPoints.map(transform)

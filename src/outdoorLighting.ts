@@ -1,5 +1,5 @@
 import * as THREE from 'three'
-import { construction, elevations, house } from './model'
+import { construction, elevations, house, housePlacement } from './model'
 import { partner } from './context'
 
 export function createOutdoorLighting(group: THREE.Object3D) {
@@ -27,8 +27,8 @@ export function createOutdoorLighting(group: THREE.Object3D) {
         outdoorPosition = (modelMatrix * outdoorVertex).xyz;
       `)
       shader.fragmentShader = `varying vec3 outdoorPosition; uniform float outdoorSkyStrength;\n${shader.fragmentShader}`.replace('#include <lights_fragment_end>', `#include <lights_fragment_end>
-        float localSouth = outdoorPosition.z - (outdoorPosition.x < 0.0 ? ${partner.z.toFixed(4)} : 0.0);
-        float localEast = abs(outdoorPosition.x);
+        float localSouth = outdoorPosition.z - ${housePlacement.z.toFixed(4)} - (outdoorPosition.x < 0.0 ? ${partner.z.toFixed(4)} : 0.0);
+        float localEast = abs(outdoorPosition.x) - ${housePlacement.x.toFixed(4)};
         float roofLimit = ${elevations.DG.toFixed(4)} + ${house.knee.toFixed(4)} + (min(localSouth, ${house.depth.toFixed(4)} - localSouth) - ${house.north.toFixed(4)}) * ${Math.tan(house.pitch * Math.PI / 180).toFixed(6)};
         bool indoors = localEast > 0.02 && localEast < ${(house.width - .02).toFixed(4)} && localSouth > 0.02 && localSouth < ${(house.depth - .02).toFixed(4)} && outdoorPosition.y < roofLimit + 0.12;
         if (!indoors && outdoorPosition.y >= ${(construction.terrain - .01).toFixed(4)}) {

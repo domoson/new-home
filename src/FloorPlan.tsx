@@ -2,7 +2,7 @@ import { useState } from 'react'
 import type { PointerEvent } from 'react'
 import { Ruler, Trash2, X } from 'lucide-react'
 import type { Floor, Furniture, Wall } from './model'
-import { construction, house, format, heightLine, lightWells, roofWindows, roomArea, stairFor, stairInnerWall, stairOpeningParts, stairSolids, storeyRise } from './model'
+import { construction, house, houseEnvelope, format, heightLine, lightWells, roofWindows, roomArea, stairFor, stairInnerWall, stairOpeningParts, stairSolids, storeyRise } from './model'
 import { stairWalkingLine } from './winderStair'
 import { contains, distance, metres, planObjects, snapPoint } from './measure'
 import type { Measurable, PlanPoint } from './measure'
@@ -11,7 +11,7 @@ import { partyRoom } from './partyRoomData'
 import { kitchenModules, moduleFront } from './kitchenStorage'
 import { windowMullionStart } from './windowLayout'
 import { raffstores } from './raffstore'
-import { openingDimensions } from './openingDimensions'
+import { openingDimensions, openingLabels } from './openingDimensions'
 import { usePlanGestures } from './planGestures'
 
 function Furnishing({ item }: { item: Furniture }) {
@@ -55,24 +55,13 @@ function Furnishing({ item }: { item: Furniture }) {
   </g>
 }
 
-function MasonryJoints({ wall }: { wall: Wall }) {
-  if (wall.footprint || !['west', 'east', 'north', 'south'].includes(wall.id)) return null
-  const length = wall.axis === 'x' ? wall.width : wall.depth
-  const blockCount = Math.round(length / construction.exteriorWall)
-  const joints = Array.from({ length: Math.max(0, blockCount - 1) }, (_, index) => (index + 1) * construction.exteriorWall)
-    .filter(offset => !wall.openings.some(opening => offset >= opening.start - .000001 && offset <= opening.start + opening.width + .000001))
-  return <g data-exterior-masonry={wall.id} pointerEvents="none" fill="none" stroke="#899387" strokeWidth=".012">{joints.map((offset, index) => wall.axis === 'x'
-    ? <line key={index} data-masonry-joint="true" x1={wall.x + offset} y1={wall.z} x2={wall.x + offset} y2={wall.z + wall.depth} />
-    : <line key={index} data-masonry-joint="true" x1={wall.x} y1={wall.z + offset} x2={wall.x + wall.width} y2={wall.z + offset} />)}</g>
-}
-
 function OpeningDimensionChain({ wall }: { wall: Wall }) {
   if (!wall.openings.length) return null
   const segments = openingDimensions(wall)
   const length = wall.axis === 'x' ? wall.width : wall.depth
   const north = wall.id === 'north'
   const south = wall.id === 'south'
-  const transform = north ? `translate(${wall.x} -.3)` : south ? `translate(${wall.x} ${wall.z + wall.depth + .25})` : `translate(${wall.x + wall.width + .3} ${wall.z}) rotate(90)`
+  const transform = north ? `translate(${wall.x} ${wall.z - .3})` : south ? `translate(${wall.x} ${wall.z + wall.depth + .25})` : `translate(${wall.x + wall.width + .3} ${wall.z}) rotate(90)`
   const wallEdge = north ? .3 : south ? -.25 : -.3
   const metre = (value: number) => value.toFixed(2)
   return <g data-opening-dimensions={wall.id} transform={transform} pointerEvents="none" stroke="#667262" strokeWidth=".013" fill="#43554b">
@@ -91,13 +80,15 @@ function OpeningDimensionChain({ wall }: { wall: Wall }) {
 }
 
 export default function FloorPlan({ floor, selected, onSelect, dimensions, furnished, zoom, onZoom }: { floor: Floor; selected: string; onSelect: (id: string) => void; dimensions: boolean; furnished: boolean; zoom: number; onZoom: (zoom: number) => void }) {
+  const envelope = houseEnvelope()
   const [pan, setPan] = useState({ x: 0, y: 0 })
   const [measuring, setMeasuring] = useState(false)
   const [origin, setOrigin] = useState<PlanPoint | null>(null)
   const [cursor, setCursor] = useState<PlanPoint | null>(null)
   const [lines, setLines] = useState<{ start: PlanPoint; end: PlanPoint }[]>([])
   const [hover, setHover] = useState<{ object: Measurable; left: number; top: number } | null>(null)
-  const gestures = usePlanGestures(zoom, onZoom, { x: house.width / 2, y: house.depth / 2 }, pan, setPan, !measuring)
+  const viewCenter = { x: house.width / 2 + (dimensions ? .65 : 0), y: house.depth / 2 + (dimensions ? .8 : 0) }
+  const gestures = usePlanGestures(zoom, onZoom, viewCenter, pan, setPan, !measuring)
   const objects = planObjects(floor, furnished)
   const location = (event: PointerEvent<SVGSVGElement>) => {
     const matrix = event.currentTarget.getScreenCTM()!
@@ -111,7 +102,7 @@ export default function FloorPlan({ floor, selected, onSelect, dimensions, furni
     setHover(!measuring && object ? { object, left: Math.max(8, Math.min(event.clientX + 16, window.innerWidth - 276)), top: Math.max(8, Math.min(event.clientY + 18, window.innerHeight - 126)) } : null)
   }
   const labels: Record<string, [number, number]> = Object.fromEntries(floor.rooms.map(room => [room.id, room.spawn]))
-  const viewWidth = 10.2 / zoom, viewHeight = (house.depth + 2.6) / zoom
+  const viewWidth = (dimensions ? 12.2 : 10.2) / zoom, viewHeight = (house.depth + (dimensions ? 6.4 : 2.6)) / zoom
   const core = stairFor()
   const walkingLine = stairWalkingLine(storeyRise(floor.id))
   walkingLine[0][0] = core.x + core.width - .05
@@ -119,17 +110,17 @@ export default function FloorPlan({ floor, selected, onSelect, dimensions, furni
   const beyondPlanCut = (height: number) => floor.id === 'DG' ? height < storeyRise(floor.id) / 2 : height > storeyRise(floor.id) / 2
   const arrowEnd = walkingLine.at(-1)!, arrowBefore = walkingLine.at(-2)!
   const arrowAngle = Math.atan2(arrowEnd[2] - arrowBefore[2], arrowEnd[0] - arrowBefore[0]) * 180 / Math.PI
-  return <><div className="measure-tools"><button className={`icon-button ${measuring ? 'on' : ''}`} aria-label="Maßband" title="Maßband: zwei Punkte setzen; Shift für waagerecht/senkrecht" aria-pressed={measuring} onClick={() => { setMeasuring(!measuring); setOrigin(null); setHover(null) }}><Ruler size={19} /></button><button className="icon-button" aria-label="Messungen löschen" title="Messungen löschen" disabled={!lines.length && !origin} onClick={() => { setLines([]); setOrigin(null) }}><Trash2 size={18} /></button>{origin && <button className="icon-button" aria-label="Messung abbrechen" title="Messung abbrechen (Escape)" onClick={() => setOrigin(null)}><X size={18} /></button>}</div><svg xmlns="http://www.w3.org/2000/svg" className="floor-plan" role="img" tabIndex={0} aria-label={`Grundriss ${floor.name}`} viewBox={`${house.width / 2 - viewWidth / 2 - pan.x} ${house.depth / 2 - viewHeight / 2 - pan.y} ${viewWidth} ${viewHeight}`} onPointerDown={event => {
+  return <><div className="measure-tools"><button className={`icon-button ${measuring ? 'on' : ''}`} aria-label="Maßband" title="Maßband: zwei Punkte setzen; Shift für waagerecht/senkrecht" aria-pressed={measuring} onClick={() => { setMeasuring(!measuring); setOrigin(null); setHover(null) }}><Ruler size={19} /></button><button className="icon-button" aria-label="Messungen löschen" title="Messungen löschen" disabled={!lines.length && !origin} onClick={() => { setLines([]); setOrigin(null) }}><Trash2 size={18} /></button>{origin && <button className="icon-button" aria-label="Messung abbrechen" title="Messung abbrechen (Escape)" onClick={() => setOrigin(null)}><X size={18} /></button>}</div><svg xmlns="http://www.w3.org/2000/svg" className="floor-plan" role="img" tabIndex={0} aria-label={`Grundriss ${floor.name}`} viewBox={`${viewCenter.x - viewWidth / 2 - pan.x} ${viewCenter.y - viewHeight / 2 - pan.y} ${viewWidth} ${viewHeight}`} onPointerDown={event => {
     event.currentTarget.focus()
     if (measuring) { const point = location(event); setCursor(point); if (origin) { if (distance(origin, point) > .001) setLines([...lines, { start: origin, end: point }]); setOrigin(null) } else setOrigin(point); return }
     move(event)
     gestures.pointerDown(event)
   }} onClickCapture={event => { if (measuring) event.stopPropagation(); else gestures.clickCapture(event) }} onPointerMove={move} onPointerLeave={() => setHover(null)} onPointerUp={gestures.pointerUp} onPointerCancel={gestures.pointerUp} onKeyDown={event => { if (event.key === 'Escape') { setOrigin(null); setHover(null) } if (event.key === 'Delete') { setLines([]); setOrigin(null) } }} style={{ fontFamily: 'IBM Plex Sans, sans-serif', touchAction: 'none', cursor: measuring ? 'crosshair' : 'grab' }}>
     <defs><pattern id="terrace-plan" width=".15" height="3" patternUnits="userSpaceOnUse"><rect width=".144" height="3" fill="#c8ad80" /><path d="M.03 0 V3 M.09 0 V3" stroke="#b49c77" strokeWidth=".005" /></pattern><pattern id="closed-eaves" width=".18" height=".18" patternUnits="userSpaceOnUse"><rect width=".18" height=".18" fill="#e4e6e4" /><path d="M0 .18 L.18 0" stroke="#c5cbc6" strokeWidth=".018" /></pattern></defs>
-    <rect x="-.22" y="0" width=".22" height={house.depth} fill="#c7cac4" /><text x="-.4" y="5" fontSize=".12" fill="#868b80" textAnchor="middle" transform="rotate(-90 -.4 5)">HAUSTRENNWAND · NACHBAR WEST</text>
+    <rect x={envelope.x - .22} y={envelope.z} width=".22" height={envelope.depth} fill="#c7cac4" /><text x={envelope.x - .4} y="5" fontSize=".12" fill="#868b80" textAnchor="middle" transform={`rotate(-90 ${envelope.x - .4} 5)`}>HAUSTRENNWAND · NACHBAR WEST</text>
     {floor.id === 'EG' && terraceArea > 0 && <g><polygon data-terrace="east" points={terraceOutline.map(point => point.join(',')).join(' ')} fill="url(#terrace-plan)" /><rect x={terraceMain.x} y="13" width={terraceMain.width} height=".28" fill="#c6d7bc" /><text x="5.75" y="12.65" textAnchor="middle" fontSize=".2" fill="#526452">Terrasse · {format(terraceArea)} m²</text>{furnished && terraceFurniture.map(item => <Furnishing key={item.id} item={item} />)}</g>}
     {floor.id === 'KG' && <g fill="#e2e7e3" stroke="#8b9b90" strokeWidth=".025">{lightWells.map(({x, z, width, depth}) => <g key={`${x}-${z}`}><rect data-light-well="true" x={x} y={z} width={width} height={depth} />{Array.from({ length: 7 }, (_, index) => <line key={index} x1={x} x2={x + width} y1={z + (index + 1) * depth / 8} y2={z + (index + 1) * depth / 8} />)}</g>)}</g>}
-    <rect x="0" y="0" width={house.width} height={house.depth} fill="#fff" />
+    <rect data-house-envelope="true" x={envelope.x} y={envelope.z} width={envelope.width} height={envelope.depth} fill="#fff" />
     {floor.id === 'DG' && floor.walls.filter(wall => wall.id.startsWith('knee-')).map(wall => { const start = wall.id === 'knee-north' ? house.north : wall.z + wall.depth; const end = wall.id === 'knee-north' ? wall.z : house.south; return <rect key={wall.id} data-closed-eaves="true" x={wall.x} y={start} width={wall.width} height={end - start} fill="url(#closed-eaves)" pointerEvents="none" /> })}
     {floor.rooms.map(room => <g key={room.id} onClick={() => onSelect(room.id)} style={{ cursor: 'pointer' }}>{room.parts.map((part, index) => part.footprint ? <polygon key={index} points={part.footprint.map(point => point.join(',')).join(' ')} fill={room.color} opacity={selected === room.id ? 1 : .65} /> : <rect key={index} x={part.x} y={part.z} width={part.width} height={part.depth} fill={room.color} opacity={selected === room.id ? 1 : .65} />)}</g>)}
     {floor.rooms.flatMap(room => (room.tileParts ?? []).map((part, index) => <rect key={`${room.id}-${index}`} data-entry-tiles="true" x={part.x} y={part.z} width={part.width} height={part.depth} fill="#e7e4d9" fillOpacity=".65" stroke="#bab8ac" strokeWidth=".012" pointerEvents="none" />))}
@@ -156,12 +147,11 @@ export default function FloorPlan({ floor, selected, onSelect, dimensions, furni
       </g>
       return <g key={opening.id} data-opening={opening.id} transform={`translate(${east} ${south}) ${wall.axis === 'z' ? 'rotate(90)' : ''}`}><rect x="0" y={wall.axis === 'z' ? -wall.width : 0} width={opening.width} height={wall.axis === 'z' ? wall.width : wall.depth} fill={opening.kind === 'window' ? '#dbe9e8' : '#f7f8f4'} />{!!jamb && [0, opening.width - jamb].map(start => <rect key={start} data-door-frame="true" x={start} y={wall.axis === 'z' ? -wall.width : 0} width={jamb} height={wall.axis === 'z' ? wall.width : wall.depth} fill="#a89b84" />)}{opening.kind === 'passage' ? null : opening.kind === 'window' ? <path d={`M0 ${wall.axis === 'z' ? -wall.width / 2 : wall.depth / 2} H${opening.width}`} stroke="#739d9e" strokeWidth=".025" /> : opening.id === 'terrace' ? <g data-sliding-pane="inner" stroke="#739d9e" strokeWidth=".025" fill="none"><path d={`M0 .06 H${opening.width * 2} M${opening.width} -.02 v.16 M.2 -.12 h.9 l-.15 -.08 m.15 .08 l-.15 .08`} /></g> : <g stroke="#7b8979" strokeWidth=".018" fill="none" transform={`${opening.hinge === 'end' ? `translate(${opening.width - jamb} 0) scale(-1 1)` : `translate(${jamb} 0)`} ${['store-north', 'parents-entry-south'].includes(wall.id) !== (opening.swing === 'reverse') ? 'scale(1 -1)' : ''}`}><path d={`M0 0 V${-leafWidth} A${leafWidth} ${leafWidth} 0 0 1 ${leafWidth} 0`} /></g>}</g>
     })}</g>)}
-    {floor.walls.map(wall => <MasonryJoints key={wall.id} wall={wall} />)}
     {floor.walls.flatMap(wall => wall.openings.filter(opening => opening.cornerGlazing).map(opening => {
       const east = wall.x + (wall.axis === 'x' ? opening.start : wall.width / 2)
       const south = wall.z + (wall.axis === 'z' ? opening.start : wall.depth / 2)
-      const length = opening.width + (wall.axis === 'x' ? construction.exteriorWall / 2 : -construction.exteriorWall / 2)
-      return <g key={opening.id} data-corner-glazing={opening.id} stroke="#739d9e" strokeWidth=".04"><line x1={east} y1={south} x2={east + (wall.axis === 'x' ? length : 0)} y2={south + (wall.axis === 'z' ? length : 0)} />{wall.axis === 'z' && <rect data-corner-coupling="true" x={east - .04} y={south + length - .04} width=".08" height=".08" fill="#526963" stroke="none" />}</g>
+      const length = (wall.axis === 'x' ? wall.width : wall.depth) - opening.start + (wall.axis === 'x' ? construction.exteriorWall / 2 : -construction.exteriorWall / 2)
+      return <g key={opening.id} data-corner-glazing={opening.id} stroke="#739d9e" strokeWidth=".04">{wall.axis === 'z' && <rect x={wall.x} y={south} width={wall.width} height={wall.depth - opening.start} fill="#dbe9e8" stroke="none" />}<line x1={east} y1={south} x2={east + (wall.axis === 'x' ? length : 0)} y2={south + (wall.axis === 'z' ? length : 0)} />{wall.axis === 'z' && <rect data-corner-coupling="true" x={east - .04} y={south + length - .04} width=".08" height=".08" fill="#526963" stroke="none" />}</g>
     }))}
     {floor.walls.flatMap(wall => wall.openings.filter(opening => opening.kind === 'window' && opening.windowLayout?.columns === 2).map(opening => {
       const east = wall.x + (wall.axis === 'x' ? opening.start + windowMullionStart(opening) : wall.width / 2 - .04)
@@ -172,9 +162,28 @@ export default function FloorPlan({ floor, selected, onSelect, dimensions, furni
     {furnished && <g pointerEvents="none">{floor.furniture.map(item => <Furnishing key={item.id} item={item} />)}</g>}
     {floor.id === 'DG' && <g pointerEvents="none">{[1, 2].flatMap(height => [heightLine(height), house.depth - heightLine(height)].map(south => <g key={`${height}-${south}`}><line x1={house.west} x2={house.east} y1={south} y2={south} stroke="#608c94" strokeDasharray=".09 .06" strokeWidth=".022" /><text x={house.width - .25} y={south + .04} fontSize=".13" fill="#60818c">{height} m</text></g>))}<line x1={house.west} x2={house.east} y1={house.depth / 2} y2={house.depth / 2} stroke="#a4aaa1" strokeWidth=".012" strokeDasharray=".25 .05" /></g>}
     {dimensions && floor.rooms.map(room => { const point = labels[room.id] ?? room.spawn; const compact = ['wc', 'entry', 'hall', 'pantry'].includes(room.id); const labelWidth = compact ? .82 : 1.9; return <g key={room.id} data-room-label={room.id} onClick={() => onSelect(room.id)} style={{ cursor: 'pointer' }}><rect x={point[0] - labelWidth / 2} y={point[1] - .25} width={labelWidth} height=".56" rx=".04" fill="#f9fbf6" opacity=".91" /><text x={point[0]} y={point[1] - .04} textAnchor="middle" fontSize={compact ? '.105' : '.145'} fontWeight="500" fill="#334b41">{room.name}</text><text x={point[0]} y={point[1] + .18} textAnchor="middle" fontSize=".155" fontWeight="600" fill="#294c40">{format(roomArea(room, floor.id).floor)} m²</text></g> })}
-    {dimensions && <><g stroke="#8a9588" strokeWidth=".014" fill="#667262"><path d={`M0 -.25 V-.85 M${house.width} -.25 V-.85 M0 -.65 H${house.width} M${house.width + .3} 0 H${house.width + .95} M${house.width + .3} ${house.depth} H${house.width + .95} M${house.width + .7} 0 V${house.depth}`} /><text x={house.width / 2} y="-.79" textAnchor="middle" fontSize=".2" stroke="none">{house.width.toLocaleString('de-DE', { minimumFractionDigits: 2 })} m</text><text x={house.width + 1} y={house.depth / 2} textAnchor="middle" fontSize=".2" stroke="none" transform={`rotate(90 ${house.width + 1} ${house.depth / 2})`}>{house.depth.toLocaleString('de-DE', { minimumFractionDigits: 2 })} m</text><path d={`M${house.west} ${house.depth + .5} v.45 M${house.east} ${house.depth + .5} v.45 M${house.west} ${house.depth + .8} H${house.east}`} /><text x={house.width / 2} y={house.depth + .73} fontSize=".14" textAnchor="middle" stroke="none">{(house.east - house.west).toLocaleString('de-DE', { minimumFractionDigits: 3 })} m lichte Breite</text></g>{floor.walls.filter(wall => ['north', 'east', 'south', 'west'].includes(wall.id)).map(wall => <OpeningDimensionChain key={wall.id} wall={wall} />)}</>}
+    {dimensions && <><g stroke="#8a9588" strokeWidth=".014" fill="#667262">
+      <path data-total-width="true" d={`M${envelope.x} ${envelope.z - .25} V${envelope.z - .85} M${envelope.x + envelope.width} ${envelope.z - .25} V${envelope.z - .85} M${envelope.x} ${envelope.z - .65} H${envelope.x + envelope.width}`} />
+      <text data-total-width-label="true" x={envelope.x + envelope.width / 2} y={envelope.z - .79} textAnchor="middle" fontSize=".2" stroke="none">{envelope.width.toLocaleString('de-DE', { minimumFractionDigits: 2 })} m</text>
+      <path data-total-depth="true" d={`M${envelope.x + envelope.width + .3} ${envelope.z} H${envelope.x + envelope.width + .95} M${envelope.x + envelope.width + .3} ${envelope.z + envelope.depth} H${envelope.x + envelope.width + .95} M${envelope.x + envelope.width + .7} ${envelope.z} V${envelope.z + envelope.depth}`} />
+      <text x={envelope.x + envelope.width + 1} y={envelope.z + envelope.depth / 2} textAnchor="middle" fontSize=".2" stroke="none" transform={`rotate(90 ${envelope.x + envelope.width + 1} ${envelope.z + envelope.depth / 2})`}>{envelope.depth.toLocaleString('de-DE', { minimumFractionDigits: 2 })} m</text>
+      <path d={`M${house.west} ${house.depth + .5} v.45 M${house.east} ${house.depth + .5} v.45 M${house.west} ${house.depth + .8} H${house.east}`} /><text x={house.width / 2} y={house.depth + .73} fontSize=".14" textAnchor="middle" stroke="none">{(house.east - house.west).toLocaleString('de-DE', { minimumFractionDigits: 3 })} m lichte Breite</text>
+      <path data-clear-depth="true" d={`M${envelope.x - .55} ${house.north} h-.45 M${envelope.x - .55} ${house.south} h-.45 M${envelope.x - .85} ${house.north} V${house.south}`} />
+      <text data-clear-depth-label="true" x={envelope.x - .92} y={(house.north + house.south) / 2} fontSize=".14" textAnchor="middle" stroke="none" transform={`rotate(-90 ${envelope.x - .92} ${(house.north + house.south) / 2})`}>{(house.south - house.north).toLocaleString('de-DE', { minimumFractionDigits: 3 })} m lichte Länge</text>
+    </g>{floor.walls.filter(wall => ['north', 'east', 'south', 'west'].includes(wall.id)).map(wall => <OpeningDimensionChain key={wall.id} wall={wall} />)}</>}
     {floor.id === 'KG' && furnished && floor.furniture.some(item => item.id === 'party-sofa') && <g data-party-room="true" pointerEvents="none"><circle cx={partyRoom.x} cy={partyRoom.z} r={partyRoom.radius} fill="#dce8e8" stroke="#697f85" strokeWidth=".025" /></g>}
     {floor.id === 'DG' && roofWindows.map(window => <rect key={window.id} data-roof-window={window.id} x={window.x} y={window.z} width={window.width} height={window.depth} fill="#d6edee" fillOpacity=".35" stroke="#42858c" strokeDasharray=".06 .04" strokeWidth=".025" pointerEvents="none" />)}
+    {dimensions && <g data-opening-labels="true" pointerEvents="none">{openingLabels(floor).map(label => {
+      const east = label.side === 'east'
+      const x = east ? envelope.x + envelope.width + 1.3 : label.x
+      const z = east ? Math.max(.35, label.z) : label.side === 'north' ? -1.65 : house.depth + 1.35
+      const endZ = east ? z + .16 : label.side === 'north' ? z + .4 : z - .14
+      return <g key={label.id} data-opening-label={label.id}>
+        <path data-opening-leader={label.id} d={`M${label.x} ${label.z} L${east ? x - .12 : x} ${endZ}`} stroke="#42858c" strokeWidth=".014" fill="none" />
+        <circle cx={label.x} cy={label.z} r=".04" fill="#42858c" />
+        <text data-opening-label-text={label.id} x={x} y={z} textAnchor={east ? 'start' : 'middle'} fontSize=".19" fill="#294c40" stroke="#f9fbf6" strokeWidth=".055" paintOrder="stroke"><tspan x={x} fontWeight="600">{label.title}</tspan><tspan x={x} dy=".26">{label.size}</tspan>{label.detail && <tspan x={x} dy=".25" fontSize=".155">{label.detail}</tspan>}</text>
+      </g>
+    })}</g>}
     {hover && <g pointerEvents="none" stroke="#227d80" strokeWidth=".025" fill="none"><rect x={hover.object.x} y={hover.object.z} width={hover.object.width} height={hover.object.depth} /><path d={`M${hover.object.x} ${hover.object.z - .12} h${hover.object.width} M${hover.object.x - .12} ${hover.object.z} v${hover.object.depth}`} /><text x={hover.object.x + hover.object.width / 2} y={hover.object.z - .19} fill="#195c60" stroke="#fff" strokeWidth=".055" paintOrder="stroke" textAnchor="middle" fontSize=".16">{metres(hover.object.width)}</text><text x={hover.object.x - .2} y={hover.object.z + hover.object.depth / 2} fill="#195c60" stroke="#fff" strokeWidth=".055" paintOrder="stroke" textAnchor="end" fontSize=".16">{metres(hover.object.depth)}</text></g>}
     <g className="measurement-lines" pointerEvents="none">{[...lines, ...(origin && cursor ? [{ start: origin, end: cursor }] : [])].map(({start, end}, index) => <g key={index}><line x1={start.x} y1={start.z} x2={end.x} y2={end.z} stroke="#b44736" strokeWidth=".028" strokeDasharray={index === lines.length ? '.08 .04' : undefined} />{[start, end].map((point, pointIndex) => <circle key={pointIndex} cx={point.x} cy={point.z} r=".045" fill="#b44736" />)}<text data-measurement={index < lines.length ? 'saved' : 'preview'} x={(start.x + end.x) / 2} y={(start.z + end.z) / 2 - .12} fontSize=".19" textAnchor="middle" fill="#913b2d" stroke="#fff" strokeWidth=".075" paintOrder="stroke">{metres(distance(start, end))}</text></g>)}</g>
   </svg>{hover && <div className="measure-tooltip" role="tooltip" style={{left: hover.left, top: hover.top}}><strong>{hover.object.label}</strong><span>{metres(hover.object.width)} × {metres(hover.object.depth)}</span><span>{hover.object.details}</span></div>}</>

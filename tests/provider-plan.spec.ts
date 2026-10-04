@@ -936,6 +936,159 @@ test('Möbelfronten und Bettkopfteile haben getrennte Flächen', async ({ page }
   for (const detail of gaps) expect(detail.gap, detail.id).toBeGreaterThan(.002)
 })
 
+test('Vierzig Zentimeter Aussenwaende schliessen in 3D an Decken und Glasecke an', async ({ page }, testInfo) => {
+  await page.goto('/')
+  const result = await page.evaluate(async () => {
+    const THREE = await import('/node_modules/.vite/deps/three.js')
+    const { buildScene } = await import('/src/scene.ts')
+    const { elevations, housePlacement, storeyRise } = await import('/src/model.ts')
+    const { boundaryDistance, partner } = await import('/src/context.ts')
+    const { stairWalkingLine } = await import('/src/winderStair.ts')
+    const { initializePhysics, createWalker } = await import('/src/walk.ts')
+    const model = buildScene('EG', true, true, true)
+    model.group.updateMatrixWorld(true)
+    const walls = []
+    for (const side of ['east', 'west']) {
+      const group = model.group.getObjectByName(`house-${side}`)
+      for (const floor of ['KG', 'EG', 'OG', 'DG']) for (const face of ['north', 'east', 'south', 'west']) {
+        const bounds = new THREE.Box3()
+        for (const mesh of group.children.filter(mesh => mesh.name === `${floor}-wall-${face}`)) bounds.union(new THREE.Box3().setFromObject(mesh))
+        const localWest = (side === 'east' ? bounds.min.x : -bounds.max.x) - housePlacement.x
+        const localEast = (side === 'east' ? bounds.max.x : -bounds.min.x) - housePlacement.x
+        const offsetZ = housePlacement.z + (side === 'west' ? partner.z : 0)
+        walls.push({ side, floor, face, thickness: ['east', 'west'].includes(face) ? bounds.max.x - bounds.min.x : bounds.max.z - bounds.min.z, outer: face === 'east' ? localEast : face === 'west' ? localWest : face === 'north' ? bounds.min.z - offsetZ : bounds.max.z - offsetZ, clearance: face === 'north' ? boundaryDistance([bounds.min.x, bounds.min.z], 0) : 3, partyEdge: face === 'west' ? (side === 'east' ? bounds.min.x : bounds.max.x) : 0 })
+      }
+    }
+    const coupling = new THREE.Box3().setFromObject(model.group.getObjectByName('EG-glazing-corner-coupling')).getCenter(new THREE.Vector3())
+    const slider = model.doors.find(door => door.id === 'EG-terrace')
+    model.setOpening(slider.id, 0)
+    const closed = slider.object.getWorldPosition(new THREE.Vector3())
+    model.setOpening(slider.id, 1)
+    const opened = slider.object.getWorldPosition(new THREE.Vector3())
+    const slab = new THREE.Box3()
+    for (const mesh of model.group.getObjectByName('house-east').children.filter(mesh => mesh.name === 'EG-slab')) slab.union(new THREE.Box3().setFromObject(mesh))
+    for (const door of model.doors) if (door.kind === 'door') model.setOpening(door.id, 1)
+    await initializePhysics()
+    const camera = new THREE.PerspectiveCamera(), walker = createWalker(model, camera, new THREE.Vector3(3, 0, 5))
+    const move = (east: number, south: number) => {
+      for (let frame = 0; frame < 300 && Math.hypot(walker.position().x - east, walker.position().z - south) > .055; frame++) {
+        camera.lookAt(east, camera.position.y, south); walker.keys.add('KeyW'); walker.tick(); walker.keys.clear()
+      }
+      return Math.hypot(walker.position().x - east, walker.position().z - south) < .07
+    }
+    const routes = []
+    for (const id of ['KG', 'EG', 'OG']) for (const reverse of [false, true]) {
+      const points = stairWalkingLine(storeyRise(id)).map(([east, , south]) => [east + housePlacement.x, south + housePlacement.z])
+      if (reverse) points.reverse()
+      walker.teleport(new THREE.Vector3(points[0][0], elevations[id] + (reverse ? storeyRise(id) : 0), points[0][1]))
+      const reached = points.slice(1).every(([east, south]) => move(east, south))
+      for (let frame = 0; frame < 20; frame++) walker.tick()
+      routes.push({ id, reverse, reached, error: walker.position().y - .9 - elevations[id] - (reverse ? 0 : storeyRise(id)) })
+    }
+    const entrances = []
+    for (const side of ['east', 'west']) {
+      const sign = side === 'east' ? 1 : -1, doorId = side === 'east' ? 'EG-entrance' : 'west-EG-entrance'
+      const south = 1.15 + housePlacement.z + (side === 'west' ? partner.z : 0)
+      walker.teleport(new THREE.Vector3(sign * 3, 0, 7))
+      walker.setOpening(doorId, 0)
+      walker.teleport(new THREE.Vector3(sign * (5.9 + housePlacement.x), 0, south))
+      const closedPasses = move(sign * (7.6 + housePlacement.x), south)
+      walker.teleport(new THREE.Vector3(sign * 3, 0, 7))
+      walker.setOpening(doorId, 1)
+      walker.teleport(new THREE.Vector3(sign * (5.9 + housePlacement.x), 0, south))
+      entrances.push({ side, closedPasses, openPasses: move(sign * (7.6 + housePlacement.x), south) })
+    }
+    walker.dispose()
+    const result = { walls, routes, entrances, coupling: [coupling.x, coupling.z], slide: opened.x - closed.x, slab: [slab.min.x, slab.max.x, slab.min.z, slab.max.z] }
+    model.dispose()
+    return result
+  })
+  for (const wall of result.walls) {
+    expect(wall.thickness, `${wall.side}/${wall.floor}/${wall.face}`).toBeCloseTo(.4)
+    expect(wall.outer).toBeCloseTo(wall.face === 'east' ? 7 : ['north', 'west'].includes(wall.face) ? -.1 : 10.6)
+    expect(wall.clearance).toBeGreaterThanOrEqual(3)
+    expect(wall.partyEdge).toBeCloseTo(0)
+  }
+  for (const route of result.routes) {
+    expect(route.reached, `${route.id}/${route.reverse}`).toBe(true)
+    expect(Math.abs(route.error)).toBeLessThan(.07)
+  }
+  for (const entrance of result.entrances) { expect(entrance.closedPasses).toBe(false); expect(entrance.openPasses).toBe(true) }
+  expect(result.coupling[0]).toBeCloseTo(6.9)
+  expect(result.coupling[1]).toBeCloseTo(10.6)
+  expect(result.slide).toBeCloseTo(1.25)
+  for (const [index, coordinate] of [0, 7.1, .1, 10.8].entries()) expect(result.slab[index]).toBeCloseTo(coordinate)
+  await page.getByRole('button', { name: '3D', exact: true }).click()
+  await page.locator('.scene-settings summary').waitFor({ timeout: 45000 })
+  const canvas = page.locator('canvas')
+  const before = PNG.sync.read(await canvas.screenshot({ path: `test-results/${testInfo.project.name}-wall-40-3d.png` }))
+  const colors = new Set<string>()
+  for (let offset = 0; offset < before.data.length; offset += 32) colors.add(`${before.data[offset] >> 4},${before.data[offset + 1] >> 4},${before.data[offset + 2] >> 4}`)
+  expect(colors.size).toBeGreaterThan(25)
+  const bounds = (await canvas.boundingBox())!
+  await page.mouse.move(bounds.x + bounds.width * .5, bounds.y + bounds.height * .5)
+  await page.mouse.down()
+  await page.mouse.move(bounds.x + bounds.width * .7, bounds.y + bounds.height * .6, { steps: 10 })
+  await page.mouse.up()
+  const after = PNG.sync.read(await canvas.screenshot({ path: `test-results/${testInfo.project.name}-wall-40-rotated.png` }))
+  let changed = 0
+  for (let offset = 0; offset < before.data.length; offset += 16) if (Math.abs(before.data[offset] - after.data[offset]) > 10) changed++
+  expect(changed).toBeGreaterThan(100)
+})
+
+test('Fenstermasse stehen mit Hinweislinien ausserhalb des Grundrisses', async ({ page }, testInfo) => {
+  await page.goto('/')
+  const plan = page.locator('svg.floor-plan')
+  for (const floor of ['KG', 'EG', 'OG', 'DG']) {
+    await page.getByRole('button', { name: floor, exact: true }).click()
+    await expect(plan.locator('[data-opening-labels]')).toBeVisible()
+    await expect(plan.locator('[data-masonry-joint], [data-exterior-masonry]')).toHaveCount(0)
+    const alignment = await plan.evaluate(svg => {
+      const envelope = svg.querySelector<SVGGraphicsElement>('[data-house-envelope]')!.getBBox()
+      const width = svg.querySelector<SVGGraphicsElement>('[data-total-width]')!.getBBox()
+      const depth = svg.querySelector<SVGGraphicsElement>('[data-total-depth]')!.getBBox()
+      const center = Number(svg.querySelector('[data-total-width-label]')!.getAttribute('x'))
+      return [width.x - envelope.x, width.x + width.width - envelope.x - envelope.width, depth.y - envelope.y, depth.y + depth.height - envelope.y - envelope.height, center - envelope.x - envelope.width / 2]
+    })
+    for (const offset of alignment) expect(offset).toBeCloseTo(0, 5)
+    await expect(plan.locator('[data-clear-depth-label]')).toHaveText('9,900 m lichte Länge')
+    const clearDepth = await plan.locator('[data-clear-depth]').evaluate(element => {
+      const bounds = (element as SVGGraphicsElement).getBBox()
+      return { start: bounds.y, end: bounds.y + bounds.height }
+    })
+    expect(clearDepth.start).toBeCloseTo(.3)
+    expect(clearDepth.end).toBeCloseTo(10.2)
+    const lengthLabel = (await plan.locator('[data-clear-depth-label]').boundingBox())!
+    const envelopeBox = (await plan.locator('[data-house-envelope]').boundingBox())!
+    expect(lengthLabel.x).toBeGreaterThanOrEqual((await plan.boundingBox())!.x)
+    expect(lengthLabel.x + lengthLabel.width).toBeLessThan(envelopeBox.x)
+    if (floor === 'EG') await expect(plan.locator('[data-opening-label="terrace"]')).toContainText('280 × 212,5 cm')
+    if (floor === 'DG') {
+      await expect(plan.locator('[data-opening-label="DG-north-skylight"]')).toContainText('94 × 140 cm')
+      await expect(plan.locator('[data-opening-label="DG-south-skylight"]')).toContainText('94 × 140 cm')
+    }
+    const failures = await plan.evaluate(svg => {
+      const view = (svg as SVGSVGElement).viewBox.baseVal
+      const labels = [...svg.querySelectorAll<SVGGraphicsElement>('[data-opening-label-text]')]
+      const buttons = [...document.querySelectorAll('button')].map(button => button.getBoundingClientRect())
+      const failures: string[] = []
+      for (const [index, label] of labels.entries()) {
+        const box = label.getBBox(), screen = label.getBoundingClientRect()
+        if (box.x < view.x || box.y < view.y || box.x + box.width > view.x + view.width || box.y + box.height > view.y + view.height) failures.push(`clipped: ${label.textContent}`)
+        for (const other of [...labels.slice(index + 1).map(item => item.getBoundingClientRect()), ...buttons]) if (screen.left < other.right && screen.right > other.left && screen.top < other.bottom && screen.bottom > other.top) failures.push(`overlap: ${label.textContent}`)
+      }
+      return failures
+    })
+    expect(failures).toEqual([])
+    await page.screenshot({ path: `test-results/${testInfo.project.name}-opening-labels-${floor}.png` })
+    await page.getByRole('button', { name: 'Bemaßung', exact: true }).click()
+    await expect(plan.locator('[data-opening-label]')).toHaveCount(0)
+    await expect(plan.locator('[data-clear-depth], [data-clear-depth-label]')).toHaveCount(0)
+    await page.getByRole('button', { name: 'Bemaßung', exact: true }).click()
+    await expect(plan.locator('[data-opening-leader]').first()).toBeVisible()
+  }
+})
+
 test('Bemaßung schaltet auch Raumlabels im Grundriss um', async ({ page }, testInfo) => {
   await page.goto('/')
   const plan = page.locator('svg.floor-plan')

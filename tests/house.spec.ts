@@ -1,5 +1,86 @@
 import { expect, test } from '@playwright/test'
 import { PNG } from 'pngjs'
+import { readFile } from 'node:fs/promises'
+
+test('PNG-Export aller Ansichten und SVG bleiben nutzbar', async ({ page }, testInfo) => {
+  await page.addInitScript(() => {
+    const original = HTMLCanvasElement.prototype.getContext
+    Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', { value: function (this: HTMLCanvasElement, contextId: string, options?: Record<string, unknown>) {
+      return original.call(this, contextId, contextId.includes('webgl') ? { ...options, preserveDrawingBuffer: false } : options)
+    } })
+  })
+  await page.goto('/')
+  const exportButton = page.getByRole('button', { name: 'Ansicht als PNG herunterladen' })
+  const exportPng = async (name: string, plan: boolean) => {
+    const pending = page.waitForEvent('download')
+    await exportButton.click()
+    const download = await pending
+    expect(download.suggestedFilename()).toBe(`Hausentwurf-${name}.png`)
+    const filename = `test-results/png-${testInfo.project.name}-${name}.png`
+    await download.saveAs(filename)
+    const image = PNG.sync.read(await readFile(filename))
+    if (plan) expect(Math.max(image.width, image.height)).toBe(3200)
+    else {
+      const size = await page.locator('canvas').evaluate(canvas => ({ width: canvas.width, height: canvas.height }))
+      expect([image.width, image.height]).toEqual([size.width, size.height])
+    }
+    const colors = new Set<string>()
+    let dark = 0, transparent = 0
+    for (let offset = 0; offset < image.data.length; offset += 64) {
+      const red = image.data[offset], green = image.data[offset + 1], blue = image.data[offset + 2]
+      colors.add(`${red >> 4},${green >> 4},${blue >> 4}`)
+      if (image.data[offset + 3] !== 255) transparent++
+      if (red < 200 && green < 200 && blue < 200) dark++
+    }
+    expect(colors.size).toBeGreaterThan(15)
+    expect(dark).toBeGreaterThan(100)
+    expect(transparent).toBe(0)
+    await expect(exportButton).toBeEnabled()
+    await expect(page.getByRole('alert')).toHaveCount(0)
+    return image
+  }
+  for (const floor of ['KG', 'EG', 'OG', 'DG']) {
+    await page.getByRole('button', { name: floor, exact: true }).click()
+    await exportPng(floor, true)
+  }
+  await page.screenshot({ path: `test-results/png-${testInfo.project.name}-toolbar.png` })
+  const bounds = (await page.locator('.drawing-controls').boundingBox())!
+  expect(bounds.x).toBeGreaterThanOrEqual(0)
+  expect(bounds.x + bounds.width).toBeLessThanOrEqual(page.viewportSize()!.width)
+  const svgDownload = page.waitForEvent('download')
+  await page.getByRole('button', { name: 'Plan herunterladen', exact: true }).click()
+  expect((await svgDownload).suggestedFilename()).toBe('Hausentwurf-DG.svg')
+  await page.getByRole('button', { name: 'Querschnitt', exact: true }).click()
+  await exportPng('Schnitt', true)
+  await page.getByRole('button', { name: 'Außenanlagen', exact: true }).click()
+  await exportPng('Aussenanlagen', true)
+  await page.getByRole('button', { name: 'EG', exact: true }).click()
+  await page.getByRole('button', { name: '3D', exact: true }).click()
+  await expect(page.locator('.loading')).toHaveCount(0)
+  await expect(page.locator('canvas')).toBeVisible()
+  const before = await exportPng('EG-3D', false)
+  const canvas = (await page.locator('canvas').boundingBox())!
+  await page.mouse.move(canvas.x + canvas.width * .6, canvas.y + canvas.height * .5)
+  await page.mouse.down()
+  await page.mouse.move(canvas.x + canvas.width * .4, canvas.y + canvas.height * .55, { steps: 10 })
+  await page.mouse.up()
+  const after = await exportPng('EG-3D', false)
+  let changed = 0
+  for (let offset = 0; offset < before.data.length; offset += 64) if (before.data[offset] !== after.data[offset]) changed++
+  expect(changed).toBeGreaterThan(100)
+  await page.screenshot({ path: `test-results/png-${testInfo.project.name}-3d-toolbar.png` })
+  await page.getByRole('button', { name: 'Rundgang', exact: true }).click()
+  await expect(page.locator('.loading')).toHaveCount(0)
+  await expect(page.locator('canvas')).toBeVisible()
+  await exportPng('EG-Rundgang', false)
+  await page.getByRole('button', { name: '2D', exact: true }).click()
+  await page.route('**/*.woff2*', route => route.abort())
+  await exportButton.click()
+  await expect(page.getByRole('alert')).toBeVisible()
+  await expect(exportButton).toBeEnabled()
+  await page.unroute('**/*.woff2*')
+  await exportPng('EG', true)
+})
 
 test('Hauptentwurf, Maße und 3D für alle Geschosse', async ({ page }, testInfo) => {
   const errors: string[] = []

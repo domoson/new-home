@@ -1,18 +1,20 @@
-import { house, lightWells, makeFloor } from './model'
-import { partner } from './context'
+import { houseEnvelope, lightWells, makeFloor, rect } from './model'
+import { partnerEnvelope, siteHouseEnvelope, siteHouseRect } from './context'
 import type { SiteRect } from './parking'
 
 export const splashStripWidth = .4
 export const splashStripLevel = -.14
-export const siteLightWells = [...lightWells, ...lightWells.map(well => ({ ...well, x: -well.x - well.width, z: well.z + partner.z }))]
+export const siteLightWells = [...lightWells.map(well => siteHouseRect(well)), ...lightWells.map(well => siteHouseRect(well, 'west'))]
 export const siteEntrySteps = (['east', 'west'] as const).map(side => {
-  const openings = makeFloor('EG', side).walls.find(wall => wall.id === 'east')!.openings.filter(opening => ['entrance', 'entrance-fixed'].includes(opening.id))
-  const start = Math.min(...openings.map(opening => opening.start)) - .1
-  const end = Math.max(...openings.map(opening => opening.start + opening.width)) + .1
-  return { x: side === 'east' ? house.width : -house.width - .9, z: start + (side === 'east' ? 0 : partner.z), width: .9, depth: end - start }
+  const wall = makeFloor('EG', side).walls.find(wall => wall.id === 'east')!
+  const openings = wall.openings.filter(opening => ['entrance', 'entrance-fixed'].includes(opening.id))
+  const start = wall.z + Math.min(...openings.map(opening => opening.start)) - .1
+  const end = wall.z + Math.max(...openings.map(opening => opening.start + opening.width)) + .1
+  const envelope = houseEnvelope()
+  return siteHouseRect(rect(envelope.x + envelope.width, start, .9, end - start), side)
 })
 
-const buildings = [{ x: 0, z: 0, width: house.width, depth: house.depth }, partner]
+const buildings = [siteHouseEnvelope(), partnerEnvelope()]
 const envelopes = buildings.map(bounds => ({ x: bounds.x - splashStripWidth, z: bounds.z - splashStripWidth, width: bounds.width + 2 * splashStripWidth, depth: bounds.depth + 2 * splashStripWidth }))
 const exclusions = [...buildings, ...siteLightWells, ...siteEntrySteps]
 const bounds = [...envelopes, ...exclusions]

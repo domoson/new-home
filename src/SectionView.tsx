@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Ruler, Trash2 } from 'lucide-react'
-import { atticCeiling, atticCeilingPanels, ceilingHeight, construction, elevations, house, floorIds, floorSlabs, makeFloor, ridgeElevations, roofHeight, roofInnerElevation, roofOuterElevation, roofPanels, roofVerticalThickness, roofWindows, slabThickness, stairFor, stairGuards, stairInnerWall, stairSolids, storeyRise, wallSolids } from './model'
+import { atticCeiling, atticCeilingPanels, ceilingHeight, construction, elevations, house, houseEnvelope, floorIds, floorSlabs, makeFloor, ridgeElevations, roofHeight, roofInnerElevation, roofOuterElevation, roofPanels, roofVerticalThickness, roofWindows, slabThickness, stairFor, stairGuards, stairInnerWall, stairSolids, storeyRise, wallSolids } from './model'
 import type { FloorId, Rect } from './model'
 import { distance, furnitureName, metres } from './measure'
 import type { PlanPoint } from './measure'
@@ -17,7 +17,7 @@ export default function SectionView({ furnished, zoom, floorId, onZoom }: { furn
   const [cursor, setCursor] = useState<PlanPoint | null>(null)
   const [lines, setLines] = useState<{ start: PlanPoint; end: PlanPoint }[]>([])
   const [pan, setPan] = useState({ x: 0, y: 0 })
-  const length = axis === 'NS' ? house.depth : house.width
+  const length = axis === 'NS' ? houseEnvelope().depth : houseEnvelope().width
   const gestures = usePlanGestures(zoom, onZoom, { x: length / 2, y: -3.3 }, pan, setPan, !measuring)
   const roofTop = roofInnerElevation
   const span = (bounds: Rect) => sectionSpan(bounds, axis, position)

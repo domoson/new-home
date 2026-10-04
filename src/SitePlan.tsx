@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { PointerEvent } from 'react'
 import { MapPinned, Ruler, Trash2 } from 'lucide-react'
-import { boundaryDistance, boundaryZ, partner, siteBoundary, siteDivision, siteParcels } from './context'
-import { house } from './model'
+import { boundaryDistance, boundaryZ, partnerEnvelope, siteBoundary, siteDivision, siteHouseEnvelope, siteParcels } from './context'
 import { houseSetbacks } from './setbacks'
 import { usePlanGestures } from './planGestures'
 import { distance, metres } from './measure'
@@ -96,7 +95,7 @@ export default function SitePlan({ dimensions, zoom, selected, onSelect, onZoom 
       <polygon points={siteBoundary.map(point => point.join(',')).join(' ')} fill="url(#site-grass)" stroke="#9da995" strokeWidth=".025" />
       <path d={`M${siteBoundary[3]} L${siteBoundary[2]}`} stroke="#d3d8d2" strokeWidth=".12" />
       <text x="0" y="25" textAnchor="middle" fontSize={overview ? 1.25 : .5} fill="#607068">An der Röth</text>
-      <path d={`M${siteDivision[0]} L0,0 M0,${house.depth + partner.z} L${siteDivision[1]}`} stroke="#809a72" strokeWidth=".45" />
+      <path d={`M${siteDivision[0]} L0,${siteHouseEnvelope().z} M0,${partnerEnvelope().z + partnerEnvelope().depth} L${siteDivision[1]}`} stroke="#809a72" strokeWidth=".45" />
       <g data-splash-strip="true">
         <title>Traufstreifen: 40 cm grauer Kies, Lichtschächte ausgespart</title>
         <defs><pattern id="site-gravel" width=".16" height=".16" patternUnits="userSpaceOnUse"><rect width=".16" height=".16" fill="#c3c5bf" /><circle cx=".04" cy=".05" r=".018" fill="#939891" /><circle cx=".12" cy=".13" r=".014" fill="#e1e2dc" /></pattern></defs>

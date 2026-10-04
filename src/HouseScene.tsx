@@ -1,9 +1,11 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useImperativeHandle, useRef, useState } from 'react'
+import type { RefObject } from 'react'
+import { canvasPng } from './exportImage'
 import { DoorOpen, House, Lightbulb, LightbulbOff, MousePointer2, RotateCcw, Settings2, Sun } from 'lucide-react'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js'
-import { elevations, floorIds, makeFloor } from './model'
+import { elevations, floorIds, housePlacement, makeFloor } from './model'
 import type { FloorId } from './model'
 import { buildScene } from './scene'
 import { createScalePeople } from './scalePeople'
@@ -99,9 +101,13 @@ function Joystick({ onMove }: { onMove: (x: number, y: number) => void }) {
   )
 }
 
-export default function HouseScene({ floorId, mode, furnished, roof, cutWalls, selected, reset, settings, onSettings }: { floorId: FloorId; mode: 'orbit' | 'walk'; furnished: boolean; roof: boolean; cutWalls: boolean; selected: string; reset: number; settings: SceneSettings; onSettings: (settings: SceneSettings) => void }) {
+export default function HouseScene({ floorId, mode, furnished, roof, cutWalls, selected, reset, settings, onSettings, captureImage }: { floorId: FloorId; mode: 'orbit' | 'walk'; furnished: boolean; roof: boolean; cutWalls: boolean; selected: string; reset: number; settings: SceneSettings; onSettings: (settings: SceneSettings) => void; captureImage: RefObject<(() => Promise<Blob>) | null> }) {
   const container = useRef<HTMLDivElement>(null)
-  const commands = useRef<{ key: (key: string, down: boolean) => void; move: (x: number, y: number) => void; door: (id?: string) => boolean; opening: (id: string, amount: number) => void; lock: () => void; home: () => void; facade: () => void; settings: (value: SceneSettings) => void } | null>(null)
+  const commands = useRef<{ captureImage: () => Promise<Blob>; key: (key: string, down: boolean) => void; move: (x: number, y: number) => void; door: (id?: string) => boolean; opening: (id: string, amount: number) => void; lock: () => void; home: () => void; facade: () => void; settings: (value: SceneSettings) => void } | null>(null)
+  useImperativeHandle(captureImage, () => async () => {
+    if (!commands.current) throw new Error('Die Ansicht ist noch nicht bereit. Bitte erneut versuchen.')
+    return commands.current.captureImage()
+  }, [])
   const latestSettings = useRef(settings)
   const [materialHouse, setMaterialHouse] = useState<'east' | 'west'>('east')
   const [lightHouse, setLightHouse] = useState<'east' | 'west'>('east')
@@ -127,6 +133,7 @@ export default function HouseScene({ floorId, mode, furnished, roof, cutWalls, s
       const sun = new THREE.DirectionalLight('#fff4d9', 3); sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048); sun.shadow.camera.left = -24; sun.shadow.camera.right = 24; sun.shadow.camera.top = 24; sun.shadow.camera.bottom = -24; sun.shadow.camera.far = 100; sun.shadow.normalBias = .025; sun.shadow.bias = -.00015; sun.target.position.set(1, 0, 6); scene.add(sun, sun.target)
       const model = buildScene(floorId, mode === 'walk', roof, furnished, cutWalls); scene.add(model.group)
       const people = createScalePeople(mode === 'walk' || roof ? floorIds : [floorId], furnished)
+      people.group.position.set(housePlacement.x, 0, housePlacement.z)
       scene.add(people.group)
       const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
       const outdoorLighting = createOutdoorLighting(model.group)
@@ -172,7 +179,7 @@ export default function HouseScene({ floorId, mode, furnished, roof, cutWalls, s
       const controls = new OrbitControls(camera, renderer.domElement); controls.enableDamping = true; controls.enabled = mode === 'orbit'; controls.maxPolarAngle = Math.PI * .48; controls.minDistance = 3; controls.maxDistance = 100
       const pointer = new PointerLockControls(camera, renderer.domElement); pointer.pointerSpeed = .65
       const room = makeFloor(floorId).rooms.find(room => room.id === selected)
-      const spawn = new THREE.Vector3(room?.spawn[0] ?? 3.32, elevations[floorId], room?.spawn[1] ?? 6.95)
+      const spawn = new THREE.Vector3((room?.spawn[0] ?? 3.32) + housePlacement.x, elevations[floorId], (room?.spawn[1] ?? 6.95) + housePlacement.z)
       const walker = physics ? physics.createWalker(model, camera, spawn) : null
       const toggleOpening = (id?: string) => {
         const result = walker ? walker.toggleDoor(id) : id ? model.toggleOpening(id) : false
@@ -238,7 +245,7 @@ export default function HouseScene({ floorId, mode, furnished, roof, cutWalls, s
         const distance = 11 / Math.sin(Math.min(vertical, 2 * Math.atan(Math.tan(vertical / 2) * aspect)) / 2)
         controls.target.set(0, 4.5, 5.6); camera.position.copy(controls.target).addScaledVector(new THREE.Vector3(1, .55, 1.1).normalize(), distance); controls.update()
       }
-      commands.current = { key(key, pressed) { if (pressed) walker?.keys.add(key); else walker?.keys.delete(key) }, move(x, y) { if (walker) { walker.moveVector.x = x; walker.moveVector.y = y } }, door: toggleOpening, opening(id, amount) { const result = walker ? walker.setOpening(id, amount) : model.setOpening(id, amount); updateOpenings(); return result }, lock() { if (pointer.isLocked) pointer.unlock(); else pointer.lock() }, home, facade: facadeView, settings: applySettings }
+      commands.current = { captureImage() { renderer.render(scene, camera); return canvasPng(renderer.domElement) }, key(key, pressed) { if (pressed) walker?.keys.add(key); else walker?.keys.delete(key) }, move(x, y) { if (walker) { walker.moveVector.x = x; walker.moveVector.y = y } }, door: toggleOpening, opening(id, amount) { const result = walker ? walker.setOpening(id, amount) : model.setOpening(id, amount); updateOpenings(); return result }, lock() { if (pointer.isLocked) pointer.unlock(); else pointer.lock() }, home, facade: facadeView, settings: applySettings }
       let last = performance.now(), accumulator = 0, lastFloor = floorId as string
       renderer.setAnimationLoop(() => {
         const now = performance.now(), delta = Math.min((now - last) / 1000, .1); accumulator += delta; last = now

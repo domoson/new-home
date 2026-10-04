@@ -1,4 +1,4 @@
-import { basementWindow, construction, elevations, house, interiorWallThickness, rect, stair, standardDoor } from './model'
+import { basementWindow, construction, elevations, facadeGrid, house, houseEnvelope, interiorWallThickness, rect, stair, standardDoor } from './model'
 import type { Floor, FloorId, Furniture, Opening, Rect, Room, Wall } from './model'
 import { kitchenFurniture } from './kitchenLayout'
 import { raffstores } from './raffstore'
@@ -35,14 +35,15 @@ function shell(id: FloorId): Wall[] {
   const east: Opening[] = id === 'KG' ? [windowOpening('well-hobby', house.depth - basementWindow.southGap - basementWindow.width, basementWindow.width, 1.35, basementWindow.height)] : id === 'EG' ? [windowOpening('entrance-fixed', .3, .3, 0, 2.25), { ...opening('entrance', .6), width: 1.1, height: 2.25, swing: 'reverse' }, windowOpening('kitchen-east-window', 3.3, 1.8, 1.375, .75), { ...windowOpening('living-corner-fixed', 9.3, 1.2, 0, 2.125), cornerGlazing: true }] : id === 'OG' ? [{ ...windowOpening('east-north', 3.3, 1.2, 0, 2.125), windowLayout: { columns: 1, lowerFixed: .9 } }] : [{ ...windowOpening('gable-office', 3.3, 1.2, 0, 2.125), windowLayout: { columns: 1, lowerFixed: .9 } }, { ...windowOpening('gable-parents', house.depth - 3.3 - 1.2, 1.2, 0, 2.125), windowLayout: { columns: 1, lowerFixed: .9 } }]
   const southWallLength = house.east - house.west
   const terraceWidth = 2.5, terraceLeaf = terraceWidth / 2
-  const terraceStart = southWallLength - terraceWidth - construction.exteriorWall
-  const south: Opening[] = id === 'EG' ? [windowOpening('garden-west', 1.5 - house.west, 1.2, 0, 2.125), opening('terrace', terraceStart, terraceLeaf, 'door', 0, 2.125), { ...windowOpening('garden-fixed', terraceStart + terraceLeaf, terraceLeaf + construction.exteriorWall, 0, 2.125), cornerGlazing: true, windowLayout: { columns: 1 } }] : id === 'OG' ? [{ ...windowOpening('south-west', 1.5 - house.west, 1.2, 0, 2.125), windowLayout: { columns: 1, lowerFixed: .9 } }, windowOpening('south-east', southWallLength - construction.exteriorWall - 1.8, 1.8, 1.15, 1)] : []
+  const terraceStart = southWallLength - terraceWidth - facadeGrid
+  const south: Opening[] = id === 'EG' ? [windowOpening('garden-west', 1.5 - house.west, 1.2, 0, 2.125), opening('terrace', terraceStart, terraceLeaf, 'door', 0, 2.125), { ...windowOpening('garden-fixed', terraceStart + terraceLeaf, terraceLeaf + facadeGrid, 0, 2.125), cornerGlazing: true, windowLayout: { columns: 1 } }] : id === 'OG' ? [{ ...windowOpening('south-west', 1.5 - house.west, 1.2, 0, 2.125), windowLayout: { columns: 1, lowerFixed: .9 } }, windowOpening('south-east', southWallLength - facadeGrid - 1.8, 1.8, 1.15, 1)] : []
   if (id === 'EG') for (const glazed of [...east, ...south].filter(opening => opening.kind === 'window' && opening.sill === 0)) glazed.windowLayout = { columns: glazed.windowLayout!.columns }
   if (id === 'EG') {
     south.find(opening => opening.id === 'garden-west')!.windowLayout = { columns: 1, lowerFixed: .9 }
   }
   if (id !== 'KG') for (const glazed of [...north, ...east, ...south].filter(opening => opening.kind === 'window' && opening.width >= 1.5 && !opening.id.includes('fixed'))) glazed.windowLayout = { ...glazed.windowLayout!, ventilationWidth: .6 }
-  return [wall('west', 'z', 0, 0, house.depth, [], house.west), wall('east', 'z', house.east, 0, house.depth, east, construction.exteriorWall), wall('north', 'x', house.west, 0, house.east - house.west, north, construction.exteriorWall), wall('south', 'x', house.west, house.south, house.east - house.west, south, construction.exteriorWall)]
+  const envelope = houseEnvelope()
+  return [wall('west', 'z', envelope.x, envelope.z, envelope.depth, [], construction.partyWall), wall('east', 'z', house.east, envelope.z, envelope.depth, east.map(opening => ({ ...opening, start: opening.start - envelope.z })), construction.exteriorWall), wall('north', 'x', house.west, envelope.z, house.east - house.west, north, construction.exteriorWall), wall('south', 'x', house.west, house.south, house.east - house.west, south, construction.exteriorWall)]
 }
 
 export function buildProviderFloor(id: FloorId, side: 'east' | 'west'): Floor {

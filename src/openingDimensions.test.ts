@@ -1,9 +1,20 @@
 import { describe, expect, it } from 'vitest'
 import { floorIds, makeFloor, rect } from './model'
 import type { Wall } from './model'
-import { openingDimensions } from './openingDimensions'
+import { openingDimensions, openingLabels } from './openingDimensions'
 
 describe('opening dimension chain', () => {
+  it('beschriftet Fenster und die komplette Hebeschiebeanlage mit Modellmassen', () => {
+    for (const id of floorIds) {
+      const floor = makeFloor(id), labels = openingLabels(floor)
+      for (const wall of floor.walls) for (const opening of wall.openings.filter(opening => opening.kind === 'window' && opening.id !== 'garden-fixed')) expect(labels.some(label => label.id === opening.id && label.size.endsWith(' cm'))).toBe(true)
+    }
+    expect(openingLabels(makeFloor('EG')).find(label => label.id === 'terrace')).toMatchObject({ title: 'Hebeschiebet\u00fcr', size: '280 \u00d7 212,5 cm', detail: 'Fl\u00fcgel 125 + Festfeld 155 cm' })
+    expect(openingLabels(makeFloor('EG')).some(label => label.id === 'garden-fixed')).toBe(false)
+    const skylights = openingLabels(makeFloor('DG')).filter(label => label.id.includes('skylight'))
+    expect(skylights).toHaveLength(2)
+    expect(skylights.every(label => label.size === '94 \u00d7 140 cm')).toBe(true)
+  })
   it('sorts openings and includes both corners and every pier', () => {
     const wall: Wall = { ...rect(0, 0, 5, .3), id: 'north', axis: 'x', openings: [
       { id: 'door', start: 3, width: 1, height: 2.1, sill: 0, kind: 'door' },

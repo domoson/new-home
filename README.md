@@ -90,26 +90,44 @@ und Kollisionen bleiben unveraendert. Die Farbgebung ist eine Annaeherung an
 trockenen Sommerbestand, keine exakte Fototextur; der Datumsregler aendert
 weiterhin nur den Sonnenstand, nicht den Vegetationszustand.
 
-## Aktuelle Variante 6,90 x 10,50 m
+## Aktuelle Variante 7,10 x 10,70 m
 
 Die neue EG-/OG-Skizze ersetzt die bisherige Raumaufteilung. Die Osthaelfte ist
 auf KG, EG, OG und DG angepasst und eingerichtet; die Westhaelfte bleibt
 ein Baukoerper ohne Innenausbau. Alte Terrasse und Vordach sind entfernt.
 Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
 
-- Je Haelfte 6,90 x 10,50 m; 72,45 m2 Bruttogrundflaeche je Ebene,
-  Gesamtbreite 13,80 m, Versatz 0,90 m nach Sueden
+- Je Haelfte 7,10 x 10,70 m; 75,97 m2 Bruttogrundflaeche je Ebene,
+  Gesamtbreite 14,20 m, Versatz 0,90 m nach Sueden
   fuer West. Gemeinsame Hauswand auf der unveraenderten, flaechengleichen Teilung.
-- Bei unveraenderter Lage hat die nordwestliche Ecke des Westhauses nur noch
-  ca. 2,98 m senkrechten Abstand zur Nordgrenze. Keine automatische Verschiebung;
-  Abstands-/Dachflaechen und Lage beduerfen fachlicher Pruefung.
+- Aussenwaende und Trennwandanteil je Haelfte auf 40 cm verstaerkt.
+  Die unveraenderten Innenraeume ruecken an der gemeinsamen Trennlinie
+  jeweils 10 cm auseinander. Innenraeume, Moebel,
+  Fensterpositionen/-groessen, Dach und 30-cm-Raster bleiben unveraendert.
+  Deckenraender, Lichtschachtanschluesse und Eingangspodeste folgen der Aussenkante.
+  Der Dachueberstand wird entsprechend kleiner; keine Dachvergroesserung.
+- Das gesamte Doppelhaus ist um 20 cm nach Sueden verschoben; Grundstueck,
+  Nachbargebaeude und Stellplaetze bleiben ortsfest. Hausnahe Anschluesse,
+  3D-Kollisionen und Rundgang-Startpunkte folgen der Platzierung.
+  Kleinster Nordabstand ca. 3,05 m, aber ueberschlaegige Nord-Abstandsflache
+  ca. 3,17 m: noch ca. 12 cm Ueberstand an der kritischsten Ecke.
+  Insgesamt ca. 33 cm Suedverschiebung waeren dafuer erforderlich,
+  sind jedoch noch nicht freigegeben. Keine baurechtliche Freigabe.
 - FFB KG / EG / OG / DG: -2,45 / 0,00 / 2,97 / 5,94 m.
 - Lichte Hoehen KG 2,25 m, EG/OG 2,77 m; Geschossdecken 20 cm.
 - Dach 35 Grad, Innenknie 50 cm; DG-Decke bei 2,77 m, 24 cm stark.
   Die Firstoberkante liegt modelliert bei 10,27 m ueber FFB EG beziehungsweise
   10,47 m ueber dem angenommenen Gelaende und damit 3,50 cm tiefer als zuvor.
-  Aussenwaende und Haustrennwand 30 cm, Innenwaende 12,5 cm und Dachpaket 24 cm sind Annahmen.
-  Das Aussenwandmauerwerk ist im Grundriss schematisch im 30-cm-Raster dargestellt.
+  Aussenwaende und Trennwand je Haelfte 40 cm, Innenwaende 12,5 cm und Dachpaket 24 cm sind Annahmen.
+  Das 30-cm-Fensterraster bleibt erhalten, die grauen Mauerwerksrasterlinien
+  im Grundriss sind entfernt. Gesamtmasslinien liegen auf den Aussenkanten.
+  Lichte Breite 6,300 m unten und lichte Laenge 9,900 m links neben der
+  Trennwand beziehen sich auf die Innenkanten der Aussenwaende.
+  Bei aktiver Bemassung stehen Fenstertyp und Breite x Hoehe in cm mit Hinweislinien
+  ausserhalb des Plans. Dachfenster erhalten ihr Nennmass entlang der Dachflaeche.
+  Die Hebeschiebetuer ist als Gesamtanlage 280 x 212,5 cm beschriftet,
+  mit 125 cm beweglichem Fluegel und 155 cm Festfeld. Modell-, keine Bestellmasse;
+  die Eckkopplung wird geometrisch an die dickere Wand angepasst.
   Zentrale Querwaende an Treppe/Flur 20 cm; kein statischer Nachweis.
   DG-Innenwaende enden an der Unterkante der Spitzbodendecke.
 - Osthaelfte: je ein Dachfenster Nord und Sued, Nennmass 94 x 140 cm entlang
@@ -381,6 +399,10 @@ Planungsannahmen in der Anwendung. Umgebungsmodelle bleiben weiterverwendet.
 - KG, EG, OG und DG waehlen; Raeume im Plan oder in der Raumliste anklicken.
 - 2D: Plus/Minus zoomt; auf freier Zeichenflaeche ziehen verschiebt den vergroesserten
   Plan. Der Rahmenknopf setzt die Ansicht zurueck. Download exportiert das aktuelle SVG.
+  Der zusaetzliche Bild-Download exportiert die aktuelle Ansicht als PNG:
+  Grundriss, Schnitt und Lageplan mit 3200 Pixeln an der langen Kante,
+  weissem Hintergrund und eingebetteter Planschrift; 3D und Rundgang in
+  aktueller Perspektive und Canvas-Aufloesung. Bedienelemente werden nicht exportiert.
 - Mausrad ueber dem 2D-Plan oder Schnitt zoomt stufenlos wie in 3D, ohne Seitenscrollen.
 - Hover bzw. Antippen zeigt Objektmasse: Moebel samt Hoehe/Aufstand, Wandteilstuecke
   mit Gesamtlaenge und Staerke, Tueren/Fenster mit Brüstung, Stufen/Podeste, Raeume,

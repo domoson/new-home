@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js'
-import { atticCeiling, atticCeilingPanels, construction, house, elevations, floorIds, floorSlabs, furnitureVolumes, lightWells, makeFloor, rect, ridgeElevations, roofHeight, roofInnerElevation, roofOuterElevation, roofPanels, roofVerticalThickness, roofWindows, slabThickness, stairFor, stairGuards, stairHandrails, stairInnerWall, stairSolids, storeyRise, wallSolids } from './model'
+import { atticCeiling, atticCeilingPanels, construction, house, houseEnvelope, housePlacement, elevations, floorIds, floorSlabs, furnitureVolumes, lightWells, makeFloor, rect, ridgeElevations, roofHeight, roofInnerElevation, roofOuterElevation, roofPanels, roofVerticalThickness, roofWindows, slabThickness, stairFor, stairGuards, stairHandrails, stairInnerWall, stairSolids, storeyRise, wallSolids } from './model'
 import { windowFrame, windowGap, windowJoint, windowMullionStart, windowPanels } from './windowLayout'
 import { kitchenModules, moduleFront } from './kitchenStorage'
 import { terraceFurniture, terraceParts, westTerraceFurniture } from './terrace'
@@ -10,7 +10,7 @@ import { createIndirectLighting } from './indirectLighting'
 import { stairPrism } from './winderStair'
 import { roofTileGeometry } from './roofTiles'
 import type { FloorId, Furniture, Rect, Solid } from './model'
-import { finishes, initialAppearance, partner, siteBoundary } from './context'
+import { finishes, initialAppearance, partner, partnerEnvelope, siteBoundary, siteHouseEnvelope, siteHouseRect } from './context'
 import type { FacadeComposition, FinishKey, WoodProfile } from './context'
 import { createFacadeMaterial } from './facade'
 import { raffstores } from './raffstore'
@@ -69,10 +69,11 @@ function floorTexture() {
 
 export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, furnished: boolean, cutWalls = false, includeSite = true): SceneModel {
   const group = new THREE.Group(), colliders: ColliderShape[] = [], triangles: SceneModel['triangles'] = [], doors: DoorModel[] = []
+  const siteGroup = new THREE.Group(), siteTriangles: SceneModel['triangles'] = []
   const textures: THREE.Texture[] = [], materials: THREE.Material[] = []
   const mat = (color: string, roughness = .8, map?: THREE.Texture) => { const result = new THREE.MeshStandardMaterial({ color, roughness, map: map ?? null }); materials.push(result); return result }
   const oak = oakTexture(), floorMap = floorTexture(); textures.push(oak, floorMap)
-  const coordinates = includeSite ? new THREE.Matrix4() : new THREE.Matrix4().makeScale(-1, 1, 1).setPosition(0, 0, -partner.z)
+  const coordinates = includeSite ? new THREE.Matrix4().makeTranslation(-housePlacement.x, 0, -housePlacement.z) : new THREE.Matrix4().makeScale(-1, 1, 1).setPosition(-housePlacement.x, 0, -partner.z - housePlacement.z)
   const facadeFinish = createFacadeMaterial(oak, false, coordinates), facade = facadeFinish.material; materials.push(facade)
   const canopyFinish = createFacadeMaterial(oak, true, coordinates); materials.push(canopyFinish.material)
   facade.color.set(initialAppearance.facade)
@@ -491,6 +492,7 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
     if (collide) triangles.push({ vertices, indices })
   }
   const renderedFloors = walk || showRoof ? floorIds : [floorId]
+  const envelope = houseEnvelope()
   const blinds: ReturnType<typeof createRaffstore>[] = []
   const roomLighting = createRoomLighting(includeSite ? renderedFloors : [], materials, furnished); group.add(roomLighting.group)
   const party = furnished && includeSite && makeFloor('KG').furniture.some(item => item.id === 'party-sofa') && renderedFloors.includes('KG') ? createPartyRoom(materials) : undefined
@@ -502,10 +504,10 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
       blinds.push(blind); group.add(blind.group)
     }
     const cut = cutWalls && !walk && !showRoof
-    for (const slab of includeSite ? floorSlabs(id) : [rect(0, 0, house.width, house.depth)]) {
+    for (const slab of includeSite ? floorSlabs(id) : [envelope]) {
       const texture = floorMap.clone(); texture.repeat.set(slab.width / 2, slab.depth / 2); texture.needsUpdate = true; textures.push(texture)
       const floorMaterial = id === 'KG' ? stone : mat('#ffffff', .8, texture)
-      const mesh = addBox(slab, base - slabThickness(id), slabThickness(id), [Math.abs(slab.x + slab.width - house.width) < .000001 ? facade : plaster, slab.x === 0 ? facade : plaster, floorMaterial, plaster, Math.abs(slab.z + slab.depth - house.depth) < .000001 ? facade : plaster, slab.z === 0 ? facade : plaster]); mesh.name = `${id}-slab`
+      const mesh = addBox(slab, base - slabThickness(id), slabThickness(id), [Math.abs(slab.x + slab.width - envelope.x - envelope.width) < .000001 ? facade : plaster, slab.x === envelope.x ? facade : plaster, floorMaterial, plaster, Math.abs(slab.z + slab.depth - envelope.z - envelope.depth) < .000001 ? facade : plaster, slab.z === envelope.z ? facade : plaster]); mesh.name = `${id}-slab`
     }
     for (const room of floor.rooms.filter(room => ['wc', 'bath', 'entry', 'pantry'].includes(room.id) || room.id === 'hall' && id !== 'EG')) for (const part of room.tileParts ?? room.parts) {
       if (room.id === 'hall' && id !== 'EG') {
@@ -546,7 +548,7 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
         const openHeight = cut && opening.kind !== 'window' ? Math.min(opening.height, Math.max(0, 1.05 - opening.sill)) : opening.height
         if (opening.kind === 'window') {
           if (openHeight <= 0) continue
-          const glazing = opening.cornerGlazing ? { ...opening, width: opening.width + (wall.axis === 'x' ? construction.exteriorWall / 2 : -construction.exteriorWall / 2) } : opening
+          const glazing = opening.cornerGlazing ? { ...opening, width: (wall.axis === 'x' ? wall.width : wall.depth) - opening.start + (wall.axis === 'x' ? construction.exteriorWall / 2 : -construction.exteriorWall / 2) } : opening
           const fixedBox = (start: number, bottom: number, width: number, height: number, material: THREE.Material, thickness = .08) => {
             const bounds = wall.axis === 'x' ? rect(east + start, south - thickness / 2, width, thickness) : rect(east - thickness / 2, south + start, thickness, width)
             const mesh = addBox(bounds, base + opening.sill + bottom, height, material === frameMaterial ? frameFaces(wall.axis === 'z' ? 1 : wall.id === 'north' ? 4 : 5) : material)
@@ -668,7 +670,7 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
       const gutter = new THREE.Mesh(new THREE.CylinderGeometry(.07, .07, house.width + .35, 16, 1, true, Math.PI, Math.PI), roofEdge)
       gutter.rotation.z = Math.PI / 2; gutter.position.set((house.width + .25) / 2, roofOuterElevation(south) - .07, south); group.add(gutter)
       gutter.name = `main-gutter-${side}`
-      const pipeX = house.west + .04, wallSouth = side === 'north' ? 0 : house.depth, bendRadius = .1, tubeRadius = .04, gutterY = roofOuterElevation(south) - .07
+      const pipeX = house.west + .04, wallSouth = side === 'north' ? envelope.z : envelope.z + envelope.depth, bendRadius = .1, tubeRadius = .04, gutterY = roofOuterElevation(south) - .07
       const wallZ = side === 'north' ? wallSouth - .04 : wallSouth + .04
       const pipeTop = gutterY - bendRadius
       const pipe = new THREE.Mesh(new THREE.CylinderGeometry(tubeRadius, tubeRadius, pipeTop + .14, 12), roofEdge)
@@ -703,27 +705,28 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
     const deckTexture = oak.clone(); deckTexture.repeat.set(.125, 1); deckTexture.needsUpdate = true; textures.push(deckTexture)
     const deckMaterial = mat('#ffffff', .85, deckTexture)
     for (const part of terraceParts) for (let offset = 0; offset < part.width - .006; offset += .15) { const mesh = addBox(rect(part.x + offset, part.z, Math.min(.144, part.width - offset), part.depth), -.04, .04, deckMaterial); mesh.name = 'terrace-board'; mesh.castShadow = false }
-    const entranceOpenings = makeFloor('EG', includeSite ? 'east' : 'west').walls.find(wall => wall.id === 'east')!.openings.filter(opening => ['entrance', 'entrance-fixed'].includes(opening.id))
-    const entranceStart = Math.min(...entranceOpenings.map(opening => opening.start))
-    const entranceEnd = Math.max(...entranceOpenings.map(opening => opening.start + opening.width))
-    addBox(rect(house.width, entranceStart - .1, .9, entranceEnd - entranceStart + .2), -.2, .2, stone).name = 'entry-step'
+    const entranceWall = makeFloor('EG', includeSite ? 'east' : 'west').walls.find(wall => wall.id === 'east')!
+    const entranceOpenings = entranceWall.openings.filter(opening => ['entrance', 'entrance-fixed'].includes(opening.id))
+    const entranceStart = entranceWall.z + Math.min(...entranceOpenings.map(opening => opening.start))
+    const entranceEnd = entranceWall.z + Math.max(...entranceOpenings.map(opening => opening.start + opening.width))
+    addBox(rect(envelope.x + envelope.width, entranceStart - .1, .9, entranceEnd - entranceStart + .2), -.2, .2, stone).name = 'entry-step'
     if (furnished) for (const item of includeSite ? terraceFurniture : westTerraceFurniture) addFurniture(item, 0)
   }
   if (walk || showRoof || floorId === 'KG') {
     const wells = lightWells
     if (includeSite) {
     const shape = new THREE.Shape(siteBoundary.map(([x, z]) => new THREE.Vector2(x, z)))
-    for (const hole of [rect(0, 0, house.width, house.depth), rect(partner.x, partner.z, partner.width, partner.depth), ...wells, ...wells.map(well => rect(-well.x - well.width, well.z + partner.z, well.width, well.depth))]) shape.holes.push(new THREE.Path([new THREE.Vector2(hole.x, hole.z), new THREE.Vector2(hole.x + hole.width, hole.z), new THREE.Vector2(hole.x + hole.width, hole.z + hole.depth), new THREE.Vector2(hole.x, hole.z + hole.depth)]))
+    for (const hole of [siteHouseEnvelope(), partnerEnvelope(), ...wells.flatMap(well => [siteHouseRect(well), siteHouseRect(well, 'west')])]) shape.holes.push(new THREE.Path([new THREE.Vector2(hole.x, hole.z), new THREE.Vector2(hole.x + hole.width, hole.z), new THREE.Vector2(hole.x + hole.width, hole.z + hole.depth), new THREE.Vector2(hole.x, hole.z + hole.depth)]))
     const geometry = new THREE.ShapeGeometry(shape); geometry.rotateX(Math.PI / 2); geometry.translate(0, construction.terrain, 0)
     const lawn = createSummerLawnTexture(); textures.push(lawn); groundMaterial.map = lawn
-    const ground = new THREE.Mesh(geometry, groundMaterial); ground.name = 'site-ground'; ground.receiveShadow = true; group.add(ground)
+    const ground = new THREE.Mesh(geometry, groundMaterial); ground.name = 'site-ground'; ground.receiveShadow = true; siteGroup.add(ground)
     const walkBounds = new THREE.Box2().setFromPoints(shape.getPoints())
     const walkShape = new THREE.Shape([walkBounds.min.clone(), new THREE.Vector2(walkBounds.max.x, walkBounds.min.y), walkBounds.max.clone(), new THREE.Vector2(walkBounds.min.x, walkBounds.max.y)])
     walkShape.holes = shape.holes
     const walkGeometry = new THREE.ShapeGeometry(walkShape); walkGeometry.rotateX(Math.PI / 2); walkGeometry.translate(0, construction.terrain, 0)
-    triangles.push({ vertices: new Float32Array(walkGeometry.getAttribute('position').array), indices: new Uint32Array(walkGeometry.getIndex()!.array) })
+    siteTriangles.push({ vertices: new Float32Array(walkGeometry.getAttribute('position').array), indices: new Uint32Array(walkGeometry.getIndex()!.array) })
     walkGeometry.dispose()
-    for (let index = 0; index < siteBoundary.length; index++) { const [x, z] = siteBoundary[index], [nextX, nextZ] = siteBoundary[(index + 1) % siteBoundary.length]; beam(new THREE.Vector3(x, construction.terrain + .02, z), new THREE.Vector3(nextX, construction.terrain + .02, nextZ), .035, stone) }
+    for (let index = 0; index < siteBoundary.length; index++) { const [x, z] = siteBoundary[index], [nextX, nextZ] = siteBoundary[(index + 1) % siteBoundary.length]; siteGroup.add(beam(new THREE.Vector3(x, construction.terrain + .02, z), new THREE.Vector3(nextX, construction.terrain + .02, nextZ), .035, stone)) }
     }
     for (const well of wells) {
       addBox(well, -1.4, .12, stone).name = 'light-well-base'
@@ -732,7 +735,7 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
       for (let along = .08; along < well.depth; along += .12) addBox(rect(well.x, well.z + along, well.width, .012), -.14, .015, dark, false)
     }
     const soil = mat('#969b93'); soil.transparent = true; soil.opacity = .18; soil.depthWrite = false
-    for (const edge of [rect(-.08, 0, .08, house.depth), rect(0, -.08, house.width, .08), rect(house.width, 0, .08, house.depth), rect(0, house.depth, house.width, .08)]) addBox(edge, elevations.KG - slabThickness('KG'), construction.terrain - elevations.KG + slabThickness('KG'), soil, false)
+    for (const edge of [rect(envelope.x - .08, envelope.z, .08, envelope.depth), rect(envelope.x, envelope.z - .08, envelope.width, .08), rect(envelope.x + envelope.width, envelope.z, .08, envelope.depth), rect(envelope.x, envelope.z + envelope.depth, envelope.width, .08)]) addBox(edge, elevations.KG - slabThickness('KG'), construction.terrain - elevations.KG + slabThickness('KG'), soil, false)
     groundMaterial.transparent = floorId === 'KG'; groundMaterial.opacity = floorId === 'KG' ? .25 : 1; groundMaterial.depthWrite = floorId !== 'KG'
   }
   const targetMaterial = new THREE.MeshBasicMaterial({ colorWrite: false, depthWrite: false }); materials.push(targetMaterial)
@@ -742,14 +745,27 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
     target.position.copy(opening.center).applyQuaternion(target.quaternion).add(opening.position)
     target.userData.opening = opening; target.name = 'opening-target'; group.add(target)
   }
+  if (includeSite) {
+    const building = new THREE.Group()
+    building.name = 'house-east'
+    building.add(...group.children)
+    building.position.set(housePlacement.x, 0, housePlacement.z)
+    group.add(building, siteGroup)
+    for (const collider of colliders) { collider.position.x += housePlacement.x; collider.position.z += housePlacement.z }
+    for (const triangle of triangles) {
+      triangle.vertices = triangle.vertices.slice()
+      for (let index = 0; index < triangle.vertices.length; index += 3) { triangle.vertices[index] += housePlacement.x; triangle.vertices[index + 2] += housePlacement.z }
+    }
+    triangles.push(...siteTriangles)
+  }
   const west = includeSite ? buildScene(floorId, walk, showRoof, furnished, cutWalls, false) : undefined
   const indirectLighting = createIndirectLighting(renderedFloors, materials, coordinates, includeSite ? 'east' : 'west')
   if (west) {
-    west.group.name = 'house-west'; west.group.scale.x = -1; west.group.position.z = partner.z; group.add(west.group)
-    for (const collider of west.colliders) colliders.push({ position: new THREE.Vector3(-collider.position.x, collider.position.y, collider.position.z + partner.z), size: collider.size.clone(), rotation: new THREE.Quaternion(collider.rotation.x, -collider.rotation.y, -collider.rotation.z, collider.rotation.w) })
+    west.group.name = 'house-west'; west.group.scale.x = -1; west.group.position.set(-housePlacement.x, 0, partner.z + housePlacement.z); group.add(west.group)
+    for (const collider of west.colliders) colliders.push({ position: new THREE.Vector3(-collider.position.x - housePlacement.x, collider.position.y, collider.position.z + partner.z + housePlacement.z), size: collider.size.clone(), rotation: new THREE.Quaternion(collider.rotation.x, -collider.rotation.y, -collider.rotation.z, collider.rotation.w) })
     for (const triangle of west.triangles) {
       const vertices = triangle.vertices.slice(), indices = triangle.indices.slice()
-      for (let index = 0; index < vertices.length; index += 3) { vertices[index] *= -1; vertices[index + 2] += partner.z }
+      for (let index = 0; index < vertices.length; index += 3) { vertices[index] = -vertices[index] - housePlacement.x; vertices[index + 2] += partner.z + housePlacement.z }
       for (let index = 0; index < indices.length; index += 3) { const next = indices[index + 1]; indices[index + 1] = indices[index + 2]; indices[index + 2] = next }
       triangles.push({ vertices, indices })
     }
