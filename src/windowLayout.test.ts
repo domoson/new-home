@@ -3,6 +3,45 @@ import { floorIds, makeFloor, type Opening } from './model'
 import { windowMullionStart, windowPanels } from './windowLayout'
 
 describe('Fensterteilungen', () => {
+  it('moves the OG bathroom window another 30 cm east and extends its bottom to 100 cm height while keeping south EG glazing fixed', () => {
+    for (const side of ['east', 'west'] as const) {
+      const north = makeFloor('OG', side).walls.find(wall => wall.id === 'north')!
+      const bath = north.openings.find(opening => opening.id === 'bath-window')!
+      expect(north.x + bath.start).toBeCloseTo(.9 + .3)
+      expect(north.x + bath.start + bath.width).toBeCloseTo(3)
+      expect(bath).toMatchObject({ width: 1.8, sill: 1.5, height: 1 })
+      expect(bath.sill).toBeCloseTo(1.75 - .25)
+      expect(bath.sill + bath.height).toBeCloseTo(2.5)
+      expect(windowPanels(bath).filter(panel => !panel.fixed)).toHaveLength(1)
+      const south = makeFloor('EG', side).walls.find(wall => wall.id === 'south')!
+      const fixed = south.openings.find(opening => opening.id === 'garden-west-fixed')!
+      expect(south.x + fixed.start).toBeCloseTo(1.2)
+      expect(fixed).toMatchObject({ width: 1.2, sill: 0, height: 2.5, windowLayout: { columns: 1 } })
+      expect(fixed.windowLayout?.lowerFixed).toBeUndefined()
+      expect(windowPanels(fixed)).toHaveLength(1)
+      expect(windowPanels(fixed)[0]).toMatchObject({ fixed: true, bottom: .05 })
+      expect(windowPanels(fixed)[0].height).toBeCloseTo(2.4)
+      const upperSouth = makeFloor('OG', side).walls.find(wall => wall.id === 'south')!.openings.find(opening => opening.id === 'south-west')!
+      expect(windowPanels(upperSouth).filter(panel => !panel.fixed)).toHaveLength(1)
+      expect(upperSouth.windowLayout?.lowerFixed).toBe(.9)
+    }
+  })
+  it('keeps the hall fixed window 50 cm high and moves it 60 cm west', () => {
+    for (const side of ['east', 'west'] as const) {
+      const north = makeFloor('EG', side).walls.find(wall => wall.id === 'north')!
+      const hall = north.openings.find(opening => opening.id === 'hall-window-fixed')!
+      expect(hall).toMatchObject({ start: 3.6, width: 1.8, sill: 2, height: .5, windowLayout: { columns: 1 } })
+      expect(hall.sill).toBeCloseTo(1.875 + .125)
+      expect(hall.sill + hall.height).toBeCloseTo(2.5)
+      expect(hall.windowLayout?.ventilationWidth).toBeUndefined()
+      expect(north.x + hall.start).toBeCloseTo(4.5 - .6)
+      expect(north.x + hall.start + hall.width).toBeCloseTo(5.7)
+      expect(windowPanels(hall)).toHaveLength(1)
+      expect(windowPanels(hall)[0]).toMatchObject({ fixed: true, start: .05, bottom: .05 })
+      expect(windowPanels(hall)[0].width).toBeCloseTo(1.7)
+      expect(windowPanels(hall)[0].height).toBeCloseTo(.4)
+    }
+  })
   it('keeps one uninterrupted fixed pane beside a narrow upper ventilation leaf', () => {
     const panels = windowPanels({ id: 'design-window', kind: 'window', start: 0, width: 1.5, height: 2.4, sill: 0, windowLayout: { columns: 2, ventilationWidth: .6, lowerFixed: .9 } })
     expect(panels).toHaveLength(3)

@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js'
-import { atticCeiling, atticCeilingPanels, construction, house, houseEnvelope, housePlacement, elevations, floorIds, floorSlabs, furnitureVolumes, lightWells, makeFloor, rect, ridgeElevations, roofHeight, roofInnerElevation, roofOuterElevation, roofPanels, roofVerticalThickness, roofWindows, slabThickness, stairFor, stairGuards, stairHandrails, stairInnerWall, stairSolids, storeyRise, wallSolids } from './model'
+import { atticCeiling, atticCeilingPanels, construction, house, houseEnvelope, housePlacement, elevations, floorIds, floorSlabs, furnitureVolumes, lightWellBars, lightWells, makeFloor, rect, ridgeElevations, roofHeight, roofInnerElevation, roofOuterElevation, roofPanels, roofVerticalThickness, roofWindows, slabThickness, stairFor, stairGuards, stairHandrails, stairInnerWall, stairSolids, storeyRise, wallSolids } from './model'
 import { windowFrame, windowGap, windowJoint, windowMullionStart, windowPanels } from './windowLayout'
 import { kitchenModules, moduleFront } from './kitchenStorage'
 import { terraceFurniture, terraceParts, westTerraceFurniture } from './terrace'
@@ -580,7 +580,7 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
             addBox(rect(width - .03, direction < 0 ? .033 : -.045, .018, .012), Math.max(.12, height / 2 - .08), .16, dark, false, false, pivot)
             const leafId = `${id}-${opening.id}${panel.column ? '-secondary' : ''}`
             pivot.name = `${leafId}-sash`
-            const name = ({ 'kitchen-window': 'Küche', 'wc-window': 'Dusche / Ost', 'bath-window': 'Bad', 'child-north-window': 'Kind Nord', 'living-east': 'Wohnen / Ost', 'east-north': 'Ost / Nord', 'east-south': 'Ost / Süd', 'south-west': 'Südwest', 'south-east': 'Südost', 'gable-office': 'Büro / Ostgiebel', 'gable-parents': 'Schlafen / Ostgiebel', 'well-plant': 'Technik / Lichtschacht', 'well-hobby': 'Keller / Lichtschacht' } as Record<string, string>)[opening.id] ?? opening.id
+            const name = ({ 'kitchen-window': 'Küche', 'wc-window': 'Dusche / Ost', 'bath-window': 'Bad', 'child-north-window': 'Kind Nord', 'living-east': 'Wohnen / Ost', 'east-north': 'Ost / Nord', 'east-south': 'Ost / Süd', 'south-west': 'Südwest', 'south-east': 'Südost', 'gable-office': 'Büro / Ostgiebel', 'gable-parents': 'Schlafen / Ostgiebel', 'well-plant': 'Technik / Lichtschacht', 'well-hobby': 'Keller / Lichtschacht', 'well-hobby-south': 'Hobby / Lichtschacht Süd' } as Record<string, string>)[opening.id] ?? opening.id
             doors.push({ id: leafId, label: `${id} · Fenster ${name}${columns === 2 ? ` · Flügel ${panel.column + 1}` : ''}`, kind: 'window', pivot, closedAngle: pivot.rotation.y, direction, amount: 0, open: false, size: new THREE.Vector3(width, height, .06), center: new THREE.Vector3(width / 2, height / 2, 0), position: pivot.position.clone(), object: mesh, sliding: false })
           }
         } else {
@@ -728,11 +728,12 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
     walkGeometry.dispose()
     for (let index = 0; index < siteBoundary.length; index++) { const [x, z] = siteBoundary[index], [nextX, nextZ] = siteBoundary[(index + 1) % siteBoundary.length]; siteGroup.add(beam(new THREE.Vector3(x, construction.terrain + .02, z), new THREE.Vector3(nextX, construction.terrain + .02, nextZ), .035, stone)) }
     }
-    for (const well of wells) {
+    for (const [wellIndex, well] of wells.entries()) {
       addBox(well, -1.4, .12, stone).name = 'light-well-base'
-      const edges = well.x >= house.width ? [rect(well.x, well.z, well.width, .08), rect(well.x, well.z + well.depth - .08, well.width, .08), rect(well.x + well.width - .08, well.z, .08, well.depth)] : [rect(well.x, well.z, .08, well.depth), rect(well.x + well.width - .08, well.z, .08, well.depth), rect(well.x, well.z, well.width, .08)]
+      const horizontalEnd = well.z >= house.south ? well.z + well.depth - .08 : well.z
+      const edges = well.x >= house.width ? [rect(well.x, well.z, well.width, .08), rect(well.x, well.z + well.depth - .08, well.width, .08), rect(well.x + well.width - .08, well.z, .08, well.depth)] : [rect(well.x, well.z, .08, well.depth), rect(well.x + well.width - .08, well.z, .08, well.depth), rect(well.x, horizontalEnd, well.width, .08)]
       for (const edge of edges) addBox(edge, -1.4, 1.26, stone)
-      for (let along = .08; along < well.depth; along += .12) addBox(rect(well.x, well.z + along, well.width, .012), -.14, .015, dark, false)
+      for (const [index, bar] of lightWellBars(well).entries()) addBox(bar, -.14, .015, dark, false).name = `light-well-grate-${wellIndex}-${index}`
     }
     const soil = mat('#969b93'); soil.transparent = true; soil.opacity = .18; soil.depthWrite = false
     for (const edge of [rect(envelope.x - .08, envelope.z, .08, envelope.depth), rect(envelope.x, envelope.z - .08, envelope.width, .08), rect(envelope.x + envelope.width, envelope.z, .08, envelope.depth), rect(envelope.x, envelope.z + envelope.depth, envelope.width, .08)]) addBox(edge, elevations.KG - slabThickness('KG'), construction.terrain - elevations.KG + slabThickness('KG'), soil, false)

@@ -3,6 +3,15 @@ import { house } from './model'
 import { partner } from './context'
 import { siteEntrySteps, siteLightWells, splashStripParts, splashStripWidth } from './splashStrip'
 
+test('keeps all three cellar light wells clear of gravel on both house halves', () => {
+  expect(siteLightWells).toHaveLength(6)
+  for (const well of siteLightWells) for (const part of splashStripParts) {
+    const overlapEast = Math.min(part.x + part.width, well.x + well.width) - Math.max(part.x, well.x)
+    const overlapSouth = Math.min(part.z + part.depth, well.z + well.depth) - Math.max(part.z, well.z)
+    expect(Math.min(overlapEast, overlapSouth)).toBeLessThan(1e-8)
+  }
+})
+
 test('Traufstreifen bleibt vor Fassaden, Lichtschächten und Eingangspodesten', () => {
   expect(splashStripWidth).toBe(.4)
   expect(splashStripParts.length).toBeGreaterThan(0)

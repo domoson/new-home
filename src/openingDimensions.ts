@@ -1,9 +1,21 @@
 import { roofWindows } from './model'
-import type { Floor, Wall } from './model'
+import type { Floor, Opening, Wall } from './model'
+import { windowPanels } from './windowLayout'
 
-export type OpeningLabel = { id: string; side: 'north' | 'east' | 'south'; x: number; z: number; title: string; size: string; detail?: string }
+export type OpeningLabel = { id: string; side: 'north' | 'east' | 'south'; x: number; z: number; title: string; size: string; detail?: string; execution: string[] }
 const centimetres = (value: number) => (value * 100).toLocaleString('de-DE', { maximumFractionDigits: 1 })
 const openingSize = (width: number, height: number) => `${centimetres(width)} \u00d7 ${centimetres(height)} cm`
+
+function windowExecution(opening: Opening): string[] {
+  const panels = windowPanels(opening)
+  const operable = panels.filter(panel => !panel.fixed)
+  if (!operable.length) return ['nicht \u00f6ffenbar']
+  const fixedFields = panels.filter(panel => panel.fixed && !operable.some(leaf => leaf.column === panel.column))
+  return [
+    `${operable.length} \u00d6ffnungsfl\u00fcgel${fixedFields.length ? ` + ${fixedFields.length === 1 ? 'Festfeld' : `${fixedFields.length} Festfelder`}` : ''}`,
+    ...(opening.windowLayout?.lowerFixed ? [`Unterlicht fest bis ${centimetres(opening.windowLayout.lowerFixed)} cm`] : []),
+  ]
+}
 
 export function openingLabels(floor: Floor): OpeningLabel[] {
   const labels: OpeningLabel[] = floor.walls.filter(wall => ['north', 'east', 'south'].includes(wall.id)).flatMap(wall => {
@@ -17,11 +29,12 @@ export function openingLabels(floor: Floor): OpeningLabel[] {
         z: wall.z + (wall.axis === 'z' ? opening.start + width / 2 : wall.id === 'north' ? 0 : wall.depth),
         title: opening.id === 'terrace' ? 'Hebeschiebet\u00fcr' : opening.id.includes('fixed') ? 'Festverglasung' : 'Fenster',
         size: openingSize(width, opening.height),
+        execution: opening.id === 'terrace' ? [`1 Schiebefl\u00fcgel${fixed ? ' + Festfeld' : ''}`] : windowExecution(opening),
         ...(fixed ? { detail: `Fl\u00fcgel ${centimetres(opening.width)} + Festfeld ${centimetres(fixed.width)} cm` } : {}),
       }
     })
   })
-  if (floor.id === 'DG') labels.push(...roofWindows.map(window => ({ id: window.id, side: window.id.includes('north') ? 'north' as const : 'south' as const, x: window.x + window.width / 2, z: window.z + window.depth / 2, title: window.name, size: openingSize(window.width, window.length) })))
+  if (floor.id === 'DG') labels.push(...roofWindows.map(window => ({ id: window.id, side: window.id.includes('north') ? 'north' as const : 'south' as const, x: window.x + window.width / 2, z: window.z + window.depth / 2, title: window.name, size: openingSize(window.width, window.length), execution: ['Schwingfl\u00fcgel'] })))
   return labels
 }
 

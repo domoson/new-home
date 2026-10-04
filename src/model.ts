@@ -45,10 +45,17 @@ export function furnitureVolumes(item: Furniture): (Rect & { bottom: number; hei
 }
 export const stairRecess = rect(stair.x + stair.turnSize, stair.z + stair.runWidth, stair.width - stair.turnSize, stair.depth - 2 * stair.runWidth)
 export const stairOpeningParts = [rect(stair.x, stair.z, stair.width, stair.depth)]
-export const basementWindow = { width: .9, height: .75, southGap: 1.2 }
+export const basementWindow = { width: .9, height: .75, southGap: 1.2, eastNorthShift: 2.4 }
 export const lightWellSize = { width: 1.3, depth: .5 }
 const wellOverhang = (lightWellSize.width - basementWindow.width) / 2
-export const lightWells = [rect(house.east + construction.exteriorWall, house.depth - basementWindow.southGap - basementWindow.width - wellOverhang, lightWellSize.depth, lightWellSize.width), rect(house.west + .9 - wellOverhang, houseEnvelope().z - lightWellSize.depth, lightWellSize.width, lightWellSize.depth)]
+export const lightWells = [rect(house.east + construction.exteriorWall, house.depth - basementWindow.southGap - basementWindow.width - basementWindow.eastNorthShift - wellOverhang, lightWellSize.depth, lightWellSize.width), rect(house.west + .9 - wellOverhang, houseEnvelope().z - lightWellSize.depth, lightWellSize.width, lightWellSize.depth), rect(house.west + .9 - wellOverhang, house.south + construction.exteriorWall, lightWellSize.width, lightWellSize.depth)]
+export function lightWellBars(well: Rect): Rect[] {
+  const alongX = well.width >= well.depth
+  const crossLength = alongX ? well.depth : well.width
+  return Array.from({ length: Math.ceil((crossLength - .08) / .12) }, (_, index) => alongX
+    ? rect(well.x, well.z + .08 + index * .12, well.width, .012)
+    : rect(well.x + .08 + index * .12, well.z, .012, well.depth))
+}
 const roofWindowWidth = .94
 const roofWindowLength = 1.4
 const roofWindowDepth = roofWindowLength * Math.cos(house.pitch * Math.PI / 180)

@@ -1,13 +1,29 @@
 import { describe, expect, it } from 'vitest'
-import { ceilingHeight, construction, elevations, floorIds, house, lightWells, makeFloor, roofPanels, roomArea, wallSolids } from './model'
+import { ceilingHeight, construction, elevations, floorIds, house, lightWellBars, lightWells, makeFloor, roofPanels, roomArea, wallSolids } from './model'
 import { referenceAreas } from './providerPlan'
 import { kitchenModules } from './kitchenStorage'
 import { boundaryDistance, partner, polygonArea, siteArea, siteBoundary, siteParcels } from './context'
 import { winderCore, winderSteps, stairWalkingLine } from './winderStair'
 import { createRoomLighting, lightingCircuits } from './lighting'
 import { createIndirectLighting } from './indirectLighting'
+import { planObjects } from './measure'
 
 describe('Anbieterentwurf', () => {
+  it('uses matching lengthwise grille bars for every light well', () => {
+    for (const well of lightWells) {
+      const bars = lightWellBars(well)
+      expect(bars).toHaveLength(4)
+      for (const bar of bars) {
+        expect(Math.max(bar.width, bar.depth)).toBeCloseTo(Math.max(well.width, well.depth))
+        expect(Math.min(bar.width, bar.depth)).toBeCloseTo(.012)
+        expect(bar.width > bar.depth).toBe(well.width > well.depth)
+        expect(bar.x).toBeGreaterThanOrEqual(well.x)
+        expect(bar.z).toBeGreaterThanOrEqual(well.z)
+        expect(bar.x + bar.width).toBeLessThanOrEqual(well.x + well.width + 1e-8)
+        expect(bar.z + bar.depth).toBeLessThanOrEqual(well.z + well.depth + 1e-8)
+      }
+    }
+  })
   it('places the EG television against the stair wall without moving the sideboard', () => {
     const floor = makeFloor('EG')
     const wall = floor.walls.find(wall => wall.id === 'stair-south')!
@@ -46,20 +62,30 @@ describe('Anbieterentwurf', () => {
     expect(floor.rooms.find(room => room.id === 'hall')!.parts[0].width).toBeCloseTo(divider.x - house.west)
     expect(floor.rooms.find(room => room.id === 'child-north')!.parts[0].x).toBeCloseTo(divider.x + divider.width)
   })
-  it('places the cellar window 1.20 m from the south corner and centers larger light wells', () => {
+  it('moves the east cellar window north and adds an aligned south window with centered light wells', () => {
     const floor = makeFloor('KG')
-    for (const [index, wallId] of ['east', 'north'].entries()) {
+    expect(lightWells).toHaveLength(3)
+    const measuredWells = planObjects(floor, true).filter(object => object.label.startsWith('Lichtschacht'))
+    expect(measuredWells).toHaveLength(3)
+    expect(measuredWells.every(well => well.details.startsWith('130 × 50 cm'))).toBe(true)
+    const north = floor.walls.find(wall => wall.id === 'north')!
+    const south = floor.walls.find(wall => wall.id === 'south')!
+    expect(south.openings[0].start).toBe(north.openings[0].start)
+    for (const [index, wallId] of ['east', 'north', 'south'].entries()) {
       const wall = floor.walls.find(wall => wall.id === wallId)!, window = wall.openings[0], well = lightWells[index]
-      expect(window).toMatchObject({ width: .9, height: .75 })
+      expect(window).toMatchObject({ width: .9, height: .75, sill: 1.35 })
       if (wall.axis === 'z') {
-        expect(house.depth - window.start - window.width).toBeCloseTo(1.2)
+        expect(wall.z + window.start).toBeCloseTo(8.4 - 2.4)
+        expect(wall.z + window.start + window.width).toBeCloseTo(6.9)
         expect(well.z + well.depth / 2).toBeCloseTo(wall.z + window.start + window.width / 2)
         expect(well).toMatchObject({ width: .5, depth: 1.3 })
       } else {
+        expect(wall.x + window.start).toBeCloseTo(1.2)
         expect(well.x + well.width / 2).toBeCloseTo(wall.x + window.start + window.width / 2)
         expect(well).toMatchObject({ width: 1.3, depth: .5 })
       }
     }
+    expect(lightWells[2].z).toBeCloseTo(house.south + construction.exteriorWall)
   })
   it('uses the offered envelope and section levels', () => {
     expect(house.width).toBe(6.9)

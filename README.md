@@ -124,8 +124,11 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
   Lichte Breite 6,300 m unten und lichte Laenge 9,900 m links neben der
   Trennwand beziehen sich auf die Innenkanten der Aussenwaende.
   Bei aktiver Bemassung stehen Fenstertyp und Breite x Hoehe in cm mit Hinweislinien
-  ausserhalb des Plans. Dachfenster erhalten ihr Nennmass entlang der Dachflaeche.
-  Die Hebeschiebetuer ist als Gesamtanlage 280 x 212,5 cm beschriftet,
+  ausserhalb des Plans. Dazu die Ausfuehrung: Anzahl der Oeffnungsfluegel,
+  ggf. Festfeld und festes Unterlicht mit Teilungshoehe. Festfelder zaehlen nicht
+  als Oeffnungsfluegel; Dreh-Kipp-Beschlaege werden nicht pauschal zugesichert.
+  Dachfenster erhalten ihr Nennmass entlang der Dachflaeche und den Hinweis Schwingfluegel.
+  Die Hebeschiebetuer ist als Gesamtanlage 280 x 250 cm beschriftet,
   mit 125 cm beweglichem Fluegel und 155 cm Festfeld. Modell-, keine Bestellmasse;
   die Eckkopplung wird geometrisch an die dickere Wand angepasst.
   Zentrale Querwaende an Treppe/Flur 20 cm; kein statischer Nachweis.
@@ -228,34 +231,41 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
   durch die geringere Haustiefe geometrisch niedriger, nicht durch geaenderte Hoehenparameter.
 - Sofa 250 x 170 cm: lange Seite Sued, Chaiselongue West; Stuehle zum Tisch gedreht.
   Sideboard 180 x 45 x 60 cm erhalten; Regal auf 110 cm gekuerzt.
-- Fensterhoehen beider Haushaelften im 12,5-cm-Raster.
+- Fensterhoehen beider Haushaelften ueberwiegend im 12,5-cm-Raster;
+  Kinderzimmerfenster im OG abweichend 135 cm hoch bei unveraenderter Bruestung.
   Kellerfenster 75 cm; Haustuer samt Seitenteil 225 cm.
-  Bodentiefe Fenster, Terrassentueren und angrenzende Verglasung 212,5 cm hoch.
+  Bodentiefe Fenster in EG/OG/DG einheitlich 250 cm hoch.
+  Im EG-Wohnbereich bodentiefe
+  Fenster, Hebeschiebetuer und Festverglasung oben um insgesamt 37,5 cm auf 250 cm erweitert.
   Standard-Dachfenster bleiben 94 x 140 cm, Innentueren unveraendert.
   Modell-Oeffnungshoehen, keine freigegebenen Rohbau- oder Bestellmasse;
   Fugen, Rahmenanschluesse, Stuerze und Raffstoreeinbau fachlich abzustimmen.
-- Neue Fensterordnung: Bodentiefe Fenster einheitlich 120 x 212,5 cm,
-  unten ueber die volle Breite fest bis zur Teilung bei 90 cm,
+- Neue Fensterordnung: Bodentiefe Fenster einheitlich 120 x 250 cm,
+  im EG-Suedwesten durchgehend festverglast ohne Teilung oder Oeffnungsfluegel.
+  Die uebrigen bodentiefen Fenster unten ueber die volle Breite fest bis zur Teilung bei 90 cm,
   darueber ein nach innen oeffnender Fluegel. Keine senkrechte Teilung.
-  Suedwest in EG und OG identisch bei x=1,50 bis 2,70 m, gemessen ab
-  westlicher Aussenkante/Haustrennlinie; 120 cm ab innerer Wandkante.
-  DG-Ostfenster z=3,30 bis 4,50 m und z=6,00 bis 7,20 m:
-  jeweils 330 cm ab noerdlicher bzw. suedlicher Aussenkante,
-  jeweils 30 cm weiter von der Mitte weg. Bei der reduzierten Fensterhoehe
-  bleiben oberhalb des 24-cm-Raffstorekastens rund 24 cm bis zur Dachunterseite.
-  Kind Nord im OG hat nur ein Ostfenster bei z=3,30 bis 4,50 m,
-  beide Seitenkanten buendig mit dem DG-Schlafzimmerfenster, ebenfalls 120 x 212,5 cm mit
+  Suedwest in EG und OG um 30 cm nach Westen verschoben, mit identischer Position
+  bei x=1,20 bis 2,40 m ab westlicher Aussenkante/Haustrennlinie;
+  90 cm ab innerer Wandkante. Im OG Unterlicht und Oeffnungsfluegel unveraendert.
+  DG-Ostfenster z=3,60 bis 4,80 m und z=5,70 bis 6,90 m:
+  jeweils 360 cm ab noerdlicher bzw. suedlicher Aussenkante,
+  fuer die Hoehe von 250 cm jeweils 30 cm zur Mitte verschoben.
+  Oberhalb des 24-cm-Raffstorekastens bleiben an der engsten Stelle rund 7 cm
+  bis zur Dachunterseite und 3 cm bis zur waagerechten Decke.
+  Einbau, Sturz und Anschluesse fachlich pruefen; keine Herstellerfreigabe.
+  Kind Nord im OG hat nur ein Ostfenster, um 30 cm nach Sueden auf z=3,60 bis 4,80 m verschoben,
+  jetzt buendig mit dem DG-Schlafzimmerfenster, ebenfalls 120 x 250 cm mit
   90-cm-Festteil. Beide bisherigen OG-Ostfenster entfallen.
   Breite Fenster mit 150 cm Breite: 60 cm
   Lueftungsbereich und 90 cm Festfeld; bei 180 cm Breite: 60 cm
   Lueftungsbereich und 120 cm Festfeld (bewegliches Blatt nach
   Rahmen/Fugen etwa 51 cm breit). Das grosse Festfeld bleibt ohne Querholm.
-  EG-Kuechenfenster 180 x 75 cm von z=3,30 bis 5,10 m, um 30 cm nach
-  Norden versetzt, Nordkante buendig mit OG und DG. Bruestung weiterhin
-  137,5 cm, Oberkante 212,5 cm.
-  Oben um 25 cm gekuerzt; die Bruestung bleibt fuer den Abstand zur
-  Espressomaschine erhalten. Wasserhahn vor dem Festfeld; der Holm liegt
-  ueber den letzten 3 cm der Spuele, der Lueftungsfluegel beginnt suedlich davon.
+  EG-Kuechenfenster 210 x 100 cm von z=3,60 bis 5,70 m, nach der Verschiebung
+  um 30 cm nach Sueden nochmals an der Suedseite um 30 cm verbreitert.
+  Nordkante weiterhin buendig mit OG-/DG-Fenstern.
+  Bruestung 150 cm, Oberkante 250 cm unveraendert.
+  Oeffnungsbereich jetzt im Norden: 60 cm, mit 150 cm Festfeld im Sueden.
+  Arbeitszeile, Spuele und Geraete unveraendert.
   Keine seitliche Terrassentuer: Die Ostwand zwischen Halbinsel und Sitzbank
   ist bei z=6,10 bis 7,30 m wieder geschlossen, ohne Raffstore.
   Teilungshoehe 90 cm ist eine Entwurfsannahme, keine bestaetigte
@@ -270,26 +280,28 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
   EG-Suedostecke fest verglast ab z=9,30 m, 30 cm nach Norden verlaengert:
   90 cm bis zur inneren Suedwandkante plus 30 cm geoeffnete Wandtiefe.
   Beide Glasflaechen treffen sich in der Wandmitte am 8-cm-Eckprofil bei
-  x=6,75/z=10,35 m, Oberkante 212,5 cm wie die Hebeschiebeanlage.
+  x=6,75/z=10,35 m, Oberkante 250 cm wie die Hebeschiebeanlage.
   Mauerecke unter dem Sturz entfernt; kein nachgewiesenes Tragwerk,
   keine Herstellerfreigabe. Die unveraenderte Sitzbank steht teilweise vor dem Festglas.
-  Nordbadfenster im EG weiterhin 150 x 62,5 cm, Bruestung jetzt 155 cm;
-  OG-Badfenster wie Kueche 180 x 75 cm mit 137,5 cm Bruestung,
-  Oberkante 212,5 cm. Westkante unveraendert bei x=0,60 m und damit
-  buendig mit dem Gaestebadfenster darunter. Lueftungsfluegel im Osten
-  wie bei den anderen Nordfenstern; voll geoeffnet blockiert er den
-  geprueften WC-Zugang. Bei geschlossenem Badfenster ist dieser frei.
-  Nicht bodentiefe Kinderzimmerfenster im OG: Nord und Suedost 180 x 100 cm.
-  Jeweils weiterhin 115 cm Bruestung; Oberkante jetzt 215 cm.
+  Nordbadfenster im EG rechts um 15 cm auf 60 x 100 cm verkleinert,
+  ein Oeffnungsfluegel ohne Festfeld, x=0,60 bis 1,20 m:
+  Beginn unveraendert 30 cm ab westlicher Wandinnenkante.
+  Oberkante weiterhin 250 cm, Bruestung durch 37,5 cm Erweiterung nach unten jetzt 150 cm.
+  OG-Badfenster auf 180 x 100 cm nach unten erweitert und weitere 30 cm nach Osten
+  verschoben: Bruestung 150 cm, Oberkante unveraendert 250 cm. Westkante jetzt bei x=1,20 m;
+  das kleinere Gaestebadfenster darunter beginnt jetzt bei x=0,60 m. Lueftungsfluegel im Osten
+  wie bei den anderen Nordfenstern; Bedienbarkeit und Zugang mit geoeffnetem
+  Fluegel fachlich pruefen.
+  Nicht bodentiefe Kinderzimmerfenster im OG: Nord und Suedost nach oben auf 180 x 135 cm erweitert.
+  Jeweils weiterhin 115 cm Bruestung; Oberkante jetzt 250 cm.
   Es bleiben 40 cm Abstand ueber einer 75-cm-Tischplatte.
   Das Suedostfenster endet 30 cm vor der Ostkante der
-  Terrassenverglasung. Das EG-Dielenfenster ist ein 180 x 62,5 cm grosses Band
-  bei x=4,50 bis 6,30 m, beide Seitenkanten buendig mit dem OG-Fenster darueber.
-  Beide Nordfenster sind bei unveraenderter Westkante 30 cm nach Osten erweitert.
-  Nach Osten versetzt, nicht mehr mittig ueber der Garderoben-Hakenleiste.
-  Bruestung 155 cm und Oberkante 217,5 cm wie beim EG-Badfenster;
-  Hakenleiste unveraendert, seitlich neben dem Oeffnungsfluegel. Grosses Festfeld
-  und schmaler Lueftungsfluegel. Der bisherige Fensterplatz im schmalen
+  Terrassenverglasung. Das EG-Dielenfenster ist ein 180 x 50 cm grosses Band
+  bei x=3,90 bis 5,70 m, um 60 cm nach Westen verschoben.
+  Beide Seitenkanten jetzt 60 cm westlich des unveraenderten OG-Fensters darueber.
+  Unten um 12,5 cm gekuerzt: Bruestung 200 cm und Oberkante unveraendert 250 cm.
+  Durchgehende Festverglasung ohne Oeffnungsfluegel oder Mittelpfosten;
+  Hakenleiste unveraendert. Der bisherige Fensterplatz im schmalen
   Flur ist geschlossen; Tageslichtversorgung bleibt fachlich ungeprueft.
   Der Schrank in Kind
   Sued steht an der Nordwand.
@@ -321,9 +333,12 @@ Nachbarschaft, Grundstueck, Garten, Carports und Fahrzeuge bleiben erhalten.
   OG-Ostfenster folgt der Verschiebung. Flur 120 cm breit, Abstellraum bis
   zur gleichen Suedgrenze (1,90 x 1,422 m). Betten und Schraenke folgen den neuen Waenden;
   Tragwerk, Leitungen und Tuerausfuehrung bleiben fachlich ungeprueft.
-- Kellerfenster 90 x 75 cm; oestliches Fenster 1,20 m von der suedlichen
-  Aussenkante entfernt. Beide Lichtschaechte
-  mittig, 130 x 50 cm im Grundriss (aus Zeichnung angenaehert, kein Herstellermass).
+- Drei Kellerfenster 90 x 75 cm: Ostfenster im Hobbyraum um 240 cm nach Norden
+  auf z=6,00 bis 6,90 m verschoben. Neues Suedfenster bei x=1,20 bis 2,10 m,
+  gleicher Abstand zur Trennwand wie das Nordfenster. Bruestung jeweils 135 cm.
+  Drei mittige Lichtschaechte, 130 x 50 cm im Grundriss, je 20 cm seitlicher
+  Ueberstand. Gitterstreben in Grundriss und 3D einheitlich entlang der Laengsachse.
+  Schachtmasse angenaehert, kein Herstellermass; Entwaesserung ungeprueft.
 - EG-Dusche im Suedwesten des Bades, WC/Waschtisch im Norden; Nord-Vorwand 8 cm tief/120 cm hoch
   ist Annahme, von der Raumflaeche abgezogen.
 - EG-Dusche: bisherige feste seitliche Glasscheibe entfernt. Zugang von Norden

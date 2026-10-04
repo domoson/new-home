@@ -690,7 +690,191 @@ test('Detailkorrekturen haben echte freie Volumen, Zargen und einen schließende
   expect(result.closed).toBeGreaterThan(2.5)
   expect(result.opened).toBeLessThan(1.86)
   expect(result.twoPane).toBe(true)
-  expect(result.transoms).toEqual(['EG-garden-west-transom-0', 'EG-garden-west-transom-0'])
+  expect(result.transoms).toEqual([])
+})
+
+test('Kellerfenster und drei Lichtschachtgitter sind korrekt positioniert und laengs ausgerichtet', async ({ page }, testInfo) => {
+  await page.goto('/')
+  const { PNG } = await import('pngjs')
+  const result = await page.evaluate(async () => {
+    const THREE = await import('/node_modules/.vite/deps/three.js')
+    const { buildScene } = await import('/src/scene.ts')
+    const { housePlacement, lightWellBars, lightWells, makeFloor } = await import('/src/model.ts')
+    const model = buildScene('KG', false, false, true)
+    model.group.updateMatrixWorld(true)
+    const floor = makeFloor('KG')
+    const differences = [], grateCounts = []
+    for (const side of ['east', 'west']) {
+      const group = model.group.getObjectByName(`house-${side}`)
+      const inverse = group.matrixWorld.clone().invert()
+      let count = 0
+      group.traverse(object => { if (object.name.startsWith('light-well-grate-')) count++ })
+      grateCounts.push(count)
+      for (const [wellIndex, well] of lightWells.entries()) for (const [index, bar] of lightWellBars(well).entries()) {
+        const mesh = group.getObjectByName(`light-well-grate-${wellIndex}-${index}`)
+        const bounds = new THREE.Box3().setFromObject(mesh).applyMatrix4(inverse)
+        differences.push(bounds.min.x - bar.x, bounds.min.z - bar.z, bounds.max.x - bar.x - bar.width, bounds.max.z - bar.z - bar.depth)
+      }
+      for (const wall of floor.walls.filter(wall => ['north', 'east', 'south'].includes(wall.id))) for (const opening of wall.openings) {
+        const bounds = new THREE.Box3()
+        group.traverse(object => {
+          if (object instanceof THREE.Mesh && object.userData.windowFrame === `KG-${opening.id}`) bounds.union(new THREE.Box3().setFromObject(object))
+        })
+        bounds.applyMatrix4(inverse)
+        const start = wall.axis === 'z' ? bounds.min.z : bounds.min.x
+        const end = wall.axis === 'z' ? bounds.max.z : bounds.max.x
+        const expectedStart = (wall.axis === 'z' ? wall.z : wall.x) + opening.start
+        differences.push(start - expectedStart, end - expectedStart - opening.width, bounds.min.y - floor.elevation - opening.sill, bounds.max.y - floor.elevation - opening.sill - opening.height)
+      }
+    }
+    const furniture = floor.furniture.map(item => new THREE.Box3(new THREE.Vector3(item.x + housePlacement.x, floor.elevation + (item.bottom ?? 0), item.z + housePlacement.z), new THREE.Vector3(item.x + item.width + housePlacement.x, floor.elevation + (item.bottom ?? 0) + item.height, item.z + item.depth + housePlacement.z)))
+    const leaves = model.doors.filter(door => ['KG-well-hobby', 'KG-well-hobby-south'].includes(door.id))
+    const clearance = []
+    for (const door of leaves) {
+      for (let pose = 0; pose <= 20; pose++) {
+        model.setOpening(door.id, pose / 20)
+        const bounds = new THREE.Box3().setFromObject(door.pivot)
+        clearance.push(furniture.every(item => !bounds.intersectsBox(item)))
+      }
+      model.setOpening(door.id, 0)
+    }
+    for (const name of ['house-west', 'neighborhood', 'landscaping']) {
+      const object = model.group.getObjectByName(name)
+      if (object) object.visible = false
+    }
+    const scene = new THREE.Scene()
+    scene.background = new THREE.Color('#e7ebed')
+    scene.add(model.group, new THREE.HemisphereLight('#ffffff', '#829181', 2))
+    const sun = new THREE.DirectionalLight('#fff5e6', 2)
+    sun.position.set(12, 20, 15); scene.add(sun)
+    const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true })
+    const width = Math.min(900, innerWidth - 16), height = Math.min(640, innerHeight - 16)
+    renderer.setSize(width, height); renderer.setPixelRatio(1)
+    renderer.toneMapping = THREE.ACESFilmicToneMapping
+    renderer.domElement.id = 'cellar-well-preview'
+    renderer.domElement.style.cssText = 'position:fixed;left:8px;top:8px;z-index:9999'
+    document.body.append(renderer.domElement)
+    const aspect = width / height, halfWidth = Math.max(7, 6 * aspect)
+    const camera = new THREE.OrthographicCamera(-halfWidth, halfWidth, halfWidth / aspect, -halfWidth / aspect, .05, 100)
+    const render = (view: string) => {
+      if (view === 'east') camera.position.set(24, 7, 5.5)
+      else camera.position.set(16, 13, 23)
+      camera.lookAt(3.5, -1, 5.5)
+      renderer.render(scene, camera)
+    }
+    Object.assign(window, { cellarWellPreview: { render, dispose() { model.dispose(); renderer.dispose(); renderer.domElement.remove() } } })
+    return { differences, grateCounts, clearance, leaves: leaves.map(door => door.id) }
+  })
+  expect(result.grateCounts).toEqual([12, 12])
+  for (const difference of result.differences) expect(difference).toBeCloseTo(0, 5)
+  expect(result.leaves).toEqual(expect.arrayContaining(['KG-well-hobby', 'KG-well-hobby-south']))
+  expect(result.clearance.every(Boolean)).toBe(true)
+  for (const view of ['east', 'rotated']) {
+    await page.evaluate(view => (window as any).cellarWellPreview.render(view), view)
+    const image = PNG.sync.read(await page.locator('#cellar-well-preview').screenshot({ path: `test-results/${testInfo.project.name}-KG-light-wells-${view}.png` }))
+    const colors = new Set<string>()
+    for (let offset = 0; offset < image.data.length; offset += 32) colors.add(image.data.subarray(offset, offset + 3).toString('hex'))
+    expect(colors.size).toBeGreaterThan(60)
+  }
+  await page.evaluate(() => { (window as any).cellarWellPreview.dispose(); delete (window as any).cellarWellPreview })
+})
+
+for (const activeFloor of ['EG', 'OG', 'DG'] as const) test(`${activeFloor} Fenster haben gemeinsame Oberkante 250 cm und passende Bruestungen`, async ({ page }, testInfo) => {
+  await page.goto('/')
+  const result = await page.evaluate(async activeFloor => {
+    const THREE = await import('/node_modules/.vite/deps/three.js')
+    const { buildScene } = await import('/src/scene.ts')
+    const { housePlacement, makeFloor, roofHeight } = await import('/src/model.ts')
+    const { raffstores } = await import('/src/raffstore.ts')
+    const model = buildScene(activeFloor, false, activeFloor === 'DG', true)
+    model.group.updateMatrixWorld(true)
+    const floor = makeFloor(activeFloor)
+    const ids = activeFloor === 'EG' ? ['garden-west-fixed', 'terrace', 'garden-fixed', 'living-corner-fixed', 'kitchen-east-window', 'wc-window', 'hall-window-fixed'] : activeFloor === 'OG' ? ['south-west', 'east-north', 'bath-window', 'child-north-window', 'south-east'] : ['gable-office', 'gable-parents']
+    const heights = []
+    for (const side of ['east', 'west']) {
+      const group = model.group.getObjectByName(`house-${side}`)
+      for (const id of ids) {
+        const bounds = new THREE.Box3()
+        group.traverse(object => {
+          if (object instanceof THREE.Mesh && object.userData.windowFrame === `${activeFloor}-${id}`) bounds.union(new THREE.Box3().setFromObject(object))
+        })
+        const opening = floor.walls.flatMap(wall => wall.openings).find(opening => opening.id === id)
+        heights.push({ side, id, bottom: bounds.min.y - floor.elevation, top: bounds.max.y - floor.elevation, sill: opening.sill })
+      }
+    }
+    const blinds = raffstores(floor).filter(blind => ids.includes(blind.id.slice(3))).map(blind => ({ id: blind.id, bottom: blind.box.bottom, top: blind.box.bottom + blind.box.height, ceiling: floor.height, roofGap: activeFloor === 'DG' ? Math.min(roofHeight(blind.box.z), roofHeight(blind.box.z + blind.box.depth)) - blind.box.bottom - blind.box.height : null }))
+    const furniture = floor.furniture.map(item => new THREE.Box3(new THREE.Vector3(item.x + housePlacement.x, floor.elevation + (item.bottom ?? 0), item.z + housePlacement.z), new THREE.Vector3(item.x + item.width + housePlacement.x, floor.elevation + (item.bottom ?? 0) + item.height, item.z + item.depth + housePlacement.z)))
+    const clearance = []
+    for (const door of model.doors.filter(door => door.kind === 'window' && ids.some(id => door.id === `${activeFloor}-${id}` || door.id === `${activeFloor}-${id}-secondary`))) {
+      for (let pose = 0; pose <= 20; pose++) {
+        model.setOpening(door.id, pose / 20)
+        const bounds = new THREE.Box3().setFromObject(door.pivot)
+        clearance.push(furniture.every(item => !bounds.intersectsBox(item)))
+      }
+      model.setOpening(door.id, 0)
+    }
+    const slider = model.doors.find(door => door.id === 'EG-terrace')
+    let slide = 0
+    if (slider) {
+      const closed = new THREE.Box3().setFromObject(slider.pivot)
+      model.setOpening(slider.id, 1)
+      const opened = new THREE.Box3().setFromObject(slider.pivot)
+      slide = opened.min.x - closed.min.x
+      model.setOpening(slider.id, 0)
+    }
+    for (const name of ['house-west', 'neighborhood', 'landscaping']) {
+      const object = model.group.getObjectByName(name)
+      if (object) object.visible = false
+    }
+    const scene = new THREE.Scene()
+    scene.background = new THREE.Color('#e7ebed')
+    scene.add(model.group, new THREE.HemisphereLight('#ffffff', '#829181', 2))
+    const sun = new THREE.DirectionalLight('#fff5e6', 2)
+    sun.position.set(12, 20, 15); scene.add(sun)
+    const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true })
+    const width = Math.min(900, innerWidth - 16), height = Math.min(640, innerHeight - 16)
+    renderer.setSize(width, height); renderer.setPixelRatio(1)
+    renderer.toneMapping = THREE.ACESFilmicToneMapping
+    renderer.domElement.id = 'living-height-preview'
+    renderer.domElement.style.cssText = 'position:fixed;left:8px;top:8px;z-index:9999'
+    document.body.append(renderer.domElement)
+    const aspect = width / height, halfWidth = Math.max(6, 3.2 * aspect)
+    const camera = new THREE.OrthographicCamera(-halfWidth, halfWidth, halfWidth / aspect, -halfWidth / aspect, .05, 100)
+    const render = (view: string) => {
+      if (view === 'east') { camera.position.set(24, floor.elevation + 2.8, 5.5); camera.lookAt(3.5, floor.elevation + 1.2, 5.5) }
+      else if (view === 'south') { camera.position.set(3.5, floor.elevation + 3.6, 28); camera.lookAt(3.5, floor.elevation + 1.2, 5.5) }
+      else if (view === 'north') { camera.position.set(3.5, floor.elevation + 3.6, -20); camera.lookAt(3.5, floor.elevation + 1.2, 5.5) }
+      else { camera.position.set(18, floor.elevation + 9, 20); camera.lookAt(3.5, floor.elevation + 1.2, 5.5) }
+      renderer.render(scene, camera)
+    }
+    Object.assign(window, { livingHeightPreview: { render, dispose() { model.dispose(); renderer.dispose(); renderer.domElement.remove() } } })
+    return { heights, blinds, clearance, slide, sliderHeight: slider?.size.y, hallOpening: model.doors.some(door => door.id.startsWith('EG-hall-window')), southOpening: model.doors.some(door => door.id.startsWith('EG-garden-west')) }
+  }, activeFloor)
+  for (const opening of result.heights) {
+    expect(opening.top, `${opening.side}/${opening.id}`).toBeCloseTo(2.5)
+    expect(opening.bottom).toBeCloseTo(opening.sill)
+  }
+  expect(result.blinds).toHaveLength(activeFloor === 'EG' ? 6 : activeFloor === 'OG' ? 5 : 2)
+  for (const blind of result.blinds) {
+    expect(blind.bottom).toBe(2.5)
+    expect(blind.ceiling - blind.top).toBeCloseTo(.03)
+    if (blind.roofGap !== null) expect(blind.roofGap).toBeGreaterThan(.05)
+  }
+  expect(result.clearance.every(Boolean)).toBe(true)
+  if (activeFloor === 'EG') {
+    expect(result.hallOpening).toBe(false)
+    expect(result.southOpening).toBe(false)
+    expect(result.slide).toBeCloseTo(1.25)
+    expect(result.sliderHeight).toBe(2.5)
+  }
+  for (const view of ['east', 'south', 'north', 'rotated']) {
+    await page.evaluate(view => (window as any).livingHeightPreview.render(view), view)
+    const image = PNG.sync.read(await page.locator('#living-height-preview').screenshot({ path: `test-results/${testInfo.project.name}-${activeFloor}-window-height-${view}.png` }))
+    const colors = new Set<string>()
+    for (let offset = 0; offset < image.data.length; offset += 32) colors.add(image.data.subarray(offset, offset + 3).toString('hex'))
+    expect(colors.size).toBeGreaterThan(60)
+  }
+  await page.evaluate(() => { (window as any).livingHeightPreview.dispose(); delete (window as any).livingHeightPreview })
 })
 
 test('Gartenschiebeflügel bleibt innerhalb der 2,80 Meter breiten Verglasung mit Eckkopplung', async ({ page }) => {
@@ -723,7 +907,7 @@ test('Gartenschiebeflügel bleibt innerhalb der 2,80 Meter breiten Verglasung mi
   expect(result.fixed).toBe(true)
   expect(result.cornerFixed).toBe(true)
   expect(result.coupled).toBe(true)
-  expect(result.cornerTop).toBeCloseTo(2.125 - .05)
+  expect(result.cornerTop).toBeCloseTo(2.5 - .05)
   expect(result.width).toBe(1.25)
   for (const bounds of result.positions) {
     expect(bounds.min).toBeGreaterThanOrEqual(result.apertureStart - .01)
@@ -1062,10 +1246,36 @@ test('Fenstermasse stehen mit Hinweislinien ausserhalb des Grundrisses', async (
     const envelopeBox = (await plan.locator('[data-house-envelope]').boundingBox())!
     expect(lengthLabel.x).toBeGreaterThanOrEqual((await plan.boundingBox())!.x)
     expect(lengthLabel.x + lengthLabel.width).toBeLessThan(envelopeBox.x)
-    if (floor === 'EG') await expect(plan.locator('[data-opening-label="terrace"]')).toContainText('280 × 212,5 cm')
+    if (floor === 'KG') {
+      await expect(plan.locator('[data-light-well="true"]')).toHaveCount(3)
+      await expect(plan.locator('[data-light-well-bar]')).toHaveCount(12)
+      await expect(plan.locator('[data-opening-label="well-hobby-south"]')).toContainText('90 × 75 cm')
+      const lengthwise = await plan.evaluate(svg => [...svg.querySelectorAll('[data-light-well="true"]')].every((well, index) => {
+        const width = Number(well.getAttribute('width')), depth = Number(well.getAttribute('height'))
+        return [...svg.querySelectorAll(`[data-light-well-bar="${index}"]`)].every(bar => (Number(bar.getAttribute('width')) > Number(bar.getAttribute('height'))) === (width > depth))
+      }))
+      expect(lengthwise).toBe(true)
+    }
+    if (floor === 'EG') await expect(plan.locator('[data-opening-label="terrace"]')).toContainText('280 × 250 cm')
+    if (floor === 'EG') {
+      await expect(plan.locator('[data-opening-label="wc-window"]')).toContainText('60 × 100 cm')
+      await expect(plan.locator('[data-opening-label="wc-window"]')).toContainText('1 Öffnungsflügel')
+      await expect(plan.locator('[data-opening-label="hall-window-fixed"]')).toContainText('Festverglasung')
+      await expect(plan.locator('[data-opening-label="hall-window-fixed"]')).toContainText('180 × 50 cm')
+      await expect(plan.locator('[data-opening-label="hall-window-fixed"]')).toContainText('nicht öffenbar')
+      await expect(plan.locator('[data-opening-label="kitchen-east-window"]')).toContainText('1 Öffnungsflügel + Festfeld')
+      await expect(plan.locator('[data-opening-label="kitchen-east-window"]')).toContainText('210 × 100 cm')
+      await expect(plan.locator('[data-opening-label="garden-west-fixed"]')).toContainText('Festverglasung')
+      await expect(plan.locator('[data-opening-label="garden-west-fixed"]')).toContainText('120 × 250 cm')
+      await expect(plan.locator('[data-opening-label="garden-west-fixed"]')).toContainText('nicht öffenbar')
+      await expect(plan.locator('[data-opening-label="terrace"]')).toContainText('1 Schiebeflügel + Festfeld')
+      await expect(plan.locator('[data-opening-label="living-corner-fixed"]')).toContainText('nicht öffenbar')
+    }
+    if (floor === 'OG') await expect(plan.locator('[data-opening-label="bath-window"]')).toContainText('180 × 100 cm')
     if (floor === 'DG') {
       await expect(plan.locator('[data-opening-label="DG-north-skylight"]')).toContainText('94 × 140 cm')
       await expect(plan.locator('[data-opening-label="DG-south-skylight"]')).toContainText('94 × 140 cm')
+      await expect(plan.locator('[data-opening-label="DG-north-skylight"]')).toContainText('Schwingflügel')
     }
     const failures = await plan.evaluate(svg => {
       const view = (svg as SVGSVGElement).viewBox.baseVal

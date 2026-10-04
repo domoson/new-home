@@ -24,7 +24,7 @@ export function planObjects(floor: Floor, furnished: boolean): Measurable[] {
     objects.push(...terraceParts.map((part, index) => ({ ...part, label: index ? 'Terrassenrücklauf' : 'Holzterrasse', details: `${terraceArea.toLocaleString('de-DE', { maximumFractionDigits: 2 })} m² gesamt · Dielen 14,4 cm / Fuge 6 mm` })))
     if (furnished) objects.push(...terraceFurniture.map(furnitureMeasure))
   }
-  if (floor.id === 'KG') objects.push(...lightWells.map(well => ({ ...well, label: 'Lichtschacht / Abdeckung', details: '100 × 50 cm Außenmaß · Ausführung ungeprüft' })))
+  if (floor.id === 'KG') objects.push(...lightWells.map(well => ({ ...well, label: 'Lichtschacht / Abdeckung', details: `${Math.max(well.width, well.depth) * 100} × ${Math.min(well.width, well.depth) * 100} cm Außenmaß · Ausführung ungeprüft` })))
   for (const room of floor.rooms) for (const part of room.parts) objects.push({ ...part, label: room.name + (room.parts.length > 1 ? ' · Teilfläche' : ''), details: `${roomArea(room, floor.id).floor.toLocaleString('de-DE', { maximumFractionDigits: 2 })} m² gesamt · ` + (floor.id === 'DG' ? `Lichte Höhe ${metres(Math.min(roofHeight(part.z), roofHeight(part.z + part.depth)))} bis ${metres(roofHeight(Math.max(part.z, Math.min(5, part.z + part.depth))))}` : `Lichte Höhe ${metres(floor.height)}`) })
   objects.push({ ...stairFor(), label: 'Treppenkern', details: 'Ein durchgehender Lauf, zwei Viertelwendelungen · Antritt Süd, Austritt Nord' })
   objects.push(...stairSolids(storeyRise(floor.id)).map(solid => ({ ...solid, label: solid.id.startsWith('landing') ? 'Treppenpodest' : 'Treppenstufe', details: `Oberkante +${metres(solid.bottom + solid.height)} ab Antritt · Steigung ${metres(storeyRise(floor.id) / stairFor().risers)}` })))
