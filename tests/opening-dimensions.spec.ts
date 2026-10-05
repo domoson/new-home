@@ -7,8 +7,9 @@ test('Wandoeffnungen bilden eine schaltbare zweite Masskette', async ({ page }) 
     const expected = await page.evaluate(async floorId => {
       const { makeFloor } = await import('/src/model.ts')
       const { openingDimensions } = await import('/src/openingDimensions.ts')
-      return Object.fromEntries(makeFloor(floorId).walls.filter(wall => wall.openings.length && ['north', 'east', 'south', 'west'].includes(wall.id)).map(wall => [wall.id, openingDimensions(wall).map(segment => ({ kind: segment.kind, width: (segment.end - segment.start).toFixed(2), height: segment.kind === 'opening' ? segment.height.toFixed(2) : null }))]))
+      return Object.fromEntries(makeFloor(floorId).walls.filter(wall => wall.openings.length && ['north', 'east', 'south', 'west'].includes(wall.id)).map(wall => [wall.id, openingDimensions(wall).map(segment => ({ kind: segment.kind, width: (segment.end - segment.start).toFixed(2) }))]))
     }, floor)
+    await expect(page.locator('[data-opening-label]').first()).toContainText('cm')
     for (const [side, segments] of Object.entries(expected)) {
       const chain = page.locator(`[data-opening-dimensions="${side}"]`)
       await expect(chain.locator('[data-dimension-tick]')).toHaveCount(segments.length + 1)
@@ -16,8 +17,8 @@ test('Wandoeffnungen bilden eine schaltbare zweite Masskette', async ({ page }) 
       for (const [index, segment] of segments.entries()) {
         const label = chain.locator('[data-dimension-segment]').nth(index)
         await expect(label).toHaveAttribute('data-dimension-segment', segment.kind)
+        await expect(label.locator('text')).toHaveCount(1)
         await expect(label.locator('text').first()).toHaveText(segment.width)
-        if (segment.height) await expect(label.locator('text').nth(1)).toHaveText(segment.height)
       }
     }
   }

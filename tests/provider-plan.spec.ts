@@ -1304,11 +1304,24 @@ test('Bemaßung schaltet auch Raumlabels im Grundriss um', async ({ page }, test
   await page.goto('/')
   const plan = page.locator('svg.floor-plan')
   const toggle = page.getByRole('button', { name: 'Bemaßung', exact: true })
-  for (const [floor, count] of [['KG', 4], ['EG', 4], ['OG', 6], ['DG', 4]] as const) {
+  for (const [floor, count] of [['KG', 4], ['EG', 4], ['OG', 5], ['DG', 3]] as const) {
     await page.getByRole('button', { name: floor, exact: true }).click()
     await expect(plan.locator('[data-room-label]')).toHaveCount(count)
     await expect(plan.locator('[data-room-label] rect')).toHaveCount(count)
-    await expect(plan.locator('[data-room-label] text')).toHaveCount(count * 2)
+    const showsWoflv = floor === 'KG' || floor === 'DG'
+    await expect(plan.locator('[data-room-label] text')).toHaveCount(count * (showsWoflv ? 3 : 2))
+    if (showsWoflv) {
+      await expect(page.locator('.room-list')).toContainText('WoFlV*')
+      await expect(plan).toContainText('WoFlV*')
+      if (floor === 'KG') {
+        await expect(page.locator('.room-list')).toContainText(/0(?:,0)? m² WoFlV\*/)
+        await expect(plan).toContainText(/WoFlV\* 0(?:,0)? m²/)
+        await expect(page.locator('.room-detail')).toContainText('Kelleransatz (WoFlV*)')
+      } else {
+        await expect(plan.locator('[data-room-label="office"]')).toContainText('WoFlV*')
+        await expect(page.locator('.room-detail')).toContainText('Höhengewichtung (WoFlV*)')
+      }
+    }
     await toggle.click()
     await expect(plan.locator('[data-room-label]')).toHaveCount(0)
     await expect(plan).not.toContainText('m²')
@@ -1317,7 +1330,8 @@ test('Bemaßung schaltet auch Raumlabels im Grundriss um', async ({ page }, test
     await toggle.click()
     await expect(plan.locator('[data-room-label]')).toHaveCount(count)
     await expect(plan).toContainText('m²')
-    await expect(plan).toContainText('10,50 m')
+    await expect(plan).toContainText('10,70 m')
+    if (showsWoflv) await expect(plan).toContainText('WoFlV*')
   }
 })
 

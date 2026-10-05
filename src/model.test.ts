@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { area, floorIds, floorSlabs, heightLine, house, interiorWallThickness, makeFloor, rect, roofHeight, roomArea, stair, stairFor, stairGuards, stairOpeningParts, stairSolids, wallSolids } from './model'
+import { area, atticLivingArea, floorIds, floorSlabs, heightLine, house, interiorWallThickness, makeFloor, rect, roofHeight, roomArea, stair, stairFor, stairGuards, stairOpeningParts, stairSolids, wallSolids } from './model'
 import type { Rect } from './model'
 
 const overlapArea = (first: Rect, second: Rect) => Math.max(0, Math.min(first.x + first.width, second.x + second.width) - Math.max(first.x, second.x)) * Math.max(0, Math.min(first.z + first.depth, second.z + second.depth) - Math.max(first.z, second.z))
@@ -156,10 +156,19 @@ describe('Maßhaltiger Vorentwurf', () => {
     expect(roofHeight(house.north)).toBe(.5)
     expect(roofHeight(heightLine(2))).toBeCloseTo(2)
     const sample = { id: 'test', name: '', parts: [rect(1, house.north, 1, heightLine(1) - house.north)], color: '', note: '', spawn: [1, 1] as [number, number] }
+    expect(atticLivingArea(sample)).toBeCloseTo(0)
     expect(roomArea(sample, 'DG').living).toBeCloseTo(0)
     sample.parts = [rect(1, heightLine(1), 1, heightLine(2) - heightLine(1))]
-    expect(roomArea(sample, 'DG').living).toBeCloseTo(area(sample.parts) / 2)
+    expect(atticLivingArea(sample)).toBeCloseTo(area(sample.parts) / 2)
+    expect(roomArea(sample, 'DG').living).toBeCloseTo(area(sample.parts) / 2 * .97)
+    sample.parts = [rect(1, heightLine(2), 1, .5)]
+    expect(atticLivingArea(sample)).toBeCloseTo(area(sample.parts))
     expect(roomArea(sample, 'KG').living).toBe(0)
+  })
+  it('setzt modellierte Kellerräume mit null Wohnfläche an', () => {
+    const cellar = makeFloor('KG')
+    expect(cellar.rooms.length).toBeGreaterThan(0)
+    for (const room of cellar.rooms) expect(roomArea(room, 'KG').living).toBe(0)
   })
   it('hält DG-Möbel unter dem Dach und dokumentiert 43 cm westlich und 62 cm östlich am Elternbett', () => {
     {

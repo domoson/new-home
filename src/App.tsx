@@ -1,6 +1,6 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { ArrowDownToLine, ArrowUpRight, Box, BrickWall, ChevronDown, Footprints, ImageDown, Info, Layers2, Maximize, Minus, Plus, Ruler, Scissors, Sofa, Trees, X } from 'lucide-react'
-import { area, floorIds, format, houseEnvelope, makeFloor, roomArea, stairOpeningParts } from './model'
+import { area, atticLivingArea, floorIds, format, houseEnvelope, makeFloor, roomArea, stairOpeningParts } from './model'
 import type { FloorId } from './model'
 import FloorPlan from './FloorPlan'
 import SectionView from './SectionView'
@@ -152,8 +152,26 @@ export default function App() {
         <div className="variant-label">{house.width.toLocaleString('de-DE', { minimumFractionDigits: 2 })} × {house.depth.toLocaleString('de-DE', { minimumFractionDigits: 2 })} m · Osthälfte</div>
         <div className="floor-heading"><h2>{floor.name}</h2><span>{floorId}</span></div>
         <div className="level-metrics"><div><strong>{format(total)}<small> m²</small></strong><span>Lichte Raumflächen</span></div><div><strong>{floorId === 'DG' ? '35°' : floor.height.toLocaleString('de-DE', { minimumFractionDigits: 2 })}<small>{floorId === 'DG' ? '' : ' m'}</small></strong><span>{floorId === 'DG' ? 'Dachneigung' : 'Lichte Höhe'}</span></div></div>
-        <div className="room-list" aria-label="Räume">{floor.rooms.map((room, index) => <button key={room.id} className={`room-row ${activeRoom.id === room.id ? 'active' : ''}`} onClick={() => inspect(room.id)} aria-pressed={activeRoom.id === room.id}><span className="room-number">{String(index + 1).padStart(2, '0')}</span><span className="room-swatch" style={{ background: room.color }} /><span>{room.name}</span><strong>{format(roomArea(room, floorId).floor)}<small> m²</small></strong></button>)}</div>
-        <section className="room-detail" aria-live="polite"><div className="eyebrow">RAUMDETAIL</div><h3>{activeRoom.name}</h3><p>{activeRoom.note}</p><dl><div><dt>Lichte Grundfläche</dt><dd>{format(roomArea(activeRoom, floorId).floor)} m²</dd></div>{referenceAreas[floorId]?.[activeRoom.id] !== undefined && <div><dt>Beschriftung der Vorlage</dt><dd>{format(referenceAreas[floorId]![activeRoom.id])} m²</dd></div>}<div><dt>Wohnfläche, überschlägig</dt><dd>{format(roomArea(activeRoom, floorId).living)} m²</dd></div>{activeRoom.parts.length === 1 && <div><dt>Lichte Abmessungen</dt><dd>{format(activeRoom.parts[0].width)} × {format(activeRoom.parts[0].depth)} m</dd></div>}</dl><button className="text-button" onClick={() => { setMode('walk'); setReset(value => value + 1) }}><Footprints size={17} /> Raum betreten <ArrowUpRight size={16} /></button></section>
+        <div className="room-list" aria-label="Räume">{floor.rooms.map((room, index) => {
+          const areas = roomArea(room, floorId)
+          const showsWoflv = floorId === 'KG' || floorId === 'DG'
+          const woflvArea = floorId === 'KG' ? areas.living : atticLivingArea(room)
+          return <button key={room.id} className={`room-row ${activeRoom.id === room.id ? 'active' : ''}`} onClick={() => inspect(room.id)} aria-pressed={activeRoom.id === room.id}><span className="room-number">{String(index + 1).padStart(2, '0')}</span><span className="room-swatch" style={{ background: room.color }} /><span>{room.name}</span><strong>{format(areas.floor)}<small> m²</small>{showsWoflv && <small> ({format(woflvArea)} m² WoFlV*)</small>}</strong></button>
+        })}</div>
+        <section className="room-detail" aria-live="polite">
+          <div className="eyebrow">RAUMDETAIL</div>
+          <h3>{activeRoom.name}</h3>
+          <p>{activeRoom.note}</p>
+          <dl>
+            <div><dt>Lichte Grundfläche</dt><dd>{format(roomArea(activeRoom, floorId).floor)} m²</dd></div>
+            {referenceAreas[floorId]?.[activeRoom.id] !== undefined && <div><dt>Beschriftung der Vorlage</dt><dd>{format(referenceAreas[floorId]![activeRoom.id])} m²</dd></div>}
+            <div><dt>Wohnfläche, überschlägig</dt><dd>{format(roomArea(activeRoom, floorId).living)} m²</dd></div>
+            {floorId === 'KG' && <div><dt>Kelleransatz (WoFlV*)</dt><dd>{format(roomArea(activeRoom, floorId).living)} m²</dd></div>}
+            {floorId === 'DG' && <div><dt>Höhengewichtung (WoFlV*)</dt><dd>{format(atticLivingArea(activeRoom))} m²</dd></div>}
+            {activeRoom.parts.length === 1 && <div><dt>Lichte Abmessungen</dt><dd>{format(activeRoom.parts[0].width)} × {format(activeRoom.parts[0].depth)} m</dd></div>}
+          </dl>
+          <button className="text-button" onClick={() => { setMode('walk'); setReset(value => value + 1) }}><Footprints size={17} /> Raum betreten <ArrowUpRight size={16} /></button>
+        </section>
         <div className="sidebar-foot"><span className="material-dot" /> Eiche natur · Matte Oberflächen</div>
         </>}
         {exterior && (siteItem.id === 'house-east' || siteItem.id === 'house-west') && <SetbackDetails side={siteItem.id === 'house-east' ? 'east' : 'west'} />}

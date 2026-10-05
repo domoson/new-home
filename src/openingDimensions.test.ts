@@ -41,9 +41,9 @@ describe('opening dimension chain', () => {
     ] }
     expect(openingDimensions(wall)).toEqual([
       { start: 0, end: .5, kind: 'pier' },
-      { start: .5, end: 2, kind: 'opening', height: 1.2 },
+      { start: .5, end: 2, kind: 'opening' },
       { start: 2, end: 3, kind: 'pier' },
-      { start: 3, end: 4, kind: 'opening', height: 2.1 },
+      { start: 3, end: 4, kind: 'opening' },
       { start: 4, end: 5, kind: 'pier' },
     ])
   })

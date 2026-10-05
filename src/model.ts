@@ -81,6 +81,10 @@ export const roofInnerElevation = (south: number) => elevations.DG + roofHeight(
 export const roofOuterElevation = (south: number) => roofInnerElevation(south) + roofVerticalThickness
 export const ridgeElevations = { inside: roofInnerElevation(house.depth / 2), roofSurface: roofOuterElevation(house.depth / 2), outside: roofOuterElevation(house.depth / 2) + construction.ridgeCapAllowance }
 export const heightLine = (height: number) => house.north + (height - house.knee) / Math.tan(house.pitch * Math.PI / 180)
+export function atticLivingArea(room: Room) {
+  const band = (height: number) => room.parts.reduce((sum, part) => sum + part.width * Math.max(0, Math.min(part.z + part.depth, house.depth - heightLine(height)) - Math.max(part.z, heightLine(height))), 0)
+  return (band(1) + band(2)) / 2
+}
 export const atticCeiling = { height: 2.77, thickness: .24 }
 export const ceilingHeight = (south: number) => Math.min(roofHeight(south), atticCeiling.height)
 export function atticCeilingPanels(): Rect[] {
@@ -91,8 +95,7 @@ export function roomArea(room: Room, floor: FloorId) {
   const gross = area(room.parts)
   if (floor === 'KG') return { floor: gross, living: 0 }
   if (floor !== 'DG') return { floor: gross, living: gross * .97 }
-  const band = (height: number) => room.parts.reduce((sum, part) => sum + part.width * Math.max(0, Math.min(part.z + part.depth, house.depth - heightLine(height)) - Math.max(part.z, heightLine(height))), 0)
-  return { floor: gross, living: (band(1) + band(2)) / 2 * .97 }
+  return { floor: gross, living: atticLivingArea(room) * .97 }
 }
 export function makeFloor(id: FloorId, houseSide: 'east' | 'west' = 'east'): Floor {
   return buildProviderFloor(id, houseSide)
