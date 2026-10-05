@@ -789,7 +789,7 @@ for (const activeFloor of ['EG', 'OG', 'DG'] as const) test(`${activeFloor} Fens
     const model = buildScene(activeFloor, false, activeFloor === 'DG', true)
     model.group.updateMatrixWorld(true)
     const floor = makeFloor(activeFloor)
-    const ids = activeFloor === 'EG' ? ['garden-west-fixed', 'terrace', 'garden-fixed', 'garden-corner-fixed', 'living-corner-fixed', 'kitchen-east-window', 'wc-window', 'hall-window-fixed'] : activeFloor === 'OG' ? ['south-west', 'east-north', 'bath-window', 'child-north-window', 'south-east'] : ['gable-office', 'gable-parents']
+    const ids = activeFloor === 'EG' ? ['garden-west-fixed', 'terrace', 'garden-fixed', 'living-corner-fixed', 'kitchen-east-window', 'wc-window', 'hall-window-fixed'] : activeFloor === 'OG' ? ['south-west', 'east-north', 'bath-window', 'child-north-window', 'south-east'] : ['gable-office', 'gable-parents']
     const heights = []
     for (const side of ['east', 'west']) {
       const group = model.group.getObjectByName(`house-${side}`)
@@ -854,7 +854,7 @@ for (const activeFloor of ['EG', 'OG', 'DG'] as const) test(`${activeFloor} Fens
     expect(opening.top, `${opening.side}/${opening.id}`).toBeCloseTo(2.5)
     expect(opening.bottom).toBeCloseTo(opening.sill)
   }
-  expect(result.blinds).toHaveLength(activeFloor === 'EG' ? 7 : activeFloor === 'OG' ? 5 : 2)
+  expect(result.blinds).toHaveLength(activeFloor === 'EG' ? 6 : activeFloor === 'OG' ? 5 : 2)
   for (const blind of result.blinds) {
     expect(blind.bottom).toBe(2.5)
     expect(blind.ceiling - blind.top).toBeCloseTo(.03)
@@ -864,7 +864,7 @@ for (const activeFloor of ['EG', 'OG', 'DG'] as const) test(`${activeFloor} Fens
   if (activeFloor === 'EG') {
     expect(result.hallOpening).toBe(false)
     expect(result.southOpening).toBe(false)
-    expect(result.slide).toBeCloseTo(1.2)
+    expect(result.slide).toBeCloseTo(1.25)
     expect(result.sliderHeight).toBe(2.5)
   }
   for (const view of ['east', 'south', 'north', 'rotated']) {
@@ -877,12 +877,12 @@ for (const activeFloor of ['EG', 'OG', 'DG'] as const) test(`${activeFloor} Fens
   await page.evaluate(() => { (window as any).livingHeightPreview.dispose(); delete (window as any).livingHeightPreview })
 })
 
-test('Gartenschiebeflügel bleibt innerhalb der 2,40 Meter breiten Hebeschiebeanlage neben der Eckfestverglasung', async ({ page }) => {
+test('Gartenschiebeflügel bleibt innerhalb der 2,80 Meter breiten Verglasung mit Eckkopplung', async ({ page }) => {
   await page.goto('/')
   const result = await page.evaluate(async () => {
     const THREE = await import('/node_modules/.vite/deps/three.js')
     const { buildScene } = await import('/src/scene.ts')
-    const { house, housePlacement, makeFloor } = await import('/src/model.ts')
+    const { house, makeFloor } = await import('/src/model.ts')
     const model = buildScene('EG', false, false, false)
     const door = model.doors.find(door => door.id === 'EG-terrace')
     const south = makeFloor('EG').walls.find(wall => wall.id === 'south')
@@ -896,11 +896,10 @@ test('Gartenschiebeflügel bleibt innerhalb der 2,40 Meter breiten Hebeschiebean
       positions.push({ min: bounds.min.x, max: bounds.max.x, rotation: door.pivot.rotation.y })
     }
     const fixed = model.group.getObjectByName('EG-garden-fixed-fixed-0')
-    const cornerSouth = model.group.getObjectByName('EG-garden-corner-fixed-fixed-0')
     const coupling = model.group.getObjectByName('EG-glazing-corner-coupling')
     const couplingBounds = new THREE.Box3().setFromObject(coupling)
-    const eastGlass = new THREE.Box3().setFromObject(corner), southGlass = new THREE.Box3().setFromObject(cornerSouth)
-    const result = { sliding: door.sliding, width: door.size.x, fixed: !!fixed, cornerFixed: cornerBefore.equals(corner.matrixWorld) && !model.doors.some(door => door.id.includes('living-corner')), cornerTop: eastGlass.max.y, coupled: Math.abs(southGlass.max.x - couplingBounds.min.x) < .02 && Math.abs(eastGlass.max.z - couplingBounds.min.z) < .02 && Math.abs(eastGlass.min.x - couplingBounds.min.x) < .05 && Math.abs(southGlass.min.z - couplingBounds.min.z) < .05, positions, apertureStart: housePlacement.x + south.x + terrace.start, apertureEnd: housePlacement.x + south.x + fixedOpening.start + fixedOpening.width, innerEast: housePlacement.x + house.east }
+    const eastGlass = new THREE.Box3().setFromObject(corner), southGlass = new THREE.Box3().setFromObject(fixed)
+    const result = { sliding: door.sliding, width: door.size.x, fixed: !!fixed, cornerFixed: cornerBefore.equals(corner.matrixWorld) && !model.doors.some(door => door.id.includes('living-corner')), cornerTop: eastGlass.max.y, coupled: Math.abs(southGlass.max.x - couplingBounds.min.x) < .02 && Math.abs(eastGlass.max.z - couplingBounds.min.z) < .02 && Math.abs(eastGlass.min.x - couplingBounds.min.x) < .05 && Math.abs(southGlass.min.z - couplingBounds.min.z) < .05, positions, apertureStart: south.x + terrace.start, apertureEnd: south.x + fixedOpening.start + fixedOpening.width, innerEast: house.east }
     model.dispose()
     return result
   })
@@ -909,16 +908,17 @@ test('Gartenschiebeflügel bleibt innerhalb der 2,40 Meter breiten Hebeschiebean
   expect(result.cornerFixed).toBe(true)
   expect(result.coupled).toBe(true)
   expect(result.cornerTop).toBeCloseTo(2.5 - .05)
-  expect(result.width).toBe(1.2)
+  expect(result.width).toBe(1.25)
   for (const bounds of result.positions) {
     expect(bounds.min).toBeGreaterThanOrEqual(result.apertureStart - .01)
     expect(bounds.max).toBeLessThanOrEqual(result.apertureEnd + .01)
     expect(bounds.rotation).toBe(0)
   }
-  expect(result.positions[2].min - result.positions[0].min).toBeCloseTo(1.2)
+  expect(result.positions[2].min - result.positions[0].min).toBeCloseTo(1.25)
   expect(result.positions[0].min).toBeCloseTo(result.apertureStart)
-  expect(result.apertureEnd - result.apertureStart).toBeCloseTo(2.4)
-  expect(result.apertureEnd).toBeCloseTo(result.innerEast - 1.5)
+  expect(result.positions[2].max).toBeCloseTo(result.apertureEnd - .3)
+  expect(result.apertureEnd - result.apertureStart).toBeCloseTo(2.8)
+  expect(result.apertureEnd).toBeCloseTo(result.innerEast)
 })
 
 test('Fensterrevision zeigt stimmige Fassaden und eine geschlossene seitliche Terrassenwand', async ({ page }, testInfo) => {
@@ -926,13 +926,12 @@ test('Fensterrevision zeigt stimmige Fassaden und eine geschlossene seitliche Te
   page.on('pageerror', error => errors.push(error.message))
   await page.goto('/')
   await expect(page.locator('[data-opening="garden-door-east"]')).toHaveCount(0)
-  await expect(page.locator('[data-raffstore]')).toHaveCount(7)
+  await expect(page.locator('[data-raffstore]')).toHaveCount(6)
   for (const floor of ['EG', 'OG', 'DG']) {
     await page.getByRole('button', { name: floor, exact: true }).click()
     if (floor === 'OG') {
       await expect(page.locator('[data-opening="play-window"]')).toHaveCount(0)
       await expect(page.locator('[data-opening="east-north"]')).toHaveCount(1)
-      await expect(page.locator('[data-opening="east-south"]')).toHaveCount(0)
       await expect(page.locator('[data-raffstore]')).toHaveCount(5)
     }
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
@@ -976,7 +975,7 @@ test('Fensterrevision zeigt stimmige Fassaden und eine geschlossene seitliche Te
   expect(result.noDoor).toBe(true)
   expect(result.noBlind).toBe(true)
   expect(result.stoppedAt).toBeGreaterThan(6.2)
-  expect(result.stoppedAt).toBeLessThan(6.5)
+  expect(result.stoppedAt).toBeLessThan(6.4)
   const canvas = page.locator('#window-revision-preview')
   let previous: PNG | undefined
   for (const view of ['east', 'south', 'north', 'rotated']) {
@@ -1018,7 +1017,7 @@ test('Fensterflügel öffnen einzeln nach innen und lassen Festfelder und Unterl
         const mesh = model.group.getObjectByName(`${id}-fixed-${panel.column}`)
         return { mesh, before: mesh?.matrixWorld.clone() }
       })
-      if (opening.windowLayout.ventilationWidth) checks.push({ id, narrowLeaf: !(ventilationColumn ? primary : secondary) && !!ventilationLeaf && fixedPanels.length >= 1 && ventilationLeaf.size.x < opening.width / 2 })
+      if (opening.windowLayout.ventilationWidth) checks.push({ id, narrowLeaf: !(ventilationColumn ? primary : secondary) && !!ventilationLeaf && fixedPanels.length >= 1 && ventilationLeaf.size.x < .6 })
       for (const panel of panels.filter(panel => !panel.fixed)) {
         const door = panel.column ? secondary : primary
         if (!door) throw new Error(`Missing operable panel: ${id}/${panel.column}`)
@@ -1257,7 +1256,7 @@ test('Fenstermasse stehen mit Hinweislinien ausserhalb des Grundrisses', async (
       }))
       expect(lengthwise).toBe(true)
     }
-    if (floor === 'EG') await expect(plan.locator('[data-opening-label="terrace"]')).toContainText('240 × 250 cm')
+    if (floor === 'EG') await expect(plan.locator('[data-opening-label="terrace"]')).toContainText('280 × 250 cm')
     if (floor === 'EG') {
       await expect(plan.locator('[data-opening-label="wc-window"]')).toContainText('60 × 100 cm')
       await expect(plan.locator('[data-opening-label="wc-window"]')).toContainText('1 Öffnungsflügel')
@@ -1265,14 +1264,14 @@ test('Fenstermasse stehen mit Hinweislinien ausserhalb des Grundrisses', async (
       await expect(plan.locator('[data-opening-label="hall-window-fixed"]')).toContainText('180 × 50 cm')
       await expect(plan.locator('[data-opening-label="hall-window-fixed"]')).toContainText('nicht öffenbar')
       await expect(plan.locator('[data-opening-label="kitchen-east-window"]')).toContainText('1 Öffnungsflügel + Festfeld')
-      await expect(plan.locator('[data-opening-label="kitchen-east-window"]')).toContainText('240 × 112,5 cm')
+      await expect(plan.locator('[data-opening-label="kitchen-east-window"]')).toContainText('210 × 100 cm')
       await expect(plan.locator('[data-opening-label="garden-west-fixed"]')).toContainText('Festverglasung')
-      await expect(plan.locator('[data-opening-label="garden-west-fixed"]')).toContainText('60 × 250 cm')
+      await expect(plan.locator('[data-opening-label="garden-west-fixed"]')).toContainText('120 × 250 cm')
       await expect(plan.locator('[data-opening-label="garden-west-fixed"]')).toContainText('nicht öffenbar')
       await expect(plan.locator('[data-opening-label="terrace"]')).toContainText('1 Schiebeflügel + Festfeld')
       await expect(plan.locator('[data-opening-label="living-corner-fixed"]')).toContainText('nicht öffenbar')
     }
-    if (floor === 'OG') await expect(plan.locator('[data-opening-label="bath-window"]')).toContainText('180 × 112,5 cm')
+    if (floor === 'OG') await expect(plan.locator('[data-opening-label="bath-window"]')).toContainText('180 × 100 cm')
     if (floor === 'DG') {
       await expect(plan.locator('[data-opening-label="DG-north-skylight"]')).toContainText('94 × 140 cm')
       await expect(plan.locator('[data-opening-label="DG-south-skylight"]')).toContainText('94 × 140 cm')
