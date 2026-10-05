@@ -93,9 +93,10 @@ describe('Variante 6,90 x 10,50 m', () => {
     expect(extension.footprint).toBeUndefined()
     expect(extension).toMatchObject({ x: stair.x + stair.width, z: stair.end, depth: .2 })
     expect(extension.x + extension.width).toBeCloseTo(2.65)
-    const south = ground.walls.find(wall => wall.id === 'south')!, terrace = south.openings.find(opening => opening.id === 'terrace')!, fixed = south.openings.find(opening => opening.id === 'garden-fixed')!
-    expect(terrace.width + fixed.width).toBeCloseTo(2.8)
-    expect(fixed.start + fixed.width).toBeCloseTo(house.east - house.west)
+    const south = ground.walls.find(wall => wall.id === 'south')!, terrace = south.openings.find(opening => opening.id === 'terrace')!, fixed = south.openings.find(opening => opening.id === 'garden-fixed')!, corner = south.openings.find(opening => opening.id === 'garden-corner-fixed')!
+    expect(terrace.width + fixed.width).toBeCloseTo(2.4)
+    expect(corner.start).toBeCloseTo(fixed.start + fixed.width)
+    expect(corner.start + corner.width).toBeCloseTo(house.east - house.west)
     const sofa = ground.furniture.find(item => item.id === 'sofa')!, chaise = ground.furniture.find(item => item.id === 'sofa-chaise')!
     expect(house.south - sofa.z - sofa.depth).toBeCloseTo(.2)
     expect(sofa.z - chaise.z - chaise.depth).toBeCloseTo(0)

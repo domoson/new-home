@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { house, makeFloor, roofHeight, wallSolids } from './model'
+import { construction, house, makeFloor, roofHeight, wallSolids } from './model'
 import { raffstoreDetail, raffstores } from './raffstore'
 import * as THREE from 'three'
 import { createRaffstore } from './raffstoreScene'
@@ -36,20 +36,24 @@ describe('Raffstoredetails', () => {
       }
     }
   })
-  it('uses one south curtain over the slider and fixed pane with a shared corner guide', () => {
+  it('uses one south curtain over the slider and fixed pane and a separate corner curtain with a shared guide', () => {
     const blinds = raffstores(makeFloor('EG'))
-    expect(blinds).toHaveLength(6)
+    expect(blinds).toHaveLength(7)
     expect(blinds.some(blind => blind.id === 'EG-garden-door-east')).toBe(false)
     expect(raffstores(makeFloor('OG'))).toHaveLength(5)
     expect(raffstores(makeFloor('DG'))).toHaveLength(2)
     expect(raffstores(makeFloor('KG'))).toEqual([])
     expect(blinds.some(blind => blind.id.includes('entrance'))).toBe(false)
-    const south = blinds.find(blind => blind.id === 'EG-terrace')!
+    const slider = blinds.find(blind => blind.id === 'EG-terrace')!
+    const south = blinds.find(blind => blind.id === 'EG-garden-corner-fixed')!
     const east = blinds.find(blind => blind.id === 'EG-living-corner-fixed')!
+    expect(slider.width).toBeCloseTo(2.4)
+    expect(slider.corner).toBe(false)
+    expect(slider.x + slider.width).toBeCloseTo(south.x)
     expect(south.x + south.width).toBeCloseTo(east.x)
     expect(east.z + east.width).toBeCloseTo(south.z)
     expect(south.sharedEndGuide).toBe(true)
     expect(east.sharedEndGuide).toBe(false)
-    expect(house.width - east.x).toBeCloseTo(raffstoreDetail.setback)
+    expect(house.east + construction.exteriorWall - east.x).toBeCloseTo(raffstoreDetail.setback)
   })
 })
