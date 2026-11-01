@@ -90,7 +90,93 @@ und Kollisionen bleiben unveraendert. Die Farbgebung ist eine Annaeherung an
 trockenen Sommerbestand, keine exakte Fototextur; der Datumsregler aendert
 weiterhin nur den Sonnenstand, nicht den Vegetationszustand.
 
-## Aktuelle Variante 7,10 x 10,70 m
+## Wolf-Angebot: Fenster und Fassade, 01.11.2026
+
+Massgeblich fuer diese Vorschau sind die roten Anmerkungen auf den drei
+EG-/OG-/DG-Screenshots. Die Chat-Zusammenfassung liefert die exakten Rastermasse
+110,5 x 215,5 cm statt der gerundeten roten 110 x 215 cm. Die genannten PDFs
+liegen nicht vor: Dies ist eine Visualisierungsvariante, keine Bestellfreigabe.
+Alle folgenden Masse sind Breite x Hoehe in cm, BRH ab Fertigfussboden.
+
+| Position | Urspruengliche Anfrage laut Screenshot | Jetzt | BRH jetzt | Ausfuehrung / Aenderung |
+| --- | --- | --- | --- | --- |
+| EG Gaestebad Nord | 60 x 100 | 60,5 x 123 | 123 | 1 Oeffnungsfluegel |
+| EG Diele Nord | 180 x 50, BRH 173 | 173 x 73 | 173 | Festglas; im bisherigen Modell BRH 200 |
+| EG Kueche Ost | 210 x 100, BRH 93 | 198 x 123 | 93 | 2 gleich breite Oeffnungsfluegel statt Fluegel + Festfeld; bisheriges Modell BRH 150 |
+| EG Wohnen Suedwest | 120 x 250 | 110,5 x 215,5 | 0 | Durchgehendes Festglas |
+| EG Wohnen Ost, Ecke | 120 x 250 | 110,5 x 215,5 | 0 | Festglas; massiver 40-cm-Wandbacken statt offener Glasecke |
+| EG HST Sued | 280 x 250 | 298 x 215,5 | 0 | 1 Schiebefluegel + 1 Festfeld; 149 + 149 cm als unbestaetigte Teilung |
+| OG Bad Nord | 180 x 100 | 173 x 123 | 93 | 2 Fluegel; rote Sammelnotiz auf beide Nordfenster bezogen |
+| OG Kind Nord / Sued, normale Fenster | je 180 x 135 | je 173 x 123 | 93 | 2 Fluegel, mittig ueber unveraenderten Schreibtischen |
+| OG Kind Nord Ost / Kind Sued Suedwest | je 120 x 250 mit Unterlicht | je 110,5 x 215,5 | 0 | 2 Elemente insgesamt; FIX FEST laut Rot, kein Unterlicht, keine Oeffnung |
+| DG Schlafen / Buero, Ostgiebel | je 120 x 250 mit Unterlicht | je 110,5 x 215,5 | 0 | 2 durchgehende Festfelder |
+| DG Dachfenster Nord / Sued | je 94 x 140 | unveraendert | Dachschraege | Klapp-/Schwing; 2 externe Rolllaeden ergaenzt |
+| EG schmales Eingangsglas Ost | 30 x 225 | unveraendert | 0 | Separates Festglas bleibt; keine Zusammenlegung mit Kuechenfenster |
+| Haustuer | im Modell 110 x 225 | 110 x 215,5 | 0 | Alu, 40-cm-Edelstahlgriff; neue Hoehe nur Chat-Annahme |
+| KG | im Modell 3 x 90 x 75 | unveraendert | 135 | Kein annotierter KG-Plan; viertes Fenster aus Chat nicht lokalisiert |
+
+Oeffnungsmasse und BRH stehen auch direkt am Grundriss; die 3D-Rahmen und
+beweglichen Fluegel verwenden dieselben Daten. Fenster werden als Drehfluegel
+animiert; Dreh-Kipp-Beschlag, Stulp/Mittelpfosten, Sicherheitsglas und
+Rettungswege sind nicht herstellerseitig nachgewiesen. Die 6-cm-Mittelpfosten
+sind schematisch. Feste OG-/DG-Felder sind keine Rettungsoeffnungen.
+
+### Fassadenstand und offene Punkte
+
+- Clima NOVA mit 34,8 cm Gesamtwandstaerke, darin laut Chat 60 mm
+  Holzweichfaser-Putztraeger, 3 mm Oberputz und Siliconharzanstrich. Geometrisch
+  ein Gesamtkoerper mit vorhandener Putzoberflaeche, keine einzelnen Schichten.
+  Innenkanten bleiben fest, Aussenkanten ruecken gegenueber 40 cm um 5,2 cm ein.
+  Daraus folgen 7,048 x 10,596 m statt 7,10 x 10,70 m. Die 40-cm-Trennwand je
+  Haelfte bleibt eine Bestandsannahme. Gemeinsames vereinfachtes Huellmodell
+  auch im KG; ein separater Beton-Kellerwandaufbau und der Sockelversprung
+  muessen noch aus der Kellerplanung uebernommen werden. Raeume, Moebel,
+  Dach und Hausplatzierung bleiben unveraendert. Falls das Aussenmass 7,10 x
+  10,70 m verbindlich bleiben soll, ist eine gesonderte Innenraumanpassung noetig.
+- Suedostecke mit 40 cm Wandbacken je Fassadenrichtung ab Aussenkante,
+  davon 34,8 cm Wandstaerke und 5,2 cm innenseitiger Ruecksprung. HST und
+  Ostfestglas enden davor. Bezugskanten und Tragwerk bitte bestaetigen.
+- Sued: 80-mm-Raffstores. Nord/Ost: geschlossene Alu-Rollladenprofile.
+  Gezeichnete Oeffnungen ergeben 4 Raffstores + 9 Rolllaeden je Haelfte,
+  statt 5 + 8 im Chat. Eingangsglas und KG unbeschattet. Kein zusaetzliches
+  Fenster allein zur Erfuellung einer Stueckzahl erfunden. West spiegelbildlich.
+  Zwei Dachrolllaeden nur auf der ausgearbeiteten Osthaelfte. Kaesten 24 x
+  16 cm und Profilgeometrie schematisch; Einbau, Restdaemmung und Revision offen.
+  Absenkung gemeinsam, Winkel nur fuer Raffstores. Dachfluegel schliessen vor
+  dem Absenken und bleiben bei abgesenktem Dachbehang gesperrt (Vorschaulogik).
+- Motorisierung laut Chat: Somfy iO suedlich, kabelgebundene Rolllaeden
+  Nord/Ost; Home-Assistant-Anbindung, Stromversorgung und Steuerung separat
+  bestaetigen. Keine echte Motor-/Wind-/Smart-Home-Integration in dieser App.
+- Eingang: Alu-Vordach 250 cm entlang der Fassade x 90 cm Ausladung,
+  mit suedlichem Seitenteil, anthrazitfarbenem Briefkasten, Audiofeld und LED.
+  Unterkante 235 cm, Dachstaerke 12 cm, Seitenteilstaerke 8 cm, 30 cm breite
+  Alu-Verkleidung suedlich neben der Tuer und genaue Ausstattungslagen sind
+  Annahmen. Das nicht rot gestrichene 30 x 225 cm Eingangsglas bleibt separat
+  erhalten. Klaeren, ob stattdessen dieses Glas durch das Alu-Seitenteil
+  ersetzt werden soll. LED nur Leuchtflaeche, keine Lichtberechnung.
+- Vorhandene Rinnen/Fallrohre in zinkgrauer Metalloptik bleiben erhalten;
+  Titanzink nur Materialannahme aus Chat. Anschluesse/Entwaesserung ungeprueft.
+  17 lfm druckfeste Fassadenvorbereitung sind nicht sichtbar darstellbar, solange
+  Lage, Hoehe und Befestigungsraster fuer Markise/Ueberdachung fehlen.
+- Nachgewiesener Nutzungskonflikt: Die beiden Fluegel jedes normalen
+  Kinderzimmerfensters kollidieren beim Oeffnen mit dem Monitor auf dem
+  unveraenderten Schreibtisch (BRH 93 statt 115 cm; Monitoroberkante 117 cm).
+  Monitore versetzen oder Oeffnungsart mit Wolf abstimmen. Auch die Kuechen-
+  und Badarmaturen benoetigen eine vollstaendige Beschlags-/Schwenkpruefung.
+
+### Pruefung dieser Variante
+
+Gezielter Modelltest `npm test -- src/providerFacade.test.ts -t 'uses Wolf'`;
+Desktop/Mobil `npx playwright test tests/provider-plan.spec.ts -g 'Wolf Angebot'`.
+Letzterer prueft echte Rahmenmasse, Fluegelzahl, BRH-Labels, Bildinhalt,
+Ansichtswechsel, Behangaenderung, Vordach und Dachfenstersperre.
+Die weiteren historischen Varianten-Tests enthalten noch alte Massannahmen;
+ein vollstaendig gruener Gesamttestlauf wird nicht behauptet.
+
+## Bestandsstand vor Wolf-Angebot (historisch)
+
+Die folgenden Detailnotizen beschreiben den vorherigen Planungsstand.
+Bei Fenstern, Fassade und Eingang gilt ausschliesslich die Wolf-Tabelle oben.
 
 Die neue EG-/OG-Skizze ersetzt die bisherige Raumaufteilung. Die Osthaelfte ist
 auf KG, EG, OG und DG angepasst und eingerichtet; die Westhaelfte bleibt

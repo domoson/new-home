@@ -27,9 +27,9 @@ export function openingLabels(floor: Floor): OpeningLabel[] {
         id: opening.id, side: wall.id as OpeningLabel['side'],
         x: wall.x + (wall.axis === 'x' ? opening.start + width / 2 : wall.width),
         z: wall.z + (wall.axis === 'z' ? opening.start + width / 2 : wall.id === 'north' ? 0 : wall.depth),
-        title: opening.id === 'terrace' ? 'Hebeschiebet\u00fcr' : opening.id.includes('fixed') ? 'Festverglasung' : 'Fenster',
+        title: opening.id === 'terrace' ? 'Hebeschiebet\u00fcr' : windowPanels(opening).every(panel => panel.fixed) ? 'Festverglasung' : 'Fenster',
         size: openingSize(width, opening.height),
-        execution: opening.id === 'terrace' ? [`1 Schiebefl\u00fcgel${fixed ? ' + Festfeld' : ''}`] : windowExecution(opening),
+        execution: [...(opening.id === 'terrace' ? [`1 Schiebefl\u00fcgel${fixed ? ' + Festfeld' : ''}`] : windowExecution(opening)), `BRH ${centimetres(opening.sill)} cm`],
         ...(fixed ? { detail: `Fl\u00fcgel ${centimetres(opening.width)} + Festfeld ${centimetres(fixed.width)} cm` } : {}),
       }
     })

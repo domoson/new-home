@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { house, makeFloor, roofHeight, roomArea, wallSolids } from './model'
+import { construction, house, makeFloor, roofHeight, roomArea, wallSolids } from './model'
 import { windowFrame, windowJoint, windowMullionStart, windowPanels } from './windowLayout'
 import { raffstores } from './raffstore'
 import { roomDaylight } from './roomDaylight'
@@ -7,6 +7,32 @@ import { roomDaylight } from './roomDaylight'
 const onGrid = (value: number) => expect(value / .3).toBeCloseTo(Math.round(value / .3), 6)
 
 describe('Fassadenfenster', () => {
+  it('uses Wolf offer dimensions and the red annotated fixed panes', () => {
+    const expected = {
+      EG: [['wc-window', .605, 1.23, 1.23, 1], ['hall-window-fixed', 1.73, .73, 1.73, 0], ['kitchen-east-window', 1.98, 1.23, .93, 2], ['garden-west-fixed', 1.105, 2.155, 0, 0], ['living-corner-fixed', 1.105, 2.155, 0, 0]],
+      OG: [['bath-window', 1.73, 1.23, .93, 2], ['child-north-window', 1.73, 1.23, .93, 2], ['south-east', 1.73, 1.23, .93, 2], ['east-north', 1.105, 2.155, 0, 0], ['south-west', 1.105, 2.155, 0, 0]],
+      DG: [['gable-office', 1.105, 2.155, 0, 0], ['gable-parents', 1.105, 2.155, 0, 0]],
+    } as const
+    for (const side of ['east', 'west'] as const) {
+      for (const floorId of ['EG', 'OG', 'DG'] as const) {
+        const floor = makeFloor(floorId, side)
+        for (const [id, width, height, sill, leaves] of expected[floorId]) {
+          const opening = floor.walls.flatMap(wall => wall.openings).find(opening => opening.id === id)!
+          expect(opening, `${floorId}/${id}`).toMatchObject({ width, height, sill })
+          expect(windowPanels(opening).filter(panel => !panel.fixed), id).toHaveLength(leaves)
+          expect(opening.cornerGlazing).not.toBe(true)
+        }
+      }
+      const ground = makeFloor('EG', side)
+      const south = ground.walls.find(wall => wall.id === 'south')!
+      const terrace = south.openings.find(opening => opening.id === 'terrace')!
+      const fixed = south.openings.find(opening => opening.id === 'garden-fixed')!
+      expect(terrace.width + fixed.width).toBeCloseTo(2.98)
+      expect(terrace.height).toBe(2.155)
+      expect(south.width - fixed.start - fixed.width + construction.exteriorWall).toBeCloseTo(.4)
+      expect(wallSolids(ground.walls.find(wall => wall.id === 'east')!, ground.height).some(solid => solid.z <= house.south && solid.z + solid.depth >= house.south && solid.bottom === 0)).toBe(true)
+    }
+  })
   it('widens the kitchen window 30 cm south and moves its opening leaf to the north', () => {
     for (const side of ['east', 'west'] as const) {
       const ground = makeFloor('EG', side)
