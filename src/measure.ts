@@ -2,7 +2,6 @@ import { house, lightWells, rect, roofHeight, roofWindows, roomArea, stairFor, s
 import type { Floor, Furniture, Rect } from './model'
 import { terraceArea, terraceFurniture, terraceParts } from './terrace'
 import { kitchenModules } from './kitchenStorage'
-import { openingTitle } from './openingDimensions'
 
 export type PlanPoint = { x: number; z: number }
 export type Measurable = Rect & { label: string; details: string; footprint?: [number, number][] }
@@ -33,7 +32,7 @@ export function planObjects(floor: Floor, furnished: boolean): Measurable[] {
   for (const wall of floor.walls) {
     const exterior = { north: 'Nord', south: 'Süd', east: 'Ost', west: 'West' }[wall.id]
     for (const part of wallSolids(wall, floor.id === 'DG' ? roofHeight(5) : floor.height).filter(solid => solid.bottom === 0)) objects.push({ ...part, label: (exterior ? `Außenwand ${exterior}` : wall.id === 'installation' ? 'Installationsschacht' : 'Innenwand') + (wall.openings.length ? ' · Teilstück' : ''), details: `Stärke ${metres(wall.axis === 'x' ? wall.depth : wall.width)} · Gesamtlänge ${metres(wall.axis === 'x' ? wall.width : wall.depth)} · ${floor.id === 'DG' ? `Höhe ${metres(Math.min(roofHeight(part.z), roofHeight(part.z + part.depth)))} bis ${metres(roofHeight(Math.max(part.z, Math.min(5, part.z + part.depth))))}` : `Höhe ${metres(floor.height)}`}` })
-    for (const opening of wall.openings) objects.push({ ...rect(wall.x + (wall.axis === 'x' ? opening.start : 0), wall.z + (wall.axis === 'z' ? opening.start : 0), wall.axis === 'x' ? opening.width : wall.width, wall.axis === 'z' ? opening.width : wall.depth), label: openingTitle(opening), details: `Breite ${metres(opening.width)} · Höhe ${metres(opening.height)} · Brüstung ${metres(opening.sill)}` })
+    for (const opening of wall.openings) objects.push({ ...rect(wall.x + (wall.axis === 'x' ? opening.start : 0), wall.z + (wall.axis === 'z' ? opening.start : 0), wall.axis === 'x' ? opening.width : wall.width, wall.axis === 'z' ? opening.width : wall.depth), label: opening.id === 'terrace' ? 'Hebeschiebetür' : opening.kind === 'window' ? opening.id.includes('fixed') ? 'Festverglasung' : 'Fenster' : opening.kind === 'passage' ? 'Durchgang' : 'Tür', details: `Breite ${metres(opening.width)} · Höhe ${metres(opening.height)} · Brüstung ${metres(opening.sill)}` })
   }
   if (furnished) {
     for (const item of floor.furniture) {
