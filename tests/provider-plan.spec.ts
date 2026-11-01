@@ -1,5 +1,151 @@
 import { expect, test } from '@playwright/test'
 
+test('Wolf Angebot: Fenster, BRH, Unterlichter und Sonnenschutz in 2D und 3D', async ({ page }, testInfo) => {
+  test.setTimeout(180000)
+  const errors: string[] = []
+  page.on('pageerror', error => errors.push(error.message))
+  await page.goto('/')
+  for (const floorId of ['EG', 'OG', 'DG', 'KG']) {
+    await page.getByRole('button', { name: floorId, exact: true }).click()
+    const labels = await page.evaluate(async floorId => {
+      const { makeFloor } = await import('/src/model.ts')
+      const { openingLabels } = await import('/src/openingDimensions.ts')
+      return openingLabels(makeFloor(floorId))
+    }, floorId)
+    for (const label of labels) {
+      const text = page.locator(`[data-opening-label-text="${label.id}"]`)
+      await expect(text).toContainText(label.size)
+      for (const line of label.execution) await expect(text).toContainText(line)
+    }
+    const clipped = await page.locator('[data-opening-label-text]').evaluateAll(elements => elements.filter(element => {
+      const box = element.getBoundingClientRect(), svg = element.closest('svg')!.getBoundingClientRect()
+      return box.left < Math.max(0, svg.left) || box.right > Math.min(innerWidth, svg.right) || box.top < svg.top || box.bottom > svg.bottom
+    }).map(element => element.getAttribute('data-opening-label-text')))
+    expect(clipped).toEqual([])
+    await page.locator('.floor-plan').screenshot({ path: `test-results/${testInfo.project.name}-wolf-${floorId}-plan.png` })
+  }
+  const result = await page.evaluate(async () => {
+    const THREE = await import('/node_modules/.vite/deps/three.js')
+    const { OBB } = await import('/node_modules/three/examples/jsm/math/OBB.js')
+    const { buildScene } = await import('/src/scene.ts')
+    const { makeFloor, housePlacement, furnitureVolumes } = await import('/src/model.ts')
+    const { windowPanels } = await import('/src/windowLayout.ts')
+    const model = buildScene('EG', false, true, true)
+    for (const name of ['neighborhood', 'garden', 'site-ground', 'house-west']) { const object = model.group.getObjectByName(name); if (object) object.visible = false }
+    model.group.updateMatrixWorld(true)
+    const mismatches = [], collisions = new Set<string>()
+    for (const floorId of ['EG', 'OG', 'DG']) {
+      const floor = makeFloor(floorId)
+      for (const wall of floor.walls) for (const opening of wall.openings.filter(opening => opening.kind === 'window')) {
+        const bounds = new THREE.Box3()
+        model.group.getObjectByName('house-east').traverse(object => {
+          if (object.userData.windowFrame === `${floorId}-${opening.id}`) bounds.union(new THREE.Box3().setFromObject(object))
+        })
+        const size = bounds.getSize(new THREE.Vector3())
+        if (Math.abs(size.y - opening.height) > .0001 || Math.abs((wall.axis === 'x' ? size.x : size.z) - opening.width) > .0001 || Math.abs(bounds.min.y - floor.elevation - opening.sill) > .0001) mismatches.push(`${floorId}/${opening.id}`)
+        const count = model.doors.filter(door => door.id === `${floorId}-${opening.id}` || door.id === `${floorId}-${opening.id}-secondary`).length
+        if (count !== windowPanels(opening).filter(panel => !panel.fixed).length) mismatches.push(`leaves/${floorId}/${opening.id}`)
+      }
+    }
+    const obstacles = []
+    model.group.getObjectByName('house-east').traverse(object => {
+      if (object instanceof THREE.Mesh && /monitor-frame|kitchen-sink.*spout|espresso/.test(object.name)) obstacles.push(object)
+    })
+    for (const door of model.doors.filter(door => /^(EG-kitchen-east-window|OG-child-north-window|OG-south-east)/.test(door.id))) {
+      for (let step = 0; step <= 20; step++) {
+        model.setOpening(door.id, step / 20); model.group.updateMatrixWorld(true)
+        const moving = new OBB(new THREE.Vector3(), door.size.clone().multiplyScalar(.5)).applyMatrix4(door.pivot.matrixWorld)
+        moving.center.copy(door.center).applyMatrix4(door.pivot.matrixWorld)
+        for (const object of obstacles) if (moving.intersectsOBB(new OBB().fromBox3(new THREE.Box3().setFromObject(object)))) collisions.add(`${door.id}/${object.name}`)
+      }
+      model.setOpening(door.id, 0)
+    }
+    const underlights = [], newCollisions = [], underlightIds = ['OG-east-north', 'OG-south-west', 'DG-gable-office', 'DG-gable-parents']
+    for (const id of underlightIds) {
+      const floor = makeFloor(id.slice(0, 2)), door = model.doors.find(door => door.id === id)
+      const lower = model.group.getObjectByName(`${id}-fixed-0`), transom = model.group.getObjectByName(`${id}-transom-0`)
+      const before = new THREE.Box3().setFromObject(lower)
+      underlights.push({ id, lowerTop: before.max.y - floor.elevation, transom: new THREE.Box3().setFromObject(transom).getCenter(new THREE.Vector3()).y - floor.elevation, leafBottom: door.pivot.position.y - floor.elevation })
+      for (let step = 0; step <= 20; step++) {
+        model.setOpening(id, step / 20); model.group.updateMatrixWorld(true)
+        const moving = new OBB(new THREE.Vector3(), door.size.clone().multiplyScalar(.5)).applyMatrix4(door.pivot.matrixWorld)
+        moving.center.copy(door.center).applyMatrix4(door.pivot.matrixWorld)
+        for (const item of floor.furniture) for (const part of furnitureVolumes(item)) {
+          const box = new THREE.Box3(new THREE.Vector3(part.x + housePlacement.x, floor.elevation + part.bottom, part.z + housePlacement.z), new THREE.Vector3(part.x + part.width + housePlacement.x, floor.elevation + part.bottom + part.height, part.z + part.depth + housePlacement.z))
+          if (moving.intersectsOBB(new OBB().fromBox3(box))) newCollisions.push(`${id}/${item.id}/${step}`)
+        }
+      }
+      if (!before.equals(new THREE.Box3().setFromObject(lower))) mismatches.push(`moving-underlight/${id}`)
+      model.setOpening(id, 0)
+    }
+    const panel = model.group.getObjectByName('EG-entrance-fixed-fixed-0')
+    const entranceLeaf = model.group.getObjectByName('EG-entrance-leaf')
+    const aluminium = panel.userData.openingInfill === 'aluminium' && panel.material === entranceLeaf.material && !panel.material.transparent && !model.group.getObjectByName('entry-aluminium-panel')
+    const canopy = new THREE.Box3().setFromObject(model.group.getObjectByName('entry-canopy-roof')).getSize(new THREE.Vector3()).toArray()
+    const shades = []
+    model.group.getObjectByName('house-east').traverse(object => { if (object.userData.sunshadeKind) shades.push(object.userData.sunshadeKind) })
+    model.setOpening('DG-north-skylight', .5)
+    model.setRaffstores(.7, 45)
+    const roofClosed = model.doors.find(door => door.id === 'DG-north-skylight').amount === 0 && !model.setOpening('DG-north-skylight', .5)
+    model.setRaffstores(0, 30)
+    const scene = new THREE.Scene(); scene.background = new THREE.Color('#e7ebed'); scene.add(model.group)
+    scene.add(new THREE.HemisphereLight('#ffffff', '#a2aaa2', 2.5))
+    const light = new THREE.DirectionalLight('#ffffff', 3); light.position.set(8, 15, 12); scene.add(light)
+    const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true }); renderer.setSize(innerWidth, innerHeight); renderer.setPixelRatio(1)
+    renderer.domElement.id = 'wolf-preview'; renderer.domElement.style.cssText = 'position:fixed;inset:0;z-index:10000'; document.body.append(renderer.domElement)
+    const camera = new THREE.PerspectiveCamera(42, innerWidth / innerHeight, .1, 150)
+    const target = new THREE.Vector3(3.5 + housePlacement.x, 4.8, 5.25 + housePlacement.z)
+    const distance = innerWidth < 600 ? 36 : 23
+    const bounds = new THREE.Box3().setFromObject(model.group.getObjectByName('house-east'))
+    bounds.min.y = -.2
+    const corners = [bounds.min.x, bounds.max.x].flatMap(x => [bounds.min.y, bounds.max.y].flatMap(y => [bounds.min.z, bounds.max.z].map(z => new THREE.Vector3(x, y, z))))
+    Object.assign(window, { wolfPreview: { render(view, extension) {
+      const direction = view === 'east' ? new THREE.Vector3(1, .12, 0) : view === 'north' ? new THREE.Vector3(.45, .1, -1) : new THREE.Vector3(.65, .15, 1)
+      camera.position.copy(target).addScaledVector(direction.normalize(), distance); camera.lookAt(target)
+      for (let step = 0; step < 24; step++) {
+        camera.updateMatrixWorld(true)
+        if (corners.every(corner => { const point = corner.clone().project(camera); return Math.abs(point.x) < .94 && Math.abs(point.y) < .94 })) break
+        camera.position.sub(target).multiplyScalar(1.06).add(target)
+      }
+      renderer.domElement.dataset.framed = String(corners.every(corner => { const point = corner.clone().project(camera); return Math.abs(point.x) < .94 && Math.abs(point.y) < .94 }))
+      model.setRaffstores(extension, 45); renderer.render(scene, camera)
+    }, openUnderlights() { for (const id of underlightIds) model.setOpening(id, 1); renderer.render(scene, camera) }, dispose() { model.dispose(); renderer.dispose(); renderer.domElement.remove() } } })
+    return { mismatches, collisions: [...collisions], newCollisions, underlights, aluminium, canopy, shades, roofClosed }
+  })
+  expect(result.mismatches).toEqual([])
+  expect(result.canopy[0]).toBeCloseTo(.9)
+  expect(result.canopy[2]).toBeCloseTo(2.5)
+  expect(result.shades.filter(kind => kind === 'raffstore')).toHaveLength(5)
+  expect(result.shades.filter(kind => kind === 'roller')).toHaveLength(8)
+  expect(result.shades.filter(kind => kind === 'roof-roller')).toHaveLength(2)
+  expect(result.aluminium).toBe(true)
+  expect(result.newCollisions).toEqual([])
+  expect(result.underlights).toHaveLength(4)
+  for (const underlight of result.underlights) {
+    expect(underlight.lowerTop).toBeCloseTo(.87)
+    expect(underlight.transom).toBeCloseTo(.9)
+    expect(underlight.leafBottom).toBeCloseTo(.934)
+  }
+  expect(result.roofClosed).toBe(true)
+  console.log('Wolf opening conflicts:', result.collisions)
+  const captures: Buffer[] = []
+  for (const [view, extension] of [['south', 0], ['east', 0], ['north', 0], ['east', .7], ['south', .7]] as const) {
+    await page.evaluate(({ view, extension }) => window.wolfPreview.render(view, extension), { view, extension })
+    await expect(page.locator('#wolf-preview')).toHaveAttribute('data-framed', 'true')
+    const capture = await page.locator('#wolf-preview').screenshot({ path: `test-results/${testInfo.project.name}-wolf-${view}-${extension}.png` })
+    const image = PNG.sync.read(capture), colors = new Set<string>()
+    for (let offset = 0; offset < image.data.length; offset += 16) colors.add(`${image.data[offset] >> 4},${image.data[offset + 1] >> 4},${image.data[offset + 2] >> 4}`)
+    expect(colors.size).toBeGreaterThan(35); captures.push(capture)
+  }
+  expect(captures[0].equals(captures[1])).toBe(false)
+  expect(captures[1].equals(captures[3])).toBe(false)
+  await page.evaluate(() => { window.wolfPreview.render('east', 0); window.wolfPreview.openUnderlights() })
+  const open = await page.locator('#wolf-preview').screenshot({ path: `test-results/${testInfo.project.name}-wolf-underlights-open.png` })
+  expect(open.equals(captures[1])).toBe(false)
+  await page.evaluate(() => { window.wolfPreview.dispose(); delete window.wolfPreview })
+  expect(errors).toEqual([])
+})
+
 test('Kinderzimmer haben Fensterarbeitsplaetze mit korrekt ausgerichteten Monitoren', async ({ page }, testInfo) => {
   await page.goto('/')
   const result = await page.evaluate(async () => {
