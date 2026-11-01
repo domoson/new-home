@@ -17,7 +17,7 @@ export function windowPanels(opening: Opening) {
     const start = column === 0 ? windowFrame : windowMullionStart(opening) + windowJoint
     if (ventilationWidth && column !== ventilationColumn) return [{ column, start, bottom: windowFrame, width, height: opening.height - 2 * windowFrame, fixed: true, hinge: 'start' as const }]
     const bottom = lowerFixed ? lowerFixed + windowJoint / 2 : windowFrame
-    const panels = [{ column, start, bottom, width, height: opening.height - windowFrame - bottom, fixed: opening.windowLayout?.fixed ?? opening.id.includes('fixed'), hinge: column === 1 ? 'end' as const : 'start' as const }]
+    const panels = [{ column, start, bottom, width, height: opening.height - windowFrame - bottom, fixed: opening.id.includes('fixed'), hinge: column === 1 ? 'end' as const : 'start' as const }]
     if (lowerFixed) panels.push({ column, start, bottom: windowFrame, width, height: lowerFixed - windowJoint / 2 - windowFrame, fixed: true, hinge: 'start' })
     return panels
   }).flat()

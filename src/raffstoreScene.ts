@@ -5,7 +5,6 @@ export function createRaffstore(blind: Raffstore, elevation: number, facade: THR
   const group = new THREE.Group()
   group.name = `${blind.id}-raffstore`
   group.userData.raffstore = blind.id
-  group.userData.sunshadeKind = blind.kind
   const box = (name: string, x: number, bottom: number, z: number, width: number, height: number, depth: number, material = metal) => {
     const mesh = new THREE.Mesh(new THREE.BoxGeometry(width, height, depth), material)
     mesh.position.set(x + width / 2, elevation + bottom + height / 2, z + depth / 2)
@@ -36,26 +35,6 @@ export function createRaffstore(blind: Raffstore, elevation: number, facade: THR
   localBox('guide-start', 0, 0, raffstoreDetail.guideWidth, blind.height + .018, .035)
   if (!blind.sharedEndGuide) localBox('guide-end', blind.width - (blind.corner ? raffstoreDetail.guideWidth / 2 : raffstoreDetail.guideWidth), 0, raffstoreDetail.guideWidth, blind.height + .018, .035)
   const startGap = .035, endGap = blind.corner ? .055 : .035, span = blind.width - startGap - endGap
-  if (blind.kind === 'roller') {
-    const count = Math.ceil(blind.height / .045), pitch = blind.height / count
-    const slats = new THREE.InstancedMesh(new THREE.BoxGeometry(span, pitch + .001, .014), metal, count)
-    slats.name = `${blind.id}-roller-slats`; slats.castShadow = true; slats.receiveShadow = true; curtain.add(slats)
-    const bottomRail = localBox('bottom-rail', startGap, blind.height, span, .025, .025)
-    const transform = new THREE.Object3D()
-    const set = (extension: number) => {
-      const amount = Number.isFinite(extension) ? THREE.MathUtils.clamp(extension, 0, 1) : 0
-      for (let index = 0; index < count; index++) {
-        const top = blind.height - index * pitch, visible = THREE.MathUtils.clamp(amount * blind.height - index * pitch, 0, pitch)
-        transform.position.set(blind.width / 2, top - visible / 2, 0)
-        transform.scale.set(1, visible / pitch, 1); transform.updateMatrix(); slats.setMatrixAt(index, transform.matrix)
-      }
-      slats.visible = amount > 0; slats.instanceMatrix.needsUpdate = true; slats.computeBoundingBox(); slats.computeBoundingSphere()
-      bottomRail.position.y = blind.height * (1 - amount) + .0125
-      group.userData.extension = amount; group.userData.tilt = 0; group.updateMatrixWorld(true)
-    }
-    set(0)
-    return { group, set, dispose: () => slats.dispose() }
-  }
   const profile = new THREE.Shape([new THREE.Vector2(-.04, .006), new THREE.Vector2(-.036, .006), new THREE.Vector2(-.032, .002), new THREE.Vector2(.032, .002), new THREE.Vector2(.036, .006), new THREE.Vector2(.04, .006), new THREE.Vector2(.034, 0), new THREE.Vector2(-.034, 0)])
   const geometry = new THREE.ExtrudeGeometry(profile, { depth: span, bevelEnabled: false, steps: 1 })
   geometry.rotateY(Math.PI / 2)
@@ -81,35 +60,4 @@ export function createRaffstore(blind: Raffstore, elevation: number, facade: THR
   }
   set(0, 30)
   return { group, set, dispose: () => lamellas.dispose() }
-}
-
-export function createRoofShutter(id: string, width: number, length: number, southSlope: boolean, material: THREE.Material) {
-  const group = new THREE.Group()
-  group.name = `${id}-roller`; group.userData.sunshadeKind = 'roof-roller'
-  const direction = southSlope ? -1 : 1
-  const box = (name: string, x: number, y: number, width: number, height: number, depth: number) => {
-    const mesh = new THREE.Mesh(new THREE.BoxGeometry(width, height, depth), material)
-    mesh.name = `${id}-roller-${name}`; mesh.position.set(x, y, -.09); mesh.castShadow = true; mesh.receiveShadow = true; group.add(mesh)
-    return mesh
-  }
-  box('housing', width / 2, direction * (length / 2 + .07), width + .08, .14, .14)
-  for (const x of [.01, width - .01]) box('guide', x, 0, .035, length, .04)
-  const count = Math.ceil(length / .045), pitch = length / count
-  const slats = new THREE.InstancedMesh(new THREE.BoxGeometry(width - .05, pitch + .001, .014), material, count)
-  slats.name = `${id}-roller-slats`; slats.castShadow = true; slats.receiveShadow = true; group.add(slats)
-  const rail = box('rail', width / 2, direction * length / 2, width - .05, .025, .035)
-  const transform = new THREE.Object3D()
-  const set = (extension: number) => {
-    const amount = Number.isFinite(extension) ? THREE.MathUtils.clamp(extension, 0, 1) : 0
-    for (let index = 0; index < count; index++) {
-      const visible = THREE.MathUtils.clamp(amount * length - index * pitch, 0, pitch)
-      transform.position.set(width / 2, direction * (length / 2 - index * pitch - visible / 2), -.09)
-      transform.scale.set(1, visible / pitch, 1); transform.updateMatrix(); slats.setMatrixAt(index, transform.matrix)
-    }
-    slats.visible = amount > 0; slats.instanceMatrix.needsUpdate = true; slats.computeBoundingBox(); slats.computeBoundingSphere()
-    rail.position.y = direction * length * (.5 - amount)
-    group.userData.extension = amount; group.updateMatrixWorld(true)
-  }
-  set(0)
-  return { group, set, dispose: () => slats.dispose() }
 }

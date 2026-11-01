@@ -9,7 +9,7 @@ describe('opening dimension chain', () => {
       const floor = makeFloor(id), labels = openingLabels(floor)
       for (const wall of floor.walls) for (const opening of wall.openings.filter(opening => opening.kind === 'window' && opening.id !== 'garden-fixed')) expect(labels.some(label => label.id === opening.id && label.size.endsWith(' cm'))).toBe(true)
     }
-    expect(openingLabels(makeFloor('EG')).find(label => label.id === 'terrace')).toMatchObject({ title: 'Hebeschiebet\u00fcr', size: '298 \u00d7 215,5 cm', detail: 'Fl\u00fcgel 149 + Festfeld 149 cm' })
+    expect(openingLabels(makeFloor('EG')).find(label => label.id === 'terrace')).toMatchObject({ title: 'Hebeschiebet\u00fcr', size: '280 \u00d7 250 cm', detail: 'Fl\u00fcgel 125 + Festfeld 155 cm' })
     expect(openingLabels(makeFloor('EG')).some(label => label.id === 'garden-fixed')).toBe(false)
     const skylights = openingLabels(makeFloor('DG')).filter(label => label.id.includes('skylight'))
     expect(skylights).toHaveLength(2)
@@ -17,22 +17,22 @@ describe('opening dimension chain', () => {
   })
   it('describes actual opening leaves, fixed fields, fixed lower lights and top-hung/pivot skylights', () => {
     const ground = openingLabels(makeFloor('EG'))
-    expect(ground.find(label => label.id === 'wc-window')).toMatchObject({ size: '60,5 \u00d7 123 cm', execution: ['1 \u00d6ffnungsfl\u00fcgel', 'BRH 123 cm'] })
-    expect(ground.find(label => label.id === 'wc-window')!.x).toBeCloseTo(.9025)
-    expect(ground.find(label => label.id === 'hall-window-fixed')).toMatchObject({ title: 'Festverglasung', size: '173 \u00d7 73 cm', execution: ['nicht \u00f6ffenbar', 'BRH 173 cm'] })
-    expect(ground.find(label => label.id === 'hall-window-fixed')!.x).toBeCloseTo(4.765)
-    expect(ground.find(label => label.id === 'kitchen-east-window')).toMatchObject({ size: '198 \u00d7 123 cm', execution: ['2 \u00d6ffnungsfl\u00fcgel', 'BRH 93 cm'] })
-    expect(ground.find(label => label.id === 'garden-west-fixed')).toMatchObject({ title: 'Festverglasung', size: '110,5 \u00d7 215,5 cm', execution: ['nicht \u00f6ffenbar', 'BRH 0 cm'] })
-    expect(openingLabels(makeFloor('OG')).find(label => label.id === 'south-west')!.execution).toEqual(['nicht \u00f6ffenbar', 'BRH 0 cm'])
-    expect(openingLabels(makeFloor('OG')).find(label => label.id === 'bath-window')).toMatchObject({ size: '173 \u00d7 123 cm', execution: ['2 \u00d6ffnungsfl\u00fcgel', 'BRH 93 cm'] })
-    expect(openingLabels(makeFloor('OG')).find(label => label.id === 'bath-window')!.x).toBeCloseTo(2.065)
-    expect(ground.find(label => label.id === 'living-corner-fixed')!.execution).toEqual(['nicht \u00f6ffenbar', 'BRH 0 cm'])
-    expect(ground.find(label => label.id === 'terrace')!.execution).toEqual(['1 Schiebefl\u00fcgel + Festfeld', 'BRH 0 cm'])
+    expect(ground.find(label => label.id === 'wc-window')).toMatchObject({ size: '60 \u00d7 100 cm', execution: ['1 \u00d6ffnungsfl\u00fcgel'] })
+    expect(ground.find(label => label.id === 'wc-window')!.x).toBeCloseTo(.9)
+    expect(ground.find(label => label.id === 'hall-window-fixed')).toMatchObject({ title: 'Festverglasung', size: '180 \u00d7 50 cm', execution: ['nicht \u00f6ffenbar'] })
+    expect(ground.find(label => label.id === 'hall-window-fixed')!.x).toBeCloseTo(4.8)
+    expect(ground.find(label => label.id === 'kitchen-east-window')).toMatchObject({ size: '210 \u00d7 100 cm', execution: ['1 \u00d6ffnungsfl\u00fcgel + Festfeld'] })
+    expect(ground.find(label => label.id === 'garden-west-fixed')).toMatchObject({ title: 'Festverglasung', size: '120 \u00d7 250 cm', execution: ['nicht \u00f6ffenbar'] })
+    expect(openingLabels(makeFloor('OG')).find(label => label.id === 'south-west')!.execution).toEqual(['1 \u00d6ffnungsfl\u00fcgel', 'Unterlicht fest bis 90 cm'])
+    expect(openingLabels(makeFloor('OG')).find(label => label.id === 'bath-window')).toMatchObject({ size: '180 \u00d7 100 cm', execution: ['1 \u00d6ffnungsfl\u00fcgel + Festfeld'] })
+    expect(openingLabels(makeFloor('OG')).find(label => label.id === 'bath-window')!.x).toBeCloseTo(2.1)
+    expect(ground.find(label => label.id === 'living-corner-fixed')!.execution).toEqual(['nicht \u00f6ffenbar'])
+    expect(ground.find(label => label.id === 'terrace')!.execution).toEqual(['1 Schiebefl\u00fcgel + Festfeld'])
     expect(openingLabels(makeFloor('DG')).filter(label => label.id.includes('skylight')).every(label => label.execution[0] === 'Klapp-/Schwingfenster')).toBe(true)
     const floor = makeFloor('KG')
     const opening = floor.walls.find(wall => wall.id === 'north')!.openings[0]
     opening.windowLayout = { columns: 2 }
-    expect(openingLabels(floor).find(label => label.id === opening.id)!.execution).toEqual(['2 \u00d6ffnungsfl\u00fcgel', 'BRH 135 cm'])
+    expect(openingLabels(floor).find(label => label.id === opening.id)!.execution).toEqual(['2 \u00d6ffnungsfl\u00fcgel'])
   })
   it('sorts openings and includes both corners and every pier', () => {
     const wall: Wall = { ...rect(0, 0, 5, .3), id: 'north', axis: 'x', openings: [

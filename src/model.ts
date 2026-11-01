@@ -6,11 +6,11 @@ import { kitchenModules } from './kitchenStorage'
 export type FloorId = 'KG' | 'EG' | 'OG' | 'DG'
 export type Rect = { x: number; z: number; width: number; depth: number; footprint?: StairPoint[] }
 export type Room = { id: string; name: string; parts: Rect[]; color: string; note: string; spawn: [number, number]; tileParts?: Rect[] }
-export type Opening = { start: number; width: number; sill: number; height: number; kind: 'door' | 'window' | 'passage'; id: string; hinge?: 'end'; swing?: 'reverse'; frame?: number; glazed?: boolean; cornerGlazing?: boolean; windowLayout?: { columns: 1 | 2; fixed?: boolean; lowerFixed?: number; ventilationWidth?: number; ventilationSide?: 'start' | 'end' } }
+export type Opening = { start: number; width: number; sill: number; height: number; kind: 'door' | 'window' | 'passage'; id: string; hinge?: 'end'; swing?: 'reverse'; frame?: number; glazed?: boolean; cornerGlazing?: boolean; windowLayout?: { columns: 1 | 2; lowerFixed?: number; ventilationWidth?: number; ventilationSide?: 'start' | 'end' } }
 export type Wall = Rect & { id: string; axis: 'x' | 'z'; openings: Opening[]; height?: number; recesses?: (Rect & { bottom: number; height: number })[] }
 export type Furniture = Rect & { id: string; kind: 'bed' | 'sofa' | 'chaise' | 'bookcase' | 'table' | 'chair' | 'bench' | 'cabinet' | 'coat-rack' | 'counter' | 'sink' | 'wc' | 'shower' | 'bath' | 'desk' | 'tv' | 'plant' | 'machine' | 'hob' | 'espresso'; height: number; bottom?: number; angle?: number; color?: string; shape?: 'round'; concealedFittings?: boolean; seatHeight?: number; front?: 'north' | 'south' | 'east' | 'west'; frontBottom?: number; niche?: { bottom: number; height: number }; baseInset?: { west: number; south: number } }
 export type Floor = { id: FloorId; name: string; elevation: number; height: number; rooms: Room[]; walls: Wall[]; furniture: Furniture[] }
-export const construction = { exteriorWall: .348, partyWall: .4, clearHeight: 2.77, basementClearHeight: 2.25, timberFloor: .2, basementCeiling: .2, foundationPackage: .2, roofNormal: .24, ridgeCapAllowance: .07, terrain: -.2 }
+export const construction = { exteriorWall: .4, partyWall: .4, clearHeight: 2.77, basementClearHeight: 2.25, timberFloor: .2, basementCeiling: .2, foundationPackage: .2, roofNormal: .24, ridgeCapAllowance: .07, terrain: -.2 }
 export const facadeGrid = .3
 export const house = { width: 6.9, depth: 10.5, west: .3, east: 6.6, north: .3, south: 10.2, pitch: 35, knee: .5 }
 export const houseEnvelope = () => ({ x: house.west - construction.partyWall, z: house.north - construction.exteriorWall, width: house.east + construction.exteriorWall - house.west + construction.partyWall, depth: house.south - house.north + 2 * construction.exteriorWall })
@@ -24,12 +24,6 @@ export const elevations: Record<FloorId, number> = { KG: -(construction.basement
 export const slabThickness = (id: FloorId) => id === 'KG' ? construction.foundationPackage : id === 'EG' ? construction.basementCeiling : construction.timberFloor
 export const storeyRise = (id: FloorId) => id === 'KG' ? elevations.EG - elevations.KG : elevations.OG - elevations.EG
 export const rect = (x: number, z: number, width: number, depth: number): Rect => ({ x, z, width, depth })
-export function entryCanopy(floor: Floor) {
-  const wall = floor.walls.find(wall => wall.id === 'east')!
-  const entrance = wall.openings.find(opening => opening.id === 'entrance')!
-  const start = wall.z + entrance.start - .3
-  return { ...rect(wall.x + wall.width, start + (entrance.width + .3 - 2.5) / 2, .9, 2.5), bottom: 2.35, height: .12, sideThickness: .08, panelStart: wall.z + entrance.start + entrance.width, panelWidth: .3 }
-}
 export function furnitureVolumes(item: Furniture): (Rect & { bottom: number; height: number })[] {
   const { x, z, width, depth, height } = item
   const modules = kitchenModules(item)
