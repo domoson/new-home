@@ -76,13 +76,14 @@ test('Standard-Dachfenster schwingen an der mittleren Achse nach innen frei auf'
     }
     view(false)
     Object.assign(window, { skylightPreview: { model, renderer, view } })
-    return { collisions: [...new Set(collisions)], hidden, maxHeight, ceiling: atticCeiling.height, count: windows.length, westPanels }
+    return { collisions: [...new Set(collisions)], hidden, maxHeight, roofTop: Math.max(...roofWindows.map(window => roofOuterElevation(window.z < 5 ? window.z + window.depth : window.z))) - elevations.DG + .06, ceilingEdge: atticCeilingPanels()[0].z, windowEdge: Math.max(...roofWindows.filter(window => window.z < 5).map(window => window.z + window.depth)), count: windows.length, westPanels }
   })
   expect(result.count).toBe(2)
   expect(result.westPanels).toBe(2)
   expect(result.collisions).toEqual([])
   expect(result.hidden).toEqual([])
-  expect(result.maxHeight).toBeLessThan(result.ceiling)
+  expect(result.maxHeight).toBeLessThan(result.roofTop)
+  expect(result.windowEdge).toBeLessThan(result.ceilingEdge)
   const canvas = page.locator('[data-skylight-preview]')
   const north = PNG.sync.read(await canvas.screenshot({ path: `test-results/${testInfo.project.name}-skylight-north.png` }))
   expect(new Set(Array.from({ length: north.width * north.height }, (_, index) => north.data.subarray(index * 4, index * 4 + 3).toString('hex'))).size).toBeGreaterThan(100)

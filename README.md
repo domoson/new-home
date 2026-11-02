@@ -90,7 +90,110 @@ und Kollisionen bleiben unveraendert. Die Farbgebung ist eine Annaeherung an
 trockenen Sommerbestand, keine exakte Fototextur; der Datumsregler aendert
 weiterhin nur den Sonnenstand, nicht den Vegetationszustand.
 
-## Aktuelle Variante 7,10 x 10,70 m
+## Aktuell: Haas / Ytong, 6,90 x 10,50 m
+
+Grundlage sind die vier Haas-Skizzen in der Anhangsreihenfolge KG, EG, DG, OG.
+Die lichte Innenhuelle bleibt 6,30 x 9,90 m. Aussenwaende 30 cm Ytong gemaess
+Vorgabe statt 40 cm. Trennwandanteil ebenfalls 30 cm je Haelfte als geometrische
+Annahme passend zur Skizzenbreite, nicht als bestaetigter Schall-/Brandschutzaufbau.
+Damit aussen je Haelfte 6,90 x 10,50 statt 7,10 x 10,70 m, also jeweils 20 cm
+weniger. Bruttogrundflaeche 72,45 statt 75,97 m2 je Ebene (-3,52 m2).
+Gemeinsame Breite 13,80 statt 14,20 m. Keine Verkleinerung der lichten Innenhuelle.
+
+Aenderungen gegenueber dem unmittelbar vorherigen Entwurf:
+
+- KG: oestliche Kellertrennwand nach Westen auf x=3,25 m; Technikraum laenger,
+  kleiner Keller breiter. Drei Fenster 90 x 75 cm erhalten; Suedfenster 15 cm
+  nach Osten auf x=1,35 m, Nordfenster weiterhin x=1,20 m, Ostfenster z=6,00 m.
+  Lichtschachtanschluesse folgen der neuen Huelle und den Fensterachsen.
+  Schematischer Speicher 1 m nach Osten versetzt fuer freien Nordfenster-Schwenkbereich.
+- EG: Flur und Diele zu einem Raum zusammengefasst. Offene U-Kueche oestlich
+  der Treppe, Essplatz Suedost, Wohnen Suedwest. Haustuer 110 x 225 cm ab z=0,70 m,
+  noerdlich angeschlagen, nach innen oeffnend, mit 40 cm Glasseitenteil noerdlich
+  daneben (Massekette 1,50 m). Bisher 110 cm Tuer + 30 cm Seitenteil noerdlich.
+  Hakenleiste von 210 auf 170 cm gekuerzt fuer den Tuerschwenkbereich.
+- EG-Gartenecke: massive Wandbacke 30 x 30 cm statt Ganzglasecke mit Eckprofil,
+  wie die 30-cm-Endmasse beider Masseketten. Ostfestglas 120 x 252 cm bei
+  z=9,00..10,20 m, Hebeschiebeanlage endet an der Innenkante x=6,60 m.
+- Innenwaende einheitlich 17,5 cm in KG/EG/OG (bisher gemischt 8 bis 20 cm),
+  im DG 11,5 cm; ausgenommen nur Sanitaervorwaende und Duschglas.
+  Staerken aus den Zeichnungen abgeleitet, nicht bemaesst; kein Tragwerksnachweis.
+- OG: Flur 105 statt 120 cm breit, Badtrennwand 20 cm nach Westen,
+  suedliche Raumtrennung jetzt z=7,04 m; keine kuenstlich gleichen Kinderflaechen.
+  Nord-Schreibtisch 50 cm nach Westen unter das Festfeld, Schrank 190 cm lang
+  und suedlich des Tuerschwenkbereichs. Zwei Kinderzimmer und Abstellraum bleiben.
+- DG: symmetrische Abseitenwaende bei z=1,60 und 8,90 m, Flur 105 cm breit,
+  Raumtrennung bei z=5,20 m. Norden Schlafen/Ankleide: Doppelbett mit Kopfende
+  zur Abseite, Kniestockschraenke, Schrank an der Treppenwand, Kleiderschrank
+  an der Raumtrennwand. Sueden Buero/Gaeste: Schreibtisch West, Gaestebett
+  160 x 200 cm Ost, Kommode an der Trennwand, Kniestockschrank. Sofa und
+  L-Schreibtisch der vorigen Fassung entfallen.
+  Beide Dachfenster 94 x 140 cm wieder vorhanden (im Haas-Plan als doppellinige
+  Rechtecke eingezeichnet), Lage unveraendert x=2,98..3,92 m.
+- Treppenkern 10 cm nach Sueden auf z=3,60..5,60 m; weiterhin 190 x 200 cm,
+  15 Steigungen und nominal 90 cm Laufbreite.
+- Fenster: EG-Nordband 30 cm nach Osten auf x=4,20 m; nun buendig mit dem
+  OG-Nordfenster, das gleichzeitig 30 cm nach Westen rueckt. EG-Oeffnungen
+  oben 252 statt 250 cm. Hebeschieber weiterhin 280 cm Gesamtbreite, jetzt
+  modellhaft 140+140 statt 125+155 cm.
+  OG-Bad 180 x 100 cm mit 127 statt 150 cm Bruestung; Kinderfenster Nord/Suedost
+  180 x 125 statt 180 x 135 cm mit 102 statt 115 cm Bruestung.
+  OG-Suedostfenster 30 cm nach Osten auf x=4,50 m. Bodentiefe OG-/DG-Fenster
+  120 x 227 statt 120 x 250 cm. Unterlichter und Fest-/Lueftungsfelder bleiben
+  schematisch; die Skizzen belegen keine Beschlag- oder Absturzsicherungsausfuehrung.
+
+Grundflaechenvergleich in m2, aus Geometrie berechnet und auf zwei Stellen gerundet:
+
+| Raum | Bisheriges Modell | Haas-Modell | Haas-Vorlage |
+| --- | ---: | ---: | ---: |
+| KG Technik / Lager | 18,90 | 19,69 | 19,85 |
+| KG Keller | 5,70 | 6,35 | 6,48 |
+| KG Hobby | 28,35 | 27,88 | 28,40 |
+| KG Flur inkl. Treppe | 6,65 | 5,90 | 6,16 |
+| EG Dusche / WC | 4,13 | 4,18 | 4,19 |
+| EG Diele + Flur | 12,15 | 8,66 | 8,91 |
+| EG Wohnen / Essen / Kochen | 40,18 | 41,90 | 42,66 |
+| OG Bad | 10,71 | 10,55 | 10,70 |
+| OG Kind Nord | 18,60 | 18,98 | 18,85 |
+| OG Kind Sued | 18,60 | 18,81 | 18,80 |
+| OG Flur | 4,35 | 3,61 | 3,92 |
+| OG Abstellraum | 2,70 | 2,40 | 2,45 |
+| DG Schlafen / Ankleide | 15,44 | 17,23 | 17,22 |
+| DG Flur | 2,20 | 2,10 | 2,11 |
+| DG Buero / Gaeste | 22,24 | 21,31 | 21,04 |
+
+Nicht bemaesste Innenkonturen und Moebel sind angenaehert, keine CAD-Uebernahme.
+Groesste Abweichung zur Skizzen-Grundflaeche 0,76 m2 (EG Wohnen, 1,8 Prozent).
+Die DG-Hoehengewichtung ergibt vor 3 Prozent Pauschalabzug 14,58 / 18,66 m2
+fuer Schlafen / Buero, gegenueber 14,36 / 18,07 m2 in der Vorlage.
+Alle vier Referenzlisten stehen auch im Raumdetail und im Flaechenabgleich.
+
+Gebaeudeschnitt: FFB KG/EG/OG/DG -2,45 / 0 / 2,97 / 5,94 m, lichte Hoehen
+2,25 / 2,77 / 2,77 / 2,77 m, Decken 20 cm, Kehlbalkendecke 24 cm, 35 Grad -
+alles bereits so modelliert. Neu: First 1,512 m ueber Kehlbalkendecke laut
+Schnitt. Bei innerer Kniehoehe 50 cm (1-/2-m-Linien im DG-Plan) ergibt das
+ein Dachpaket von ca. 45,5 cm normal statt 24 cm. Firstoberkante jetzt
+10,46 m ueber FFB EG statt 10,20 m. Die 52-cm-Angabe am Traufpunkt ist ohne
+eindeutigen Bezugspunkt; Dachaufbau "lt. Statik".
+
+Offene Punkte aus dem Skizzenabgleich, bewusst nicht geaendert:
+
+- Die westliche Nachbarwand reicht in allen Plaenen 1,80 m ueber unsere
+  Suedfassade hinaus. Das deutet auf 1,80 m statt 0,90 m Versatz hin.
+- Dachueberstaende im Schnitt ca. 60..70 cm, nicht bemaesst; Modell 25 cm.
+- Durch den hoeheren First steigt die ueberschlaegige Nord-Abstandsflaeche auf
+  ca. 3,29 m bei ca. 3,17 m Abstand an der kritischsten Ecke.
+
+Die Kellerhuelle ist vereinfacht ebenfalls 30 cm; Kellerwandmaterial unbestaetigt.
+Grundstueck, Nachbarschaft, Garten, Carports und Fahrzeug bleiben erhalten,
+Westhaelfte weiterhin Baukoerper ohne Innenausbau, 90 cm Versatz und die
+bisherige 20-cm-Suedverschiebung unveraendert. Statik, Treppe, Schall-/Brandschutz,
+Rettungswege, Fensterteilungen und Sonnenschutz benoetigen Fach-/Herstellerplanung.
+
+## Historischer Stand vor Haas: 7,10 x 10,70 m
+
+Die folgenden Angaben dokumentieren den vorherigen Entwurf und gelten nicht
+als aktuelle Haas-Spezifikation. Massgeblich ist der Abschnitt oben.
 
 Die neue EG-/OG-Skizze ersetzt die bisherige Raumaufteilung. Die Osthaelfte ist
 auf KG, EG, OG und DG angepasst und eingerichtet; die Westhaelfte bleibt

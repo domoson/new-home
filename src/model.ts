@@ -10,13 +10,14 @@ export type Opening = { start: number; width: number; sill: number; height: numb
 export type Wall = Rect & { id: string; axis: 'x' | 'z'; openings: Opening[]; height?: number; recesses?: (Rect & { bottom: number; height: number })[] }
 export type Furniture = Rect & { id: string; kind: 'bed' | 'sofa' | 'chaise' | 'bookcase' | 'table' | 'chair' | 'bench' | 'cabinet' | 'coat-rack' | 'counter' | 'sink' | 'wc' | 'shower' | 'bath' | 'desk' | 'tv' | 'plant' | 'machine' | 'hob' | 'espresso'; height: number; bottom?: number; angle?: number; color?: string; shape?: 'round'; concealedFittings?: boolean; seatHeight?: number; front?: 'north' | 'south' | 'east' | 'west'; frontBottom?: number; niche?: { bottom: number; height: number }; baseInset?: { west: number; south: number } }
 export type Floor = { id: FloorId; name: string; elevation: number; height: number; rooms: Room[]; walls: Wall[]; furniture: Furniture[] }
-export const construction = { exteriorWall: .4, partyWall: .4, clearHeight: 2.77, basementClearHeight: 2.25, timberFloor: .2, basementCeiling: .2, foundationPackage: .2, roofNormal: .24, ridgeCapAllowance: .07, terrain: -.2 }
+export const construction = { exteriorWall: .3, partyWall: .3, clearHeight: 2.77, basementClearHeight: 2.25, timberFloor: .2, basementCeiling: .2, foundationPackage: .2, roofNormal: .455, ridgeCapAllowance: .07, terrain: -.2 }
 export const facadeGrid = .3
 export const house = { width: 6.9, depth: 10.5, west: .3, east: 6.6, north: .3, south: 10.2, pitch: 35, knee: .5 }
 export const houseEnvelope = () => ({ x: house.west - construction.partyWall, z: house.north - construction.exteriorWall, width: house.east + construction.exteriorWall - house.west + construction.partyWall, depth: house.south - house.north + 2 * construction.exteriorWall })
 export const housePlacement = { x: construction.partyWall - house.west, z: .2 }
 export const stair = winderCore
-export const interiorWallThickness = .125
+export const interiorWallThickness = .175
+export const atticWallThickness = .115
 export const standardDoor = { width: .86, height: 2.11, frame: .03 }
 export const stairFor = () => stair
 export const floorIds: FloorId[] = ['KG', 'EG', 'OG', 'DG']
@@ -48,7 +49,7 @@ export const stairOpeningParts = [rect(stair.x, stair.z, stair.width, stair.dept
 export const basementWindow = { width: .9, height: .75, southGap: 1.2, eastNorthShift: 2.4 }
 export const lightWellSize = { width: 1.3, depth: .5 }
 const wellOverhang = (lightWellSize.width - basementWindow.width) / 2
-export const lightWells = [rect(house.east + construction.exteriorWall, house.depth - basementWindow.southGap - basementWindow.width - basementWindow.eastNorthShift - wellOverhang, lightWellSize.depth, lightWellSize.width), rect(house.west + .9 - wellOverhang, houseEnvelope().z - lightWellSize.depth, lightWellSize.width, lightWellSize.depth), rect(house.west + .9 - wellOverhang, house.south + construction.exteriorWall, lightWellSize.width, lightWellSize.depth)]
+export const lightWells = [rect(house.east + construction.exteriorWall, 6 - wellOverhang, lightWellSize.depth, lightWellSize.width), rect(1.2 - wellOverhang, houseEnvelope().z - lightWellSize.depth, lightWellSize.width, lightWellSize.depth), rect(1.35 - wellOverhang, house.south + construction.exteriorWall, lightWellSize.width, lightWellSize.depth)]
 export function lightWellBars(well: Rect): Rect[] {
   const alongX = well.width >= well.depth
   const crossLength = alongX ? well.depth : well.width

@@ -509,7 +509,7 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
       const floorMaterial = id === 'KG' ? stone : mat('#ffffff', .8, texture)
       const mesh = addBox(slab, base - slabThickness(id), slabThickness(id), [Math.abs(slab.x + slab.width - envelope.x - envelope.width) < .000001 ? facade : plaster, slab.x === envelope.x ? facade : plaster, floorMaterial, plaster, Math.abs(slab.z + slab.depth - envelope.z - envelope.depth) < .000001 ? facade : plaster, slab.z === envelope.z ? facade : plaster]); mesh.name = `${id}-slab`
     }
-    for (const room of floor.rooms.filter(room => ['wc', 'bath', 'entry', 'pantry'].includes(room.id) || room.id === 'hall' && id !== 'EG')) for (const part of room.tileParts ?? room.parts) {
+    for (const room of floor.rooms.filter(room => ['wc', 'bath', 'entry', 'pantry', 'hall'].includes(room.id))) for (const part of room.tileParts ?? room.parts) {
       if (room.id === 'hall' && id !== 'EG') {
         const parquet = floorMap.clone(); parquet.repeat.set(part.width / 2, part.depth / 2); parquet.needsUpdate = true; textures.push(parquet)
         const mesh = addBox(part, base + .001, .008, mat('#ffffff', .8, parquet), false); mesh.userData.floorRoom = room.id; mesh.userData.floorLevel = id
@@ -519,7 +519,7 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
         const mesh = addBox(part, base + .001, .008, ['hall', 'entry'].includes(room.id) ? mat('#e7e4d9') : mat('#ced9d5'), false); mesh.userData.floorRoom = room.id; mesh.userData.floorLevel = id
       }
     }
-    if (id === 'EG') for (const part of floor.rooms.find(room => room.id === 'entry')?.tileParts ?? []) {
+    if (id === 'EG') for (const part of floor.rooms.find(room => room.id === 'hall')?.tileParts ?? []) {
       if (part.footprint) continue
       for (let east = part.x + .6; east < part.x + part.width; east += .6) addBox(rect(east, part.z, .008, part.depth), base + .009, .001, stone, false)
       for (let south = part.z + .6; south < part.z + part.depth; south += .6) addBox(rect(part.x, south, part.width, .008), base + .009, .001, stone, false)
