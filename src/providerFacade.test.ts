@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { house, makeFloor, roofHeight, roomArea, wallSolids } from './model'
+import { construction, house, makeFloor, roofHeight, roomArea, wallSolids } from './model'
 import { windowFrame, windowJoint, windowMullionStart, windowPanels } from './windowLayout'
 import { raffstores } from './raffstore'
 import { roomDaylight } from './roomDaylight'
@@ -7,6 +7,55 @@ import { roomDaylight } from './roomDaylight'
 const onGrid = (value: number) => expect(value / .3).toBeCloseTo(Math.round(value / .3), 6)
 
 describe('Fassadenfenster', () => {
+  it('uses Wolf offer dimensions and the detailed opening schedule', () => {
+    const expected = {
+      EG: [['wc-window', .605, 1.23, 1.23, 1], ['hall-window-fixed', 1.73, .73, 1.73, 2], ['kitchen-east-window', 1.98, 1.23, .93, 2], ['garden-west-fixed', 1.105, 2.155, 0, 0], ['living-corner-fixed', 1.105, 2.155, 0, 0]],
+      OG: [['bath-window', 1.73, 1.23, .93, 2], ['child-north-window', 1.73, 1.23, .93, 2], ['south-east', 1.73, 1.23, .93, 2], ['east-north', 1.105, 2.155, 0, 1], ['south-west', 1.105, 2.155, 0, 1]],
+      DG: [['gable-office', 1.105, 2.155, 0, 1], ['gable-parents', 1.105, 2.155, 0, 1]],
+    } as const
+    for (const side of ['east', 'west'] as const) {
+      for (const floorId of ['EG', 'OG', 'DG'] as const) {
+        const floor = makeFloor(floorId, side)
+        for (const [id, width, height, sill, leaves] of expected[floorId]) {
+          const opening = floor.walls.flatMap(wall => wall.openings).find(opening => opening.id === id)!
+          expect(opening, `${floorId}/${id}`).toMatchObject({ width, height, sill })
+          expect(windowPanels(opening).filter(panel => !panel.fixed), id).toHaveLength(leaves)
+          expect(opening.cornerGlazing).not.toBe(true)
+          if (height === 2.155 && leaves === 1) {
+            expect(opening.windowLayout?.lowerFixed).toBe(.9)
+            expect(windowPanels(opening).filter(panel => panel.fixed)).toHaveLength(1)
+          }
+        }
+      }
+      const ground = makeFloor('EG', side)
+      const south = ground.walls.find(wall => wall.id === 'south')!
+      const terrace = south.openings.find(opening => opening.id === 'terrace')!
+      const fixed = south.openings.find(opening => opening.id === 'garden-fixed')!
+      expect(terrace.width + fixed.width).toBeCloseTo(2.98)
+      expect(terrace.height).toBe(2.155)
+      expect(south.width - fixed.start - fixed.width + construction.exteriorWall).toBeCloseTo(.4)
+      expect(wallSolids(ground.walls.find(wall => wall.id === 'east')!, ground.height).some(solid => solid.z <= house.south && solid.z + solid.depth >= house.south && solid.bottom === 0)).toBe(true)
+    }
+  })
+  it('matches Wolf window and sunshade quantities by frame dimensions', () => {
+    for (const side of ['east', 'west'] as const) {
+      const floors = (['EG', 'OG', 'DG'] as const).map(id => makeFloor(id, side))
+      const tally = (keys: string[]) => keys.reduce<Record<string, number>>((counts, key) => { counts[key] = (counts[key] ?? 0) + 1; return counts }, {})
+      const size = (width: number, height: number) => `${Math.round(width * 1000)}x${Math.round(height * 1000)}`
+      const elements = floors.flatMap(floor => floor.walls.flatMap(wall => wall.openings.filter(opening => opening.kind === 'window' && !['entrance-fixed', 'garden-fixed'].includes(opening.id)).map(opening => `${size(opening.width, opening.height)}:${opening.windowLayout?.lowerFixed ? 'underlight' : windowPanels(opening).filter(panel => !panel.fixed).length}`)))
+      expect(tally(elements)).toEqual({ '605x1230:1': 1, '1730x1230:2': 3, '1980x1230:2': 1, '1105x2155:0': 2, '1105x2155:underlight': 4, '1730x730:2': 1 })
+      const blinds = floors.flatMap(raffstores)
+      expect(tally(blinds.filter(blind => blind.kind === 'roller').map(blind => size(blind.width, blind.height)))).toEqual({ '605x1230': 1, '1730x1230': 2, '1980x1230': 1, '1105x2155': 3, '1730x730': 1 })
+      expect(tally(blinds.filter(blind => blind.kind === 'raffstore').map(blind => size(blind.width, blind.height)))).toEqual({ '1730x1230': 1, '1105x2155': 3, '2980x2155': 1 })
+    }
+  })
+  it('uses one opaque aluminium entry sidelight without counting it as daylight', () => {
+    const ground = makeFloor('EG')
+    const side = ground.walls.flatMap(wall => wall.openings).find(opening => opening.id === 'entrance-fixed')!
+    expect(side).toMatchObject({ infill: 'aluminium', width: .3, height: 2.155 })
+    expect(windowPanels(side).every(panel => panel.fixed)).toBe(true)
+    expect(roomDaylight('EG').find(room => room.id === 'EG-entry')!.glazing).toBeCloseTo(1.73 * .73)
+  })
   it('widens the kitchen window 30 cm south and moves its opening leaf to the north', () => {
     for (const side of ['east', 'west'] as const) {
       const ground = makeFloor('EG', side)

@@ -6,6 +6,8 @@ export type OpeningLabel = { id: string; side: 'north' | 'east' | 'south'; x: nu
 const centimetres = (value: number) => (value * 100).toLocaleString('de-DE', { maximumFractionDigits: 1 })
 const openingSize = (width: number, height: number) => `${centimetres(width)} \u00d7 ${centimetres(height)} cm`
 
+export const openingTitle = (opening: Opening) => opening.infill === 'aluminium' ? 'Alu-Seitenteil' : opening.id === 'terrace' ? 'Hebeschiebet\u00fcr' : opening.kind === 'window' ? windowPanels(opening).every(panel => panel.fixed) ? 'Festverglasung' : opening.windowLayout?.lowerFixed ? 'Fenstert\u00fcr' : 'Fenster' : opening.kind === 'passage' ? 'Durchgang' : 'T\u00fcr'
+
 function windowExecution(opening: Opening): string[] {
   const panels = windowPanels(opening)
   const operable = panels.filter(panel => !panel.fixed)
@@ -27,9 +29,9 @@ export function openingLabels(floor: Floor): OpeningLabel[] {
         id: opening.id, side: wall.id as OpeningLabel['side'],
         x: wall.x + (wall.axis === 'x' ? opening.start + width / 2 : wall.width),
         z: wall.z + (wall.axis === 'z' ? opening.start + width / 2 : wall.id === 'north' ? 0 : wall.depth),
-        title: opening.id === 'terrace' ? 'Hebeschiebet\u00fcr' : opening.id.includes('fixed') ? 'Festverglasung' : 'Fenster',
+        title: openingTitle(opening),
         size: openingSize(width, opening.height),
-        execution: opening.id === 'terrace' ? [`1 Schiebefl\u00fcgel${fixed ? ' + Festfeld' : ''}`] : windowExecution(opening),
+        execution: [...(opening.id === 'terrace' ? [`1 Schiebefl\u00fcgel${fixed ? ' + Festfeld' : ''}`] : windowExecution(opening)), `BRH ${centimetres(opening.sill)} cm`],
         ...(fixed ? { detail: `Fl\u00fcgel ${centimetres(opening.width)} + Festfeld ${centimetres(fixed.width)} cm` } : {}),
       }
     })

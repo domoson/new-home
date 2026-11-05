@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { atticWallThickness, ceilingHeight, construction, elevations, floorIds, house, interiorWallThickness, lightWellBars, lightWells, makeFloor, ridgeElevations, roofPanels, roofWindows, roomArea, wallSolids } from './model'
+import { ceilingHeight, construction, elevations, floorIds, house, lightWellBars, lightWells, makeFloor, roofPanels, roomArea, wallSolids } from './model'
 import { referenceAreas } from './providerPlan'
 import { kitchenModules } from './kitchenStorage'
 import { boundaryDistance, partner, polygonArea, siteArea, siteBoundary, siteParcels } from './context'
@@ -7,100 +7,6 @@ import { winderCore, winderSteps, stairWalkingLine } from './winderStair'
 import { createRoomLighting, lightingCircuits } from './lighting'
 import { createIndirectLighting } from './indirectLighting'
 import { planObjects } from './measure'
-
-describe('Haas-Skizzen', () => {
-  it('uebernimmt alle vier Flaechenlisten und laesst Abweichungen zur Rekonstruktion sichtbar', () => {
-    expect(referenceAreas.KG).toEqual({ bath: 19.85, hall: 6.16, 'child-north': 6.48, 'child-south': 28.4 })
-    expect(referenceAreas.EG).toEqual({ wc: 4.19, hall: 8.91, living: 42.66 })
-    expect(referenceAreas.OG).toEqual({ bath: 10.7, hall: 3.92, 'child-north': 18.85, 'child-south': 18.8, store: 2.45 })
-    expect(referenceAreas.DG).toEqual({ office: 17.22, hall: 2.11, bedroom: 21.04 })
-    for (const id of floorIds) {
-      const floor = makeFloor(id)
-      expect(floor.rooms.map(room => room.id).sort()).toEqual(Object.keys(referenceAreas[id]!).sort())
-      for (const room of floor.rooms) {
-        const reference = referenceAreas[id]![room.id]
-        expect(Math.abs(roomArea(room, id).floor - reference), `${id}/${room.id}`).toBeLessThan(Math.max(.35, reference * .05))
-      }
-      expect(makeFloor(id, 'west').rooms).toEqual([])
-    }
-  })
-  it('rekonstruiert Raumkonturen ohne Ueberlappungen oder negative Flaechen', () => {
-    const overlaps = (first: { x: number; z: number; width: number; depth: number }, second: typeof first) => Math.min(first.x + first.width, second.x + second.width) - Math.max(first.x, second.x) > .00001 && Math.min(first.z + first.depth, second.z + second.depth) - Math.max(first.z, second.z) > .00001
-    for (const id of floorIds) {
-      const floor = makeFloor(id), parts = floor.rooms.flatMap(room => room.parts.map(part => ({ ...part, room: room.id })))
-      for (const [index, part] of parts.entries()) {
-        expect(part.width, `${id}/${part.room}`).toBeGreaterThan(0)
-        expect(part.depth, `${id}/${part.room}`).toBeGreaterThan(0)
-        expect(part.x).toBeGreaterThanOrEqual(house.west)
-        expect(part.z).toBeGreaterThanOrEqual(house.north)
-        expect(part.x + part.width).toBeLessThanOrEqual(house.east + 1e-8)
-        expect(part.z + part.depth).toBeLessThanOrEqual(house.south + 1e-8)
-        if (id !== 'KG' || part.room !== 'hall') expect(overlaps(part, winderCore), `${id}/${part.room}/Treppe`).toBe(false)
-        for (const other of parts.slice(index + 1)) expect(overlaps(part, other), `${id}/${part.room}/${other.room}`).toBe(false)
-        for (const wall of floor.walls) for (const solid of wallSolids(wall, floor.height)) expect(overlaps(part, solid), `${id}/${part.room}/${wall.id}`).toBe(false)
-      }
-    }
-  })
-  it('uebernimmt Fenster und Lichtschachtachsen aus den Massketten', () => {
-    const window = (floor: typeof floorIds[number], wallId: string, openingId: string) => {
-      const wall = makeFloor(floor).walls.find(wall => wall.id === wallId)!, opening = wall.openings.find(opening => opening.id === openingId)!
-      return { position: (wall.axis === 'x' ? wall.x : wall.z) + opening.start, width: opening.width, height: opening.height, sill: opening.sill }
-    }
-    expect(window('EG', 'north', 'hall-window-fixed')).toEqual({ position: 4.2, width: 1.8, height: .5, sill: 2.02 })
-    expect(window('EG', 'east', 'entrance')).toEqual({ position: .7, width: 1.1, height: 2.25, sill: 0 })
-    expect(window('EG', 'east', 'entrance-fixed')).toEqual({ position: .3, width: .4, height: 2.25, sill: 0 })
-    expect(window('EG', 'east', 'kitchen-east-window')).toEqual({ position: 3.6, width: 2.1, height: 1, sill: 1.52 })
-    expect(window('EG', 'east', 'living-corner-fixed')).toEqual({ position: 9, width: 1.2, height: 2.52, sill: 0 })
-    expect(window('EG', 'south', 'terrace')).toEqual({ position: 3.8, width: 1.4, height: 2.52, sill: 0 })
-    expect(window('OG', 'north', 'bath-window')).toEqual({ position: 1.2, width: 1.8, height: 1, sill: 1.27 })
-    expect(window('OG', 'north', 'child-north-window')).toEqual({ position: 4.2, width: 1.8, height: 1.25, sill: 1.02 })
-    expect(window('OG', 'south', 'south-east')).toEqual({ position: 4.5, width: 1.8, height: 1.25, sill: 1.02 })
-    for (const [index, [wallId, openingId, position]] of [['east', 'well-hobby', 6], ['north', 'well-plant', 1.2], ['south', 'well-hobby-south', 1.35]].entries()) {
-      const actual = window('KG', String(wallId), String(openingId)), well = lightWells[index]
-      expect(actual.position).toBeCloseTo(Number(position))
-      expect(wallId === 'east' ? well.z + well.depth / 2 : well.x + well.width / 2).toBeCloseTo(Number(position) + .45)
-    }
-  })
-  it('schliesst die EG-Gartenecke mit einer 30 x 30 cm Wandbacke', () => {
-    const floor = makeFloor('EG'), openings = floor.walls.flatMap(wall => wall.openings)
-    expect(openings.some(opening => opening.cornerGlazing)).toBe(false)
-    const east = floor.walls.find(wall => wall.id === 'east')!, south = floor.walls.find(wall => wall.id === 'south')!
-    const corner = east.openings.find(opening => opening.id === 'living-corner-fixed')!, fixed = south.openings.find(opening => opening.id === 'garden-fixed')!
-    expect(east.z + corner.start + corner.width).toBeCloseTo(house.south)
-    expect(south.x + fixed.start + fixed.width).toBeCloseTo(house.east)
-    const pier = wallSolids(east, floor.height).filter(solid => solid.z >= house.south - 1e-8 && solid.bottom === 0)
-    expect(pier).toHaveLength(1)
-    expect(pier[0].width).toBeCloseTo(.3)
-    expect(pier[0].depth).toBeCloseTo(.3)
-    expect(pier[0].height).toBeCloseTo(floor.height)
-  })
-  it('verwendet einheitliche Innenwaende, im DG schmaler, und stellt die Dachfenster wieder her', () => {
-    const exempt = ['west', 'east', 'north', 'south', 'guest-shower-door', 'wc-installation-north', 'bath-shower-door', 'bath-installation', 'bath-screen']
-    for (const id of floorIds) for (const wall of makeFloor(id).walls.filter(wall => !exempt.includes(wall.id))) {
-      expect(wall.axis === 'x' ? wall.depth : wall.width, `${id}/${wall.id}`).toBeCloseTo(id === 'DG' ? atticWallThickness : interiorWallThickness)
-    }
-    expect(interiorWallThickness).toBe(.175)
-    expect(atticWallThickness).toBe(.115)
-    expect(roofWindows.map(window => window.id)).toEqual(['DG-north-skylight', 'DG-south-skylight'])
-    for (const window of roofWindows) expect(makeFloor('DG').rooms.some(room => room.parts.some(part => window.z >= part.z && window.z + window.depth <= part.z + part.depth && window.x >= part.x && window.x + window.width <= part.x + part.width))).toBe(true)
-  })
-  it('uebernimmt First und Geschosshoehen aus dem Gebaeudeschnitt', () => {
-    expect(ridgeElevations.roofSurface - elevations.DG - construction.clearHeight - .24).toBeCloseTo(1.512, 2)
-    expect(house.pitch).toBe(35)
-  })
-  it('behaelt die lichte Innenhuelle und die Geschosshoehen bei', () => {
-    expect(house.east - house.west).toBeCloseTo(6.3)
-    expect(house.south - house.north).toBeCloseTo(9.9)
-    expect(elevations).toEqual({ KG: -2.45, EG: 0, OG: 2.97, DG: 5.94 })
-    expect(winderCore).toMatchObject({ z: 3.6, end: 5.6, width: 1.9, depth: 2, runWidth: .9, risers: 15 })
-    for (const id of floorIds) for (const furniture of makeFloor(id).furniture) {
-      expect(furniture.x, `${id}/${furniture.id}`).toBeGreaterThanOrEqual(house.west)
-      expect(furniture.z, `${id}/${furniture.id}`).toBeGreaterThanOrEqual(house.north)
-      expect(furniture.x + furniture.width, `${id}/${furniture.id}`).toBeLessThanOrEqual(house.east + 1e-8)
-      expect(furniture.z + furniture.depth, `${id}/${furniture.id}`).toBeLessThanOrEqual(house.south + 1e-8)
-    }
-  })
-})
 
 describe('Anbieterentwurf', () => {
   it('uses matching lengthwise grille bars for every light well', () => {

@@ -90,110 +90,122 @@ und Kollisionen bleiben unveraendert. Die Farbgebung ist eine Annaeherung an
 trockenen Sommerbestand, keine exakte Fototextur; der Datumsregler aendert
 weiterhin nur den Sonnenstand, nicht den Vegetationszustand.
 
-## Aktuell: Haas / Ytong, 6,90 x 10,50 m
+## Wolf-Angebot: Fenster und Fassade, 01.11.2026
 
-Grundlage sind die vier Haas-Skizzen in der Anhangsreihenfolge KG, EG, DG, OG.
-Die lichte Innenhuelle bleibt 6,30 x 9,90 m. Aussenwaende 30 cm Ytong gemaess
-Vorgabe statt 40 cm. Trennwandanteil ebenfalls 30 cm je Haelfte als geometrische
-Annahme passend zur Skizzenbreite, nicht als bestaetigter Schall-/Brandschutzaufbau.
-Damit aussen je Haelfte 6,90 x 10,50 statt 7,10 x 10,70 m, also jeweils 20 cm
-weniger. Bruttogrundflaeche 72,45 statt 75,97 m2 je Ebene (-3,52 m2).
-Gemeinsame Breite 13,80 statt 14,20 m. Keine Verkleinerung der lichten Innenhuelle.
+Grundlage ist der wiederhergestellte Tag `wolfhaus-angebot-v0`, ergaenzt um
+die vom Nutzer nachgereichte detaillierte Leistungsliste vom 01.11.2026.
+Diese hat bei Funktion und Stueckzahl Vorrang vor den roten Screenshots und
+der frueheren Chat-Zusammenfassung. Insbesondere sind vier bodentiefe Elemente
+mit Unterlicht oeffenbar, und das Dielenfenster ist zweifluegelig.
+Alle folgenden Masse sind Breite x Hoehe in cm, als Rahmenaussenmasse;
+BRH ab Fertigfussboden aus dem bisherigen Stand. Original-PDFs nicht geprueft;
+Visualisierungsvariante, keine Bestellfreigabe. Tag und Git-Historie bleiben erhalten.
 
-Aenderungen gegenueber dem unmittelbar vorherigen Entwurf:
+| Position | Urspruengliche Anfrage laut Screenshot | Jetzt | BRH jetzt | Ausfuehrung / Aenderung |
+| --- | --- | --- | --- | --- |
+| EG Gaestebad Nord | 60 x 100 | 60,5 x 123 | 123 | 1 Oeffnungsfluegel |
+| EG Diele Nord | 180 x 50, BRH 173 | 173 x 73 | 173 | 2 Dreh-Kipp-Fluegel statt Festglas; im Modell vor Wolf BRH 200 |
+| EG Kueche Ost | 210 x 100, BRH 93 | 198 x 123 | 93 | 2 gleich breite Oeffnungsfluegel statt Fluegel + Festfeld; bisheriges Modell BRH 150 |
+| EG Wohnen Suedwest | 120 x 250 | 110,5 x 215,5 | 0 | Durchgehendes Festglas |
+| EG Wohnen Ost, Ecke | 120 x 250 | 110,5 x 215,5 | 0 | Festglas; massiver 40-cm-Wandbacken statt offener Glasecke |
+| EG HST Sued | 280 x 250 | 298 x 215,5 | 0 | 1 Schiebefluegel + 1 Festfeld; 149 + 149 cm als unbestaetigte Teilung |
+| OG Bad Nord | 180 x 100 | 173 x 123 | 93 | 2 Fluegel; rote Sammelnotiz auf beide Nordfenster bezogen |
+| OG Kind Nord / Sued, normale Fenster | je 180 x 135 | je 173 x 123 | 93 | 2 Fluegel, mittig ueber unveraenderten Schreibtischen |
+| OG Kind Nord Ost / Kind Sued Suedwest | je 120 x 250 mit Unterlicht | je 110,5 x 215,5 | 0 | Je 1 Dreh-Kipp-Fluegel ueber festem Unterlicht; Teilung vorlaeufig 90 cm |
+| DG Schlafen / Buero, Ostgiebel | je 120 x 250 mit Unterlicht | je 110,5 x 215,5 | 0 | Je 1 Dreh-Kipp-Fluegel ueber festem Unterlicht; Teilung vorlaeufig 90 cm |
+| DG Dachfenster Nord / Sued | je 94 x 140 | unveraendert | Dachschraege | Klapp-/Schwing; 2 externe Rolllaeden ergaenzt |
+| EG Haustuer-Seitenteil Ost | 30 x 225 Festglas | 30 x 215,5 | 0 | Gleiche Alu-Oberflaeche wie Tuer; geschlossene Fuellung, Position und Masse als Annahme |
+| Haustuer | im Modell 110 x 225 | 110 x 215,5 | 0 | Alu, 40-cm-Edelstahlgriff; neue Hoehe nur Chat-Annahme |
+| KG | im Modell 3 x 90 x 75 | unveraendert | 135 | Kein annotierter KG-Plan; viertes Fenster aus Chat nicht lokalisiert |
 
-- KG: oestliche Kellertrennwand nach Westen auf x=3,25 m; Technikraum laenger,
-  kleiner Keller breiter. Drei Fenster 90 x 75 cm erhalten; Suedfenster 15 cm
-  nach Osten auf x=1,35 m, Nordfenster weiterhin x=1,20 m, Ostfenster z=6,00 m.
-  Lichtschachtanschluesse folgen der neuen Huelle und den Fensterachsen.
-  Schematischer Speicher 1 m nach Osten versetzt fuer freien Nordfenster-Schwenkbereich.
-- EG: Flur und Diele zu einem Raum zusammengefasst. Offene U-Kueche oestlich
-  der Treppe, Essplatz Suedost, Wohnen Suedwest. Haustuer 110 x 225 cm ab z=0,70 m,
-  noerdlich angeschlagen, nach innen oeffnend, mit 40 cm Glasseitenteil noerdlich
-  daneben (Massekette 1,50 m). Bisher 110 cm Tuer + 30 cm Seitenteil noerdlich.
-  Hakenleiste von 210 auf 170 cm gekuerzt fuer den Tuerschwenkbereich.
-- EG-Gartenecke: massive Wandbacke 30 x 30 cm statt Ganzglasecke mit Eckprofil,
-  wie die 30-cm-Endmasse beider Masseketten. Ostfestglas 120 x 252 cm bei
-  z=9,00..10,20 m, Hebeschiebeanlage endet an der Innenkante x=6,60 m.
-- Innenwaende einheitlich 17,5 cm in KG/EG/OG (bisher gemischt 8 bis 20 cm),
-  im DG 11,5 cm; ausgenommen nur Sanitaervorwaende und Duschglas.
-  Staerken aus den Zeichnungen abgeleitet, nicht bemaesst; kein Tragwerksnachweis.
-- OG: Flur 105 statt 120 cm breit, Badtrennwand 20 cm nach Westen,
-  suedliche Raumtrennung jetzt z=7,04 m; keine kuenstlich gleichen Kinderflaechen.
-  Nord-Schreibtisch 50 cm nach Westen unter das Festfeld, Schrank 190 cm lang
-  und suedlich des Tuerschwenkbereichs. Zwei Kinderzimmer und Abstellraum bleiben.
-- DG: symmetrische Abseitenwaende bei z=1,60 und 8,90 m, Flur 105 cm breit,
-  Raumtrennung bei z=5,20 m. Norden Schlafen/Ankleide: Doppelbett mit Kopfende
-  zur Abseite, Kniestockschraenke, Schrank an der Treppenwand, Kleiderschrank
-  an der Raumtrennwand. Sueden Buero/Gaeste: Schreibtisch West, Gaestebett
-  160 x 200 cm Ost, Kommode an der Trennwand, Kniestockschrank. Sofa und
-  L-Schreibtisch der vorigen Fassung entfallen.
-  Beide Dachfenster 94 x 140 cm wieder vorhanden (im Haas-Plan als doppellinige
-  Rechtecke eingezeichnet), Lage unveraendert x=2,98..3,92 m.
-- Treppenkern 10 cm nach Sueden auf z=3,60..5,60 m; weiterhin 190 x 200 cm,
-  15 Steigungen und nominal 90 cm Laufbreite.
-- Fenster: EG-Nordband 30 cm nach Osten auf x=4,20 m; nun buendig mit dem
-  OG-Nordfenster, das gleichzeitig 30 cm nach Westen rueckt. EG-Oeffnungen
-  oben 252 statt 250 cm. Hebeschieber weiterhin 280 cm Gesamtbreite, jetzt
-  modellhaft 140+140 statt 125+155 cm.
-  OG-Bad 180 x 100 cm mit 127 statt 150 cm Bruestung; Kinderfenster Nord/Suedost
-  180 x 125 statt 180 x 135 cm mit 102 statt 115 cm Bruestung.
-  OG-Suedostfenster 30 cm nach Osten auf x=4,50 m. Bodentiefe OG-/DG-Fenster
-  120 x 227 statt 120 x 250 cm. Unterlichter und Fest-/Lueftungsfelder bleiben
-  schematisch; die Skizzen belegen keine Beschlag- oder Absturzsicherungsausfuehrung.
+Oeffnungsmasse und BRH stehen auch direkt am Grundriss; die 3D-Rahmen und
+beweglichen Fluegel verwenden dieselben Daten. Die Leistungsliste benennt
+Dreh-Kipp-Fenster/-Tueren; animiert ist weiterhin nur die Drehfunktion.
+Zwei Festfelder im EG, vier einfluegelige Elemente mit Unterlicht in OG/DG;
+keine zusaetzlichen Fenster erfunden. Unterlichtteilung 90 cm aus den alten
+Plaenen, in der neuen Liste nicht bemasst, daher vorlaeufig. Stulp/Mittelpfosten,
+Sicherheitsglas und Rettungswege sind nicht nachgewiesen; 6-cm-Pfosten und
+Querholme schematisch. Unterlicht ist kein Absturzsicherungsnachweis.
+Kunststofffenster mit mindestens 80 mm Bautiefe und aeusserer Aluminiumschale;
+3D mit 80-mm-Rahmen, weissen Kunststoff-Innenflaechen und metallischer
+Aussenfarbe. Keine konstruktiv aufgeloeste Profil-/Dichtungssimulation.
 
-Grundflaechenvergleich in m2, aus Geometrie berechnet und auf zwei Stellen gerundet:
+### Fassadenstand und offene Punkte
 
-| Raum | Bisheriges Modell | Haas-Modell | Haas-Vorlage |
-| --- | ---: | ---: | ---: |
-| KG Technik / Lager | 18,90 | 19,69 | 19,85 |
-| KG Keller | 5,70 | 6,35 | 6,48 |
-| KG Hobby | 28,35 | 27,88 | 28,40 |
-| KG Flur inkl. Treppe | 6,65 | 5,90 | 6,16 |
-| EG Dusche / WC | 4,13 | 4,18 | 4,19 |
-| EG Diele + Flur | 12,15 | 8,66 | 8,91 |
-| EG Wohnen / Essen / Kochen | 40,18 | 41,90 | 42,66 |
-| OG Bad | 10,71 | 10,55 | 10,70 |
-| OG Kind Nord | 18,60 | 18,98 | 18,85 |
-| OG Kind Sued | 18,60 | 18,81 | 18,80 |
-| OG Flur | 4,35 | 3,61 | 3,92 |
-| OG Abstellraum | 2,70 | 2,40 | 2,45 |
-| DG Schlafen / Ankleide | 15,44 | 17,23 | 17,22 |
-| DG Flur | 2,20 | 2,10 | 2,11 |
-| DG Buero / Gaeste | 22,24 | 21,31 | 21,04 |
+- Clima NOVA mit 34,8 cm Gesamtwandstaerke, darin laut Chat 60 mm
+  Holzweichfaser-Putztraeger, 3 mm Oberputz und Siliconharzanstrich. Geometrisch
+  ein Gesamtkoerper mit vorhandener Putzoberflaeche, keine einzelnen Schichten.
+  Innenkanten bleiben fest, Aussenkanten ruecken gegenueber 40 cm um 5,2 cm ein.
+  Daraus folgen 7,048 x 10,596 m statt 7,10 x 10,70 m. Die 40-cm-Trennwand je
+  Haelfte bleibt eine Bestandsannahme. Gemeinsames vereinfachtes Huellmodell
+  auch im KG; ein separater Beton-Kellerwandaufbau und der Sockelversprung
+  muessen noch aus der Kellerplanung uebernommen werden. Raeume, Moebel,
+  Dach und Hausplatzierung bleiben unveraendert. Falls das Aussenmass 7,10 x
+  10,70 m verbindlich bleiben soll, ist eine gesonderte Innenraumanpassung noetig.
+- Suedostecke mit 40 cm Wandbacken je Fassadenrichtung ab Aussenkante,
+  davon 34,8 cm Wandstaerke und 5,2 cm innenseitiger Ruecksprung. HST und
+  Ostfestglas enden davor. Bezugskanten und Tragwerk bitte bestaetigen.
+- Exakt 5 Raffstores: HST 298 x 215,5; OG Suedost 173 x 123;
+  EG Suedwest, EG Ost-Eckfenster und OG Suedwest je 110,5 x 215,5.
+  Das Ost-Eckfenster ist die Ausnahme zur bisherigen reinen Sued-Zuordnung.
+  Exakt 8 Rolllaeden: EG Gaestebad 60,5 x 123, EG Diele 173 x 73,
+  EG Kueche 198 x 123, OG Bad/Nordkind je 173 x 123, OG Ost und beide
+  DG-Giebelfenster je 110,5 x 215,5. Diese lokale Zuordnung ist aus Lage und
+  Angebotsmengen abgeleitet und noch von Wolf zu bestaetigen. West spiegelbildlich.
+  Eingang und KG unbeschattet. Zwei Dachrolllaeden bleiben als frueherer Wunsch
+  auf der Osthaelfte, sind aber in der neuen Liste nicht separat bestaetigt.
+  Voll integrierte Kaesten in Wandelement-Aussparungen mit putzgleicher Abdeckung,
+  24 x 16 cm als Geometrieannahme; Daemmblock, Revision und Restdaemmung ungeprueft.
+  Rolllaeden aus doppelwandigem Aluprofil, Raffstores mit 80-mm-Alulamellen;
+  Profilgeometrie, Boerdelungen, schwarze Fuehrungsoesen und Polyesterbaender
+  nicht produktgetreu aufgeloest. Farbauswahl ueber bestehende Aussenrahmenfarbe.
+  Absenkung gemeinsam, Winkel nur fuer Raffstores. Dachfluegel schliessen vor
+  dem Absenken und bleiben bei abgesenktem Dachbehang gesperrt (Vorschaulogik).
+- Elektrische Motoren enthalten, bei Raffstores iO-faehig; Fabrikat in dieser
+  Liste nicht festgelegt. Rollladen-Anschluss und Schalter nicht enthalten;
+  bei Raffstores elektrischer Anschluss, Funkschalter und Windwaechter nicht
+  enthalten. Je 1 Nothandkurbel fuer Rolllaeden und Raffstores enthalten;
+  Zuordnung zu konkreten Fenstern fehlt, deshalb keine Kurbelposition erfunden.
+  Keine echte Motor-/Wind-/Smart-Home-Integration in der App. Home Assistant
+  ist kein bestaetigter Bestandteil dieser Leistungsliste.
+- Eingang: Alu-Vordach 250 cm entlang der Fassade x 90 cm Ausladung,
+  mit suedlichem Seitenteil, anthrazitfarbenem Briefkasten, Audiofeld und LED.
+  Unterkante 235 cm, Dachstaerke 12 cm, Seitenteilstaerke 8 cm und genaue
+  Ausstattungslagen bleiben Annahmen aus v0; Vordach in der neuen Liste nicht
+  nochmals spezifiziert. LED nur Leuchtflaeche, keine Lichtberechnung.
+  Ein einziges Haustuer-Seitenteil in gleicher Oberflaeche wie die Alu-Tuer:
+  ersetzt das bisherige schmale Glas, keine zusaetzliche suedliche Verkleidung.
+  Geschlossene Fuellung, 30 cm Breite, 215,5 cm Hoehe und noerdliche Position
+  neben der Tuer sind Modellannahmen; Fuellungsart und Masse bestaetigen.
+  Haustuer aussen einseitig fluegelueberdeckend, Breite ca. 110 cm, 40-cm-
+  Edelstahlstange, runde Ziehschutzrosette, Innendruecker, verdeckte Baender,
+  Mehrfachverriegelung, Zylinderschloss und elektrischer Oeffner ohne Anschluss.
+  Schloss-/Beschlagtechnik nur spezifiziert, nicht funktional simuliert.
+- Vorhandene Rinnen/Fallrohre in zinkgrauer Metalloptik bleiben erhalten;
+  Titanzink nur Materialannahme aus Chat. Anschluesse/Entwaesserung ungeprueft.
+  17 lfm druckfeste Fassadenvorbereitung sind nicht sichtbar darstellbar, solange
+  Lage, Hoehe und Befestigungsraster fuer Markise/Ueberdachung fehlen.
+- Nachgewiesener Nutzungskonflikt: Die beiden Fluegel jedes normalen
+  Kinderzimmerfensters kollidieren beim Oeffnen mit dem Monitor auf dem
+  unveraenderten Schreibtisch (BRH 93 statt 115 cm; Monitoroberkante 117 cm).
+  Monitore versetzen oder Oeffnungsart mit Wolf abstimmen. Auch die Kuechen-
+  und Badarmaturen benoetigen eine vollstaendige Beschlags-/Schwenkpruefung.
 
-Nicht bemaesste Innenkonturen und Moebel sind angenaehert, keine CAD-Uebernahme.
-Groesste Abweichung zur Skizzen-Grundflaeche 0,76 m2 (EG Wohnen, 1,8 Prozent).
-Die DG-Hoehengewichtung ergibt vor 3 Prozent Pauschalabzug 14,58 / 18,66 m2
-fuer Schlafen / Buero, gegenueber 14,36 / 18,07 m2 in der Vorlage.
-Alle vier Referenzlisten stehen auch im Raumdetail und im Flaechenabgleich.
+### Pruefung dieser Variante
 
-Gebaeudeschnitt: FFB KG/EG/OG/DG -2,45 / 0 / 2,97 / 5,94 m, lichte Hoehen
-2,25 / 2,77 / 2,77 / 2,77 m, Decken 20 cm, Kehlbalkendecke 24 cm, 35 Grad -
-alles bereits so modelliert. Neu: First 1,512 m ueber Kehlbalkendecke laut
-Schnitt. Bei innerer Kniehoehe 50 cm (1-/2-m-Linien im DG-Plan) ergibt das
-ein Dachpaket von ca. 45,5 cm normal statt 24 cm. Firstoberkante jetzt
-10,46 m ueber FFB EG statt 10,20 m. Die 52-cm-Angabe am Traufpunkt ist ohne
-eindeutigen Bezugspunkt; Dachaufbau "lt. Statik".
+Gezielter Modelltest `npm test -- src/providerFacade.test.ts -t 'uses Wolf|matches Wolf|opaque aluminium'`;
+Desktop/Mobil `npx playwright test tests/provider-plan.spec.ts -g 'Wolf Angebot'`.
+Letzterer prueft echte Rahmenmasse, Fluegelzahl, BRH-Labels, Bildinhalt,
+Ansichtswechsel, Behangaenderung, Vordach und Dachfenstersperre. Alle vier
+Unterlichter bleiben bei 21 Oeffnungsstellungen geometrisch fest; deren
+obere Fluegel schwenken frei von den geprueften Modell-Moebelkoerpern.
+Die weiteren historischen Varianten-Tests enthalten noch alte Massannahmen;
+ein vollstaendig gruener Gesamttestlauf wird nicht behauptet.
 
-Offene Punkte aus dem Skizzenabgleich, bewusst nicht geaendert:
+## Bestandsstand vor Wolf-Angebot (historisch)
 
-- Die westliche Nachbarwand reicht in allen Plaenen 1,80 m ueber unsere
-  Suedfassade hinaus. Das deutet auf 1,80 m statt 0,90 m Versatz hin.
-- Dachueberstaende im Schnitt ca. 60..70 cm, nicht bemaesst; Modell 25 cm.
-- Durch den hoeheren First steigt die ueberschlaegige Nord-Abstandsflaeche auf
-  ca. 3,29 m bei ca. 3,17 m Abstand an der kritischsten Ecke.
-
-Die Kellerhuelle ist vereinfacht ebenfalls 30 cm; Kellerwandmaterial unbestaetigt.
-Grundstueck, Nachbarschaft, Garten, Carports und Fahrzeug bleiben erhalten,
-Westhaelfte weiterhin Baukoerper ohne Innenausbau, 90 cm Versatz und die
-bisherige 20-cm-Suedverschiebung unveraendert. Statik, Treppe, Schall-/Brandschutz,
-Rettungswege, Fensterteilungen und Sonnenschutz benoetigen Fach-/Herstellerplanung.
-
-## Historischer Stand vor Haas: 7,10 x 10,70 m
-
-Die folgenden Angaben dokumentieren den vorherigen Entwurf und gelten nicht
-als aktuelle Haas-Spezifikation. Massgeblich ist der Abschnitt oben.
+Die folgenden Detailnotizen beschreiben den vorherigen Planungsstand.
+Bei Fenstern, Fassade und Eingang gilt ausschliesslich die Wolf-Tabelle oben.
 
 Die neue EG-/OG-Skizze ersetzt die bisherige Raumaufteilung. Die Osthaelfte ist
 auf KG, EG, OG und DG angepasst und eingerichtet; die Westhaelfte bleibt
