@@ -52,7 +52,7 @@ test('Standard-Dachfenster schwingen an der mittleren Achse nach innen frei auf'
       const center = door.object.getWorldPosition(new THREE.Vector3())
       const normal = new THREE.Vector3(0, Math.cos(35 * Math.PI / 180), (window.z < 5.25 ? -1 : 1) * Math.sin(35 * Math.PI / 180))
       const ray = new THREE.Raycaster(center.clone().addScaledVector(normal, -.8), normal, 0, .79)
-      const roofParts = building.children.filter(object => object.name === 'main-roof-panel' || object.name === 'attic-ceiling' || object.name === `${door.id}-lining`)
+      const roofParts = building.children.filter(object => object.name === 'main-roof-panel' || object.name === 'main-roof-core' || object.name === 'attic-ceiling' || object.name === `${door.id}-lining`)
       if (ray.intersectObjects(roofParts).length) hidden.push(door.id)
     }
     const westPanels = model.group.getObjectByName('house-west')!.children.filter(object => object.name === 'main-roof-panel').length
@@ -110,15 +110,25 @@ test('Ziegelreihen auf beiden Dachseiten folgen den getrennten Dachfarben', asyn
   const colors = await page.evaluate(async () => {
     const THREE = await import('/node_modules/.vite/deps/three.js')
     const { buildScene } = await import('/src/scene.ts')
+    const { houseEnvelope, roofEdgeDetail, roofOuterElevation } = await import('/src/model.ts')
     const model = buildScene('EG', false, true, true)
+    const roofErrors: string[] = [], envelope = houseEnvelope()
     const drainage: { name: string; geometry: string; minX: number; maxX: number; minY: number; maxY: number; color?: string; metalness?: number }[] = []
     model.group.traverse(object => {
       if (!object.name.startsWith('main-')) return
       const bounds = new THREE.Box3().setFromObject(object)
       const material = Array.isArray(object.material) ? object.material[0] : object.material
       drainage.push({ name: object.name, geometry: object.geometry.type, minX: bounds.min.x, maxX: bounds.max.x, minY: bounds.min.y, maxY: bounds.max.y, color: material.color?.getHexString(), metalness: material.metalness })
+      if (object.name === 'main-roof-panel' || object.name === 'main-roof-core') {
+        const points = object.geometry.getAttribute('position')
+        for (let index = 0; index < points.count; index++) {
+          const east = points.getX(index), height = points.getY(index), south = points.getZ(index)
+          if (object.name === 'main-roof-panel' && (height < roofOuterElevation(south) - roofEdgeDetail.thickness - 1e-5 || height > roofOuterElevation(south) + 1e-5)) roofErrors.push('thick-roof-edge')
+          if (object.name === 'main-roof-core' && (east < envelope.x - 1e-5 || east > envelope.x + envelope.width + 1e-5 || south < envelope.z - 1e-5 || south > envelope.z + envelope.depth + 1e-5)) roofErrors.push('exposed-roof-core')
+        }
+      }
     })
-    const east = model.group.children.find(object => object.name === 'roof-tile-courses')!
+    const east = model.group.getObjectByName('house-east')!.getObjectByName('roof-tile-courses')!
     const west = model.group.getObjectByName('house-west')!.getObjectByName('roof-tile-courses')!
     const westBefore = west.material.color.getHexString()
     const samples = ['#858e92', '#b45c42', '#313638'].map(color => {
@@ -144,10 +154,20 @@ test('Ziegelreihen auf beiden Dachseiten folgen den getrennten Dachfarben', asyn
     }
     const render = (visible: boolean) => { east.visible = west.visible = visible; renderer.render(scene, camera) }
     view(false)
-    Object.assign(window, { roofPreview: { model, renderer, view, render } })
-    return { samples, drainage, westBefore, westAfter, westExpected: new THREE.Color('#b45c42').multiplyScalar(.72).getHexString() }
+    const detail = (rotated: boolean) => {
+      model.setCladding('upper', 0, 'board-batten', 'east', { surface: 'weathered' })
+      const target = new THREE.Vector3(5.5, 8.2, 5.25)
+      const offset = new THREE.Vector3(12, 4, rotated ? 12 : -12).multiplyScalar(innerWidth < 600 ? 1.4 : 1)
+      camera.position.copy(target).add(offset); camera.lookAt(target); renderer.render(scene, camera)
+    }
+    Object.assign(window, { roofPreview: { model, renderer, view, render, detail } })
+    return { samples, drainage, roofErrors, westBefore, westAfter, westExpected: new THREE.Color('#b45c42').multiplyScalar(.72).getHexString() }
   })
-  expect(colors.drainage.filter(item => item.name.startsWith('main-gutter-'))).toHaveLength(4)
+  expect(colors.roofErrors).toEqual([])
+  expect(colors.drainage.filter(item => /^main-gutter-(north|south)$/.test(item.name))).toHaveLength(4)
+  expect(colors.drainage.filter(item => item.name.startsWith('main-verge-flashing-'))).toHaveLength(4)
+  expect(colors.drainage.filter(item => item.name.startsWith('main-gutter-end-'))).toHaveLength(8)
+  expect(colors.drainage.filter(item => item.name.startsWith('main-eaves-drip-'))).toHaveLength(4)
   expect(colors.drainage.filter(item => item.name.endsWith('-inner'))).toHaveLength(4)
   expect(colors.drainage.filter(item => item.name.endsWith('-elbow'))).toHaveLength(4)
   expect(colors.drainage.find(item => item.name === 'main-gutter-north')?.geometry).toBe('CylinderGeometry')
@@ -166,6 +186,14 @@ test('Ziegelreihen auf beiden Dachseiten folgen den getrennten Dachfarben', asyn
   expect(changed).toBeGreaterThan(200)
   await page.evaluate(() => { const preview = (window as any).roofPreview; preview.render(true); preview.view(true) })
   await canvas.screenshot({ path: `test-results/${testInfo.project.name}-roof-tiles-red.png` })
+  await page.evaluate(() => (window as any).roofPreview.detail(false))
+  const northDetail = PNG.sync.read(await canvas.screenshot({ path: `test-results/${testInfo.project.name}-roof-edge-north.png` }))
+  expect(new Set(Array.from({ length: northDetail.width * northDetail.height }, (_, index) => northDetail.data.subarray(index * 4, index * 4 + 3).toString('hex'))).size).toBeGreaterThan(200)
+  await page.evaluate(() => (window as any).roofPreview.detail(true))
+  const southDetail = PNG.sync.read(await canvas.screenshot({ path: `test-results/${testInfo.project.name}-roof-edge-south.png` }))
+  let rotatedPixels = 0
+  for (let offset = 0; offset < northDetail.data.length; offset += 4) if (Math.abs(northDetail.data[offset] - southDetail.data[offset]) > 8) rotatedPixels++
+  expect(rotatedPixels).toBeGreaterThan(500)
   await page.evaluate(() => { const preview = (window as any).roofPreview; preview.model.dispose(); preview.renderer.dispose(); preview.renderer.domElement.remove(); delete (window as any).roofPreview })
   expect(errors).toEqual([])
 })

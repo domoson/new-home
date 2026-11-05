@@ -134,7 +134,7 @@ export default function HouseScene({ floorId, mode, furnished, roof, cutWalls, s
       const sky = new THREE.DirectionalLight('#e5efff', .55); sky.position.set(-8, 35, -12); sky.target.position.set(0, 0, 5)
       sky.castShadow = true; sky.shadow.mapSize.set(2048, 2048); sky.shadow.camera.left = -18; sky.shadow.camera.right = 18; sky.shadow.camera.top = 18; sky.shadow.camera.bottom = -18; sky.shadow.camera.far = 70; sky.shadow.normalBias = .015; sky.shadow.bias = -.0001; scene.add(sky, sky.target)
       const sun = new THREE.DirectionalLight('#fff4d9', 3); sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048); sun.shadow.camera.left = -24; sun.shadow.camera.right = 24; sun.shadow.camera.top = 24; sun.shadow.camera.bottom = -24; sun.shadow.camera.far = 100; sun.shadow.normalBias = .025; sun.shadow.bias = -.00015; sun.target.position.set(1, 0, 6); scene.add(sun, sun.target)
-      const model = buildScene(floorId, mode === 'walk', roof, furnished, cutWalls); scene.add(model.group)
+      const model = buildScene(floorId, mode === 'walk', roof, furnished, cutWalls, true, { east: latestSettings.current.entryCanopy, west: latestSettings.current.west.entryCanopy }); scene.add(model.group)
       const people = createScalePeople(mode === 'walk' || roof ? floorIds : [floorId], furnished)
       people.group.position.set(housePlacement.x, 0, housePlacement.z)
       scene.add(people.group)
@@ -284,7 +284,7 @@ export default function HouseScene({ floorId, mode, furnished, roof, cutWalls, s
     }
     start().catch(reason => { if (!cancelled) { setError(reason instanceof Error ? reason.message : '3D konnte nicht gestartet werden.'); setLoading(false) } })
     return () => { cancelled = true; cleanup?.() }
-  }, [floorId, mode, furnished, roof, cutWalls, selected, reset])
+  }, [floorId, mode, furnished, roof, cutWalls, selected, reset, settings.entryCanopy, settings.west.entryCanopy])
   const update = (patch: Partial<SceneSettings>) => onSettings({ ...settings, ...patch, ...(patch.lights ? { lightingMode: 'room' as const } : {}) })
   const [compareTimber, setCompareTimber] = useState(false)
   const lightPrefix = lightHouse === 'west' ? 'west-' : ''
@@ -312,6 +312,7 @@ export default function HouseScene({ floorId, mode, furnished, roof, cutWalls, s
       <label className="check-setting"><input type="checkbox" checked={settings.transparentGround} onChange={event => update({ transparentGround: event.target.checked })} />Gelände transparent</label>
       <label className="check-setting"><input type="checkbox" checked={settings.surroundings} onChange={event => update({ surroundings: event.target.checked })} />Nachbarschaft</label><label className="check-setting"><input type="checkbox" checked={settings.landscaping} onChange={event => update({ landscaping: event.target.checked })} />Garten, Hecke und Zaun</label>
       <fieldset className="finish-settings"><legend>Holzfassade · 3D</legend>
+        <label className="check-setting"><input type="checkbox" checked={appearance.entryCanopy ?? true} onChange={event => updateAppearance({ entryCanopy: event.target.checked })} />Eingangsüberdachung</label>
         <label htmlFor="wood-profile">Holzprofil</label><select id="wood-profile" value={appearance.woodProfile} onChange={event => updateAppearance({ woodProfile: event.target.value as WoodProfile })}>{woodProfiles.map(profile => <option key={profile.id} value={profile.id}>{profile.name}</option>)}</select>
         <label htmlFor="wood-species">Holzart / Farbton</label><select id="wood-species" value={appearance.woodTone} onChange={event => updateAppearance({ woodTone: Number(event.target.value) })}>{woodTones.map((tone, index) => <option key={tone.name} value={index}>{tone.name}</option>)}</select>
         <label htmlFor="wood-surface">Oberfläche</label><select id="wood-surface" value={appearance.timber?.surface ?? 'fresh'} onChange={event => updateAppearance({ timber: { ...appearance.timber, surface: event.target.value as WoodSurface } })}><option value="fresh">Naturbelassen</option><option value="oiled">Leicht geölt</option><option value="weathered">Silbergrau bewittert</option></select>

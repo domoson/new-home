@@ -168,11 +168,19 @@ Aussenfarbe. Keine konstruktiv aufgeloeste Profil-/Dichtungssimulation.
   Zuordnung zu konkreten Fenstern fehlt, deshalb keine Kurbelposition erfunden.
   Keine echte Motor-/Wind-/Smart-Home-Integration in der App. Home Assistant
   ist kein bestaetigter Bestandteil dieser Leistungsliste.
-- Eingang: Alu-Vordach 250 cm entlang der Fassade x 90 cm Ausladung,
-  mit suedlichem Seitenteil, anthrazitfarbenem Briefkasten, Audiofeld und LED.
-  Unterkante 235 cm, Dachstaerke 12 cm, Seitenteilstaerke 8 cm und genaue
-  Ausstattungslagen bleiben Annahmen aus v0; Vordach in der neuen Liste nicht
-  nochmals spezifiziert. LED nur Leuchtflaeche, keine Lichtberechnung.
+- Eingang: optionale Holz-L-Form, Grundkoerper ca. 224 cm entlang der Fassade x
+  90 cm Ausladung, geschlossene Seite hinten/noerdlich, vorne/suedlich offen.
+  Der Seitenkern beginnt 6 cm innerhalb der noerdlichen Hauskante.
+  Holzprofile bleiben innerhalb der Hauslaenge und lassen die gesamte
+  Eingangseinheit inklusive Seitenelement frei; das vordere Ende ist unveraendert.
+  Unterkante 235 cm, Dachkern 12 cm und Seitenkern 8 cm bleiben Modellannahmen.
+  Echte Profilkoerper auf Seiten, Stirnflaechen, Dachober- und -unterseite folgen
+  Holzart, Profil und Oberflaechenzustand der Fassade derselben Haushaelfte,
+  auch bei reiner Putzfassade. Briefkasten, Schlitz, Audiofeld und LED entfernt.
+  "Eingangsueberdachung" unter Szene / Holzfassade schaltet jede Haelfte
+  unabhaengig ein/aus, einschliesslich der Kollisionskoerper; die Eingangsstufe
+  bleibt erhalten. Auswahl gilt bis zum Neuladen. Abdichtung, Gefaelle,
+  Entwaesserung und Befestigung sind nicht konstruktiv ausgearbeitet.
   Ein einziges Haustuer-Seitenteil in gleicher Oberflaeche wie die Alu-Tuer:
   ersetzt das bisherige schmale Glas, keine zusaetzliche suedliche Verkleidung.
   Geschlossene Fuellung, 30 cm Breite, 215,5 cm Hoehe und noerdliche Position
@@ -181,8 +189,17 @@ Aussenfarbe. Keine konstruktiv aufgeloeste Profil-/Dichtungssimulation.
   Edelstahlstange, runde Ziehschutzrosette, Innendruecker, verdeckte Baender,
   Mehrfachverriegelung, Zylinderschloss und elektrischer Oeffner ohne Anschluss.
   Schloss-/Beschlagtechnik nur spezifiziert, nicht funktional simuliert.
-- Vorhandene Rinnen/Fallrohre in zinkgrauer Metalloptik bleiben erhalten;
-  Titanzink nur Materialannahme aus Chat. Anschluesse/Entwaesserung ungeprueft.
+- Dachrand nach Bildreferenz schlanker: 12 cm Ortgang- und 14 cm Traufueberstand
+  ab Aussenwand, mit Holzverschalung entsprechend weniger sichtbar. Sichtbarer
+  Rand 5,5 cm statt voller Daemmstaerke; Dachkern innerhalb der Gebaeudehuelle.
+  Dachneigung, Firsthoehe, Daemmstaerke, Dachfenster und gewaehlte Deckung bleiben
+  unveraendert. Holzgiebel bis 15 mm unter den Dachrand gefuehrt, Traufanschluss
+  mit Abstand zur geneigten Dachunterseite. Schmale Ortgangbleche, Tropfkanten,
+  Rinnenendstuecke, gerollte Rinnenraender und Fallrohrschellen als 3D-Geometrie.
+  Rinnen/Fallrohre weiterhin in zinkgrauer Metalloptik; Titanzink nur
+  Materialannahme. Randmasse sind Entwurfsannahmen, keine Ausfuehrungsplanung;
+  Abdichtung, Hinterlueftung, Befestigung und Entwaesserung fachlich pruefen.
+  Die Angaben zur Fassadenvorbereitung bleiben offen:
   17 lfm druckfeste Fassadenvorbereitung sind nicht sichtbar darstellbar, solange
   Lage, Hoehe und Befestigungsraster fuer Markise/Ueberdachung fehlen.
 - Nachgewiesener Nutzungskonflikt: Die beiden Fluegel jedes normalen
@@ -1232,11 +1249,30 @@ nicht verschoben. Zusaetzliche Bekleidungsdicke liegt ausserhalb der bestehenden
 | C: vertikale Rhombusleisten | 60 / 12 mm, schraeger Querschnitt | 26 mm |
 | D: schmale vertikale Leisten | 38 / 15 mm | 32 mm |
 | E: horizontale Schalung | 140 / 3 mm, geneigte Vorderseite | 24 mm |
+| F: vertikaler Stufenfalz | 190 mm Brett, 174 mm Raster, 16 mm Ueberlappung, 2 mm Schattenfuge | 24 mm, gefalzte Kanten |
+| G: vertikale Wechselbreiten | 90 / 140 / 190 mm im regelmaessigen Wechsel, je 4 mm Fuge | 24 mm |
+| H: genutete Breitbretter, vertikal | 190 / 3 mm, drei 6 mm breite und 3 mm tiefe Nuten pro Brett | 24 mm |
+| I: vertikales Trapezprofil | 135 / 5 mm, beidseitig 18 mm breite Schraegen | 10 mm Rand, 28 mm Mitte |
+| J: vertikale Leisten mit Tiefenwechsel | 45 / 75 mm im Wechsel, je 10 mm Fuge | 24 / 40 mm |
 | Zusaetzliche offene Leisten | 38 / 42 mm | 32 mm |
+
+F-J ergaenzen A-E; E bleibt die bestehende horizontale Variante. Alle neuen
+Profile sind durchgehend vertikal mit festem, regelmaessigem Wiederholungsraster.
+Falze, Nuten, Schraegen und Tiefenspruenge sind echte Querschnittsgeometrie,
+keine Textursimulation. F hat ineinandergreifende Falze ohne separate Deckleisten;
+H bildet flache Nuten mit schraegen Flanken und geschlossenem Nutgrund ab.
+G und J wiederholen ihre Breiten-/Tiefenfolge ohne zufaellige Muster.
+Profilquerschnitte bleiben bei Fenster- und Giebelschnitten lagegleich und
+werden auch fuer die Holz-L-Form am Eingang verwendet. Masse sind Entwurfskonzepte,
+keine Herstellerprofile oder Freigabe fuer vertikale Bewitterung/Entwaesserung.
 
 40 mm Abstand zur Wand, dunkle Hintergrundbahn, quer zur Bekleidung angeordnete
 Traglattung sowie Abschluss- und Fensterbleche sind geometrisch sichtbar.
-Geschossweise Brettabschnitte erhalten einen schmalen Metallabschluss.
+Geschossweise Brettabschnitte erhalten einen 40 mm hohen Metallabschluss,
+18 mm vor der aeussersten Profilkante und mit 6 mm Abstand zum Holz darueber.
+Diese Masse naehern die staerkeren Trennlinien der Fotoreferenz an; sie sind
+nicht aus dem Bild vermessen. Die Hausgeometrie entspricht wolfhaus-angebot-v1,
+die neuen Holzprofile und Vergleichsansichten bleiben zusaetzlich verfuegbar.
 Bei A/E schliesst eine vereinfachte hinterlegte Feder die Fugen; verdeckte
 Nutgeometrie und Befestiger sind nicht einzeln konstruiert. Die offenen Systeme
 setzen eine geeignete UV- und witterungsbestaendige Fassadenbahn voraus.
@@ -1264,10 +1300,14 @@ bleiben unveraendert und enthalten die neue Bekleidungsdicke nicht.
 Bedienung: 3D > Szene > Aussenstil "Holz / Laerche" fuer OG und DG mit hellem Putz
 und warmgrauen Fenstern. Unter "Holzfassade / 3D" Profil, Holzart, Oberflaeche und
 Fensteranschluss pro Haushaelfte einstellen. "Fassadenvergleich" oeffnet vier
-Uebersichten: A-E in Laerche, A/C in vier Holzarten, drei Fensteranschluesse und
-drei Oberflaechenzustaende. Jede der 19 Kombinationen hat eine Gesamt- und
+Uebersichten: A-J in Laerche, A/C in vier Holzarten, drei Fensteranschluesse und
+drei Oberflaechenzustaende. Jede der 24 Kombinationen hat eine Gesamt- und
 Detailansicht (840 x 700 Pixel), vergroesserbar und einzeln als PNG ladbar.
 Alle Gesamtansichten haben dieselbe Kamera, Beleuchtung, Belichtung und Groesse.
+Auch alle Profildetails A-J verwenden denselben Fassadenausschnitt, dieselbe
+Kamera, naturbelassene Laerche, Farbpalette und Metallfensteranschluesse.
+Einheitliche 4096-Pixel-Schattenkarten loesen die feinen Profilkanten auf;
+die gewaehlte Holzart/Farbe der Hauptansicht beeinflusst diesen Vergleich nicht.
 Fensterdetails erhalten innerhalb ihrer Vergleichsreihe einen engeren OG-Ausschnitt.
 Der Vergleich isoliert Haus Ost; Grundstueck und Partnerhaus bleiben im Hauptmodell
 erhalten. Die Vergleichsbilder veraendern keine Einstellung der Hauptansicht.

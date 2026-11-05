@@ -10,10 +10,10 @@ import './timber-comparison.css'
 type Variant = { id: string; name: string; profile: WoodProfile; tone: number; options?: TimberOptions }
 type Overview = 'profiles' | 'species' | 'windows' | 'weathering'
 type Rendered = Variant & { full: string; detail: string }
-const overviews: { id: Overview; name: string }[] = [{ id: 'profiles', name: 'Profile A–E' }, { id: 'species', name: 'Holzarten' }, { id: 'windows', name: 'Fensterdetails' }, { id: 'weathering', name: 'Bewitterung' }]
+const overviews: { id: Overview; name: string }[] = [{ id: 'profiles', name: 'Profile A–J' }, { id: 'species', name: 'Holzarten' }, { id: 'windows', name: 'Fensterdetails' }, { id: 'weathering', name: 'Bewitterung' }]
 const profileName = (profile: WoodProfile) => woodProfiles.find(option => option.id === profile)!.name
 function variants(overview: Overview): Variant[] {
-  if (overview === 'profiles') return woodProfiles.slice(0, 5).map(profile => ({ id: profile.id, name: profile.name, profile: profile.id, tone: 0 }))
+  if (overview === 'profiles') return woodProfiles.filter(profile => profile.id !== 'open-slats').map(profile => ({ id: profile.id, name: profile.name, profile: profile.id, tone: 0 }))
   if (overview === 'species') return (['boards', 'rhombus'] as const).flatMap(profile => [8, 0, 9, 10].map(tone => ({ id: `${profile}-${tone}`, name: `${woodTones[tone].name} · ${profile === 'boards' ? 'A' : 'C'}`, profile, tone })))
   if (overview === 'windows') return (['none', 'reveals', 'screen'] as const).map(windows => ({ id: windows, name: { none: 'Metallanschluss', reveals: 'Holzlaibung', screen: 'Partieller Fensterschirm' }[windows], profile: 'rhombus', tone: 0, options: { windows } }))
   return (['fresh', 'oiled', 'weathered'] as const).map(surface => ({ id: surface, name: { fresh: 'Naturbelassen', oiled: 'Leicht geölt', weathered: 'Silbergrau bewittert' }[surface], profile: 'boards', tone: 0, options: { surface } }))
@@ -46,9 +46,9 @@ export default function TimberComparison({ onClose }: { onClose: () => void }) {
         scene.add(new THREE.HemisphereLight('#f4f6ff', '#c0b9a9', 1.8))
         sun = new THREE.DirectionalLight('#fff4df', 3.4)
         sun.position.set(16, 20, 1); sun.target.position.set(3, 4, 5)
-        sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048)
-        Object.assign(sun.shadow.camera, { left: -12, right: 12, top: 12, bottom: -12, near: .1, far: 70 })
-        sun.shadow.bias = -.00008; sun.shadow.normalBias = .008
+        sun.castShadow = true; sun.shadow.mapSize.set(4096, 4096)
+        Object.assign(sun.shadow.camera, { left: -9, right: 9, top: 9, bottom: -9, near: .1, far: 70 })
+        sun.shadow.bias = -.00001; sun.shadow.normalBias = .001
         scene.add(sun, sun.target)
         model = buildScene('EG', false, true, false)
         for (const child of model.group.children) child.visible = child.name === 'house-east'

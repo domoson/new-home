@@ -27,8 +27,10 @@ export const rect = (x: number, z: number, width: number, depth: number): Rect =
 export function entryCanopy(floor: Floor) {
   const wall = floor.walls.find(wall => wall.id === 'east')!
   const entrance = wall.openings.find(opening => opening.id === 'entrance')!
-  const start = wall.z + entrance.start - .3
-  return { ...rect(wall.x + wall.width, start + (entrance.width + .3 - 2.5) / 2, .9, 2.5), bottom: 2.35, height: .12, sideThickness: .08 }
+  const doorStart = wall.z + entrance.start
+  const end = doorStart + (entrance.width - .3 + 2.5) / 2
+  const start = wall.z + .06
+  return { ...rect(wall.x + wall.width, start, .9, end - start), bottom: 2.35, height: .12, sideThickness: .08 }
 }
 export function furnitureVolumes(item: Furniture): (Rect & { bottom: number; height: number })[] {
   const { x, z, width, depth, height } = item
@@ -70,9 +72,15 @@ export const roofWindows: (Rect & { id: string; name: string; length: number })[
   { ...rect(roofWindowX, 1.75, roofWindowWidth, roofWindowDepth), id: 'DG-north-skylight', name: 'Dachfenster Nord', length: roofWindowLength },
   { ...rect(roofWindowX, house.depth - 1.75 - roofWindowDepth, roofWindowWidth, roofWindowDepth), id: 'DG-south-skylight', name: 'Dachfenster S\u00fcd', length: roofWindowLength },
 ]
+export const roofEdgeDetail = { vergeOverhang: .12, eavesOverhang: .14, thickness: .055, ventilationGap: .015, flashingHeight: .065, flashingThickness: .004 } as const
+export function roofEnvelope(): Rect {
+  const envelope = houseEnvelope()
+  return rect(envelope.x, envelope.z - roofEdgeDetail.eavesOverhang, envelope.width + roofEdgeDetail.vergeOverhang, envelope.depth + 2 * roofEdgeDetail.eavesOverhang)
+}
 export function roofPanels(windows = roofWindows): Rect[] {
-  const eastCuts = [...new Set([-.1, house.width + .25, ...windows.flatMap(window => [window.x, window.x + window.width])])].sort((left, right) => left - right)
-  const southCuts = [...new Set([-.25, house.depth / 2, house.depth + .25, ...windows.flatMap(window => [window.z, window.z + window.depth])])].sort((left, right) => left - right)
+  const envelope = roofEnvelope()
+  const eastCuts = [...new Set([envelope.x, envelope.x + envelope.width, ...windows.flatMap(window => [window.x, window.x + window.width])])].sort((left, right) => left - right)
+  const southCuts = [...new Set([envelope.z, house.depth / 2, envelope.z + envelope.depth, ...windows.flatMap(window => [window.z, window.z + window.depth])])].sort((left, right) => left - right)
   const panels: Rect[] = []
   for (let eastIndex = 0; eastIndex < eastCuts.length - 1; eastIndex++) for (let southIndex = 0; southIndex < southCuts.length - 1; southIndex++) {
     const x = eastCuts[eastIndex], z = southCuts[southIndex], width = eastCuts[eastIndex + 1] - x, depth = southCuts[southIndex + 1] - z
@@ -83,6 +91,7 @@ export function roofPanels(windows = roofWindows): Rect[] {
 export const area = (parts: Rect[]) => parts.reduce((sum, part) => sum + (part.footprint ? Math.abs(part.footprint.reduce((value, point, index, points) => { const next = points[(index + 1) % points.length]; return value + point[0] * next[1] - next[0] * point[1] }, 0)) / 2 : part.width * part.depth), 0)
 export const roofHeight = (south: number) => house.knee + Math.min(south - house.north, house.south - south) * Math.tan(house.pitch * Math.PI / 180)
 export const roofVerticalThickness = construction.roofNormal / Math.cos(house.pitch * Math.PI / 180)
+export const roofFacadeRise = roofVerticalThickness - roofEdgeDetail.thickness - roofEdgeDetail.ventilationGap
 export const roofInnerElevation = (south: number) => elevations.DG + roofHeight(south)
 export const roofOuterElevation = (south: number) => roofInnerElevation(south) + roofVerticalThickness
 export const ridgeElevations = { inside: roofInnerElevation(house.depth / 2), roofSurface: roofOuterElevation(house.depth / 2), outside: roofOuterElevation(house.depth / 2) + construction.ridgeCapAllowance }

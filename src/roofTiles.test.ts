@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest'
-import { area, atticCeiling, house, makeFloor, roofHeight, roofPanels, roofVerticalThickness, roofWindows } from './model'
+import { area, atticCeiling, house, houseEnvelope, makeFloor, roofEdgeDetail, roofEnvelope, roofHeight, roofPanels, roofVerticalThickness, roofWindows } from './model'
 import { roofTileGeometry, roofTileSpacing, roofTileStrips } from './roofTiles'
 
 it('fits two standard roof windows below the attic ceiling in the occupied north and south rooms', () => {
@@ -20,9 +20,19 @@ it('fits two standard roof windows below the attic ceiling in the occupied north
       expect(overlap).toBeLessThan(1e-8)
     }
   }
-  expect(area(roofPanels()) + area(roofWindows)).toBeCloseTo((house.width + .35) * (house.depth + .5))
+  expect(area(roofPanels()) + area(roofWindows)).toBeCloseTo(area([roofEnvelope()]))
   expect(roofPanels([])).toHaveLength(2)
-  expect(area(roofPanels([]))).toBeCloseTo((house.width + .35) * (house.depth + .5))
+  expect(area(roofPanels([]))).toBeCloseTo(area([roofEnvelope()]))
+})
+
+it('keeps a compact roof overhang outside the timber facade without changing the party-wall edge', () => {
+  const walls = houseEnvelope(), roof = roofEnvelope()
+  expect(roof.x).toBe(walls.x)
+  expect(roof.x + roof.width - walls.x - walls.width).toBeCloseTo(.12)
+  expect(walls.z - roof.z).toBeCloseTo(.14)
+  expect(roof.z + roof.depth - walls.z - walls.depth).toBeCloseTo(.14)
+  expect(roofEdgeDetail.thickness).toBeLessThan(.06)
+  expect(roofEdgeDetail.vergeOverhang).toBeGreaterThan(.04 + .022 + .02 + .018)
 })
 
 it('clips continuous tile courses to roof panels and leaves every skylight clear', () => {

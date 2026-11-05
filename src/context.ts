@@ -37,9 +37,21 @@ export type FinishKey = keyof typeof finishes | 'frameInside'
 export const facadeCompositions = [{ id: 'plaster', name: 'Putz durchgehend' }, { id: 'timber', name: 'Holzfassade ab EG' }, { id: 'upper', name: 'Putz + Holz OG und DG' }, { id: 'gable', name: 'Putz + Holzgiebelfeld' }, { id: 'entry', name: 'Putz + Holz am Eingang' }, { id: 'og', name: 'Nur OG in Holz' }, { id: 'og-entry', name: 'OG + Eingang in Holz' }, { id: 'panels', name: 'Vertikale Holzfelder' }] as const
 export type FacadeComposition = typeof facadeCompositions[number]['id']
 export const woodTones = [{ name: 'Lärche natur', color: '#b99e74' }, { name: 'Silbergrau', color: '#92968f' }, { name: 'Dunkel lasiert', color: '#514f48' }, { name: 'Eiche hell', color: '#d2bb91' }, { name: 'Thermoesche', color: '#88644c' }, { name: 'Zeder', color: '#b97b5b' }, { name: 'Gekälkt', color: '#ddd7c8' }, { name: 'Verkohlt', color: '#303330' }, { name: 'Fichte', color: '#d7c39c' }, { name: 'Douglasie', color: '#bc8d70' }, { name: 'Thermofichte', color: '#876b53' }] as const
-export const woodProfiles = [{ id: 'boards', name: 'A · Nut und Feder · 135 mm' }, { id: 'board-batten', name: 'B · Boden-Deckel · 115 / 40 mm' }, { id: 'rhombus', name: 'C · Rhombus · 60 / 12 mm' }, { id: 'slats', name: 'D · Schmale Leisten · 38 / 15 mm' }, { id: 'horizontal', name: 'E · Horizontal · 140 mm' }, { id: 'open-slats', name: 'Offene Leisten · 38 / 42 mm' }] as const
+export const woodProfiles = [
+  { id: 'boards', name: 'A · Nut und Feder · 135 mm' },
+  { id: 'board-batten', name: 'B · Boden-Deckel · 115 / 40 mm' },
+  { id: 'rhombus', name: 'C · Rhombus · 60 / 12 mm' },
+  { id: 'slats', name: 'D · Schmale Leisten · 38 / 15 mm' },
+  { id: 'horizontal', name: 'E · Horizontal · 140 mm' },
+  { id: 'shiplap', name: 'F · Vertikaler Stufenfalz · 190 mm' },
+  { id: 'variable-width', name: 'G · Wechselbreiten · 90 / 140 / 190 mm' },
+  { id: 'grooved', name: 'H · Genutete Breitbretter · 190 mm' },
+  { id: 'bevelled', name: 'I · Trapezprofil · 135 mm' },
+  { id: 'alternating-depth', name: 'J · Tiefenwechsel · 45 / 75 mm' },
+  { id: 'open-slats', name: 'Offene Leisten · 38 / 42 mm' },
+] as const
 export type WoodProfile = typeof woodProfiles[number]['id']
-export type HouseAppearance = { facade: string; roof: string; roofTrim: string; entryDoor: string; frame: string; frameInside: string; composition: FacadeComposition; woodTone: number; woodProfile: WoodProfile; timber?: TimberOptions }
+export type HouseAppearance = { facade: string; roof: string; roofTrim: string; entryDoor: string; frame: string; frameInside: string; composition: FacadeComposition; woodTone: number; woodProfile: WoodProfile; timber?: TimberOptions; entryCanopy?: boolean }
 export type SceneSettings = HouseAppearance & { people: boolean; peopleMoving: boolean; interiorDoor: string; hour: number; season: 'summer' | 'spring' | 'winter'; west: HouseAppearance; surroundings: boolean; landscaping: boolean; transparentGround: boolean; lights: Record<string, boolean>; lightingMode: 'room' | 'global'; raffstoreExtension: number; raffstoreTilt: number }
 export const initialAppearance: HouseAppearance = { facade: finishes.facade[3].color, roof: finishes.roof[4].color, roofTrim: finishes.roofTrim[1].color, entryDoor: finishes.entryDoor[1].color, frame: finishes.frame[7].color, frameInside: finishes.frame[0].color, composition: 'plaster', woodTone: 3, woodProfile: 'boards' }
 type ExteriorAppearance = Omit<HouseAppearance, 'frameInside'>

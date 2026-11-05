@@ -28,7 +28,7 @@ test('Wolf Angebot: Fenster, BRH, Unterlichter und Sonnenschutz in 2D und 3D', a
     const THREE = await import('/node_modules/.vite/deps/three.js')
     const { OBB } = await import('/node_modules/three/examples/jsm/math/OBB.js')
     const { buildScene } = await import('/src/scene.ts')
-    const { makeFloor, housePlacement, furnitureVolumes } = await import('/src/model.ts')
+    const { makeFloor, housePlacement, furnitureVolumes, entryCanopy } = await import('/src/model.ts')
     const { windowPanels } = await import('/src/windowLayout.ts')
     const model = buildScene('EG', false, true, true)
     for (const name of ['neighborhood', 'garden', 'site-ground', 'house-west']) { const object = model.group.getObjectByName(name); if (object) object.visible = false }
@@ -110,11 +110,11 @@ test('Wolf Angebot: Fenster, BRH, Unterlichter und Sonnenschutz in 2D und 3D', a
       renderer.domElement.dataset.framed = String(corners.every(corner => { const point = corner.clone().project(camera); return Math.abs(point.x) < .94 && Math.abs(point.y) < .94 }))
       model.setRaffstores(extension, 45); renderer.render(scene, camera)
     }, openUnderlights() { for (const id of underlightIds) model.setOpening(id, 1); renderer.render(scene, camera) }, dispose() { model.dispose(); renderer.dispose(); renderer.domElement.remove() } } })
-    return { mismatches, collisions: [...collisions], newCollisions, underlights, aluminium, canopy, shades, roofClosed }
+    return { mismatches, collisions: [...collisions], newCollisions, underlights, aluminium, canopy, canopyDepth: entryCanopy(makeFloor('EG')).depth, shades, roofClosed }
   })
   expect(result.mismatches).toEqual([])
   expect(result.canopy[0]).toBeCloseTo(.9)
-  expect(result.canopy[2]).toBeCloseTo(2.5)
+  expect(result.canopy[2]).toBeCloseTo(result.canopyDepth)
   expect(result.shades.filter(kind => kind === 'raffstore')).toHaveLength(5)
   expect(result.shades.filter(kind => kind === 'roller')).toHaveLength(8)
   expect(result.shades.filter(kind => kind === 'roof-roller')).toHaveLength(2)

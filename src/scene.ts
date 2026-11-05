@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js'
-import { atticCeiling, atticCeilingPanels, construction, entryCanopy, house, houseEnvelope, housePlacement, elevations, floorIds, floorSlabs, furnitureVolumes, lightWellBars, lightWells, makeFloor, rect, ridgeElevations, roofHeight, roofInnerElevation, roofOuterElevation, roofPanels, roofVerticalThickness, roofWindows, slabThickness, stairFor, stairGuards, stairHandrails, stairInnerWall, stairSolids, storeyRise, wallSolids } from './model'
+import { atticCeiling, atticCeilingPanels, construction, entryCanopy, house, houseEnvelope, housePlacement, elevations, floorIds, floorSlabs, furnitureVolumes, lightWellBars, lightWells, makeFloor, rect, ridgeElevations, roofEdgeDetail, roofEnvelope, roofHeight, roofInnerElevation, roofOuterElevation, roofPanels, roofVerticalThickness, roofWindows, slabThickness, stairFor, stairGuards, stairHandrails, stairInnerWall, stairSolids, storeyRise, wallSolids } from './model'
 import { windowFrame, windowGap, windowJoint, windowMullionStart, windowPanels } from './windowLayout'
 import { kitchenModules, moduleFront } from './kitchenStorage'
 import { terraceFurniture, terraceParts, westTerraceFurniture } from './terrace'
@@ -69,7 +69,7 @@ function floorTexture() {
   return texture
 }
 
-export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, furnished: boolean, cutWalls = false, includeSite = true): SceneModel {
+export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, furnished: boolean, cutWalls = false, includeSite = true, entryCanopies: { east?: boolean; west?: boolean } = {}): SceneModel {
   const group = new THREE.Group(), colliders: ColliderShape[] = [], triangles: SceneModel['triangles'] = [], doors: DoorModel[] = []
   const siteGroup = new THREE.Group(), siteTriangles: SceneModel['triangles'] = []
   const textures: THREE.Texture[] = [], materials: THREE.Material[] = []
@@ -496,7 +496,8 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
     if (collide) triangles.push({ vertices, indices })
   }
   const renderedFloors = walk || showRoof ? floorIds : [floorId]
-  const cladding = createTimberCladding(renderedFloors, cutWalls && !walk && !showRoof, includeSite ? 'east' : 'west')
+  const canopy = entryCanopies.east !== false && (walk || showRoof || floorId === 'EG') ? entryCanopy(makeFloor('EG', includeSite ? 'east' : 'west')) : undefined
+  const cladding = createTimberCladding(renderedFloors, cutWalls && !walk && !showRoof, includeSite ? 'east' : 'west', canopy)
   group.add(cladding.group)
   cladding.set(initialAppearance.composition, initialAppearance.woodTone, initialAppearance.woodProfile)
   const envelope = houseEnvelope()
@@ -670,21 +671,45 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
     const roofAt = roofInnerElevation
     const skylights = includeSite ? roofWindows : []
     const panels = roofPanels(skylights)
-    for (const part of panels) { const bottom: [number, number] = [roofAt(part.z), roofAt(part.z + part.depth)]; const panel = wedge(part, bottom, [bottom[0] + thickness, bottom[1] + thickness], [roofTrimMaterial, roofMaterial, roofMaterial, roofMaterial, roofMaterial, roofMaterial]); panel.name = 'main-roof-panel' }
-    const ridge = new THREE.Mesh(new THREE.CylinderGeometry(construction.ridgeCapAllowance, construction.ridgeCapAllowance, house.width + .35, 20), roofMaterial)
-    ridge.rotation.z = Math.PI / 2; ridge.position.set((house.width + .15) / 2, ridgeElevations.roofSurface, house.depth / 2)
+    const outline = roofEnvelope(), outerEast = outline.x + outline.width
+    for (const part of panels) {
+      const top: [number, number] = [roofOuterElevation(part.z), roofOuterElevation(part.z + part.depth)]
+      const panel = wedge(part, [top[0] - roofEdgeDetail.thickness, top[1] - roofEdgeDetail.thickness], top, [roofTrimMaterial, roofMaterial, roofTrimMaterial, roofTrimMaterial, roofTrimMaterial, roofTrimMaterial])
+      panel.name = 'main-roof-panel'
+      const left = Math.max(part.x, envelope.x), right = Math.min(part.x + part.width, envelope.x + envelope.width)
+      const north = Math.max(part.z, envelope.z), south = Math.min(part.z + part.depth, envelope.z + envelope.depth)
+      if (right > left && south > north) {
+        const core = wedge(rect(left, north, right - left, south - north), [roofAt(north), roofAt(south)], [roofOuterElevation(north) - roofEdgeDetail.thickness, roofOuterElevation(south) - roofEdgeDetail.thickness], [plaster, plaster, facade, facade, facade, facade])
+        core.name = 'main-roof-core'
+      }
+    }
+    const ridge = new THREE.Mesh(new THREE.CylinderGeometry(construction.ridgeCapAllowance, construction.ridgeCapAllowance, outline.width, 20), roofMaterial)
+    ridge.rotation.z = Math.PI / 2; ridge.position.set(outline.x + outline.width / 2, ridgeElevations.roofSurface, house.depth / 2)
     ridge.name = 'main-ridge-cap'; ridge.castShadow = true; ridge.receiveShadow = true; group.add(ridge)
     const tileCourses = new THREE.Mesh(roofTileGeometry(panels, roofAt, thickness), roofCourseMaterial)
     tileCourses.name = 'roof-tile-courses'; tileCourses.castShadow = true; tileCourses.receiveShadow = true; group.add(tileCourses)
     const roofEdge = mat('#d6dbdc', .34)
     roofEdge.metalness = .35
     roofEdge.side = THREE.DoubleSide
-    for (const [side, south] of [['north', -.25], ['south', house.depth + .25]] as const) {
-      const gutter = new THREE.Mesh(new THREE.CylinderGeometry(.07, .07, house.width + .35, 16, 1, true, Math.PI, Math.PI), roofEdge)
-      gutter.rotation.z = Math.PI / 2; gutter.position.set((house.width + .25) / 2, roofOuterElevation(south) - .07, south); group.add(gutter)
+    for (const [side, start, end] of [['north', outline.z, house.depth / 2], ['south', house.depth / 2, outline.z + outline.depth]] as const) {
+      const upper: [number, number] = [roofOuterElevation(start) + .014, roofOuterElevation(end) + .014]
+      wedge(rect(outerEast, start, roofEdgeDetail.flashingThickness, end - start), [upper[0] - roofEdgeDetail.flashingHeight, upper[1] - roofEdgeDetail.flashingHeight], upper, roofEdge, false).name = `main-verge-flashing-${side}`
+      wedge(rect(outerEast - .045, start, .045 + roofEdgeDetail.flashingThickness, end - start), upper, [upper[0] + roofEdgeDetail.flashingThickness, upper[1] + roofEdgeDetail.flashingThickness], roofEdge, false).name = `main-verge-cap-${side}`
+    }
+    for (const [side, edge] of [['north', outline.z], ['south', outline.z + outline.depth]] as const) {
+      const south = edge + (side === 'north' ? -.06 : .06), gutterY = roofOuterElevation(edge) - .045
+      const gutter = new THREE.Mesh(new THREE.CylinderGeometry(.07, .07, outline.width, 24, 1, true, Math.PI, Math.PI), roofEdge)
+      gutter.rotation.z = Math.PI / 2; gutter.position.set(outline.x + outline.width / 2, gutterY, south); group.add(gutter)
       gutter.name = `main-gutter-${side}`
-      const pipeX = house.west + .04, wallSouth = side === 'north' ? envelope.z : envelope.z + envelope.depth, bendRadius = .1, tubeRadius = .04, gutterY = roofOuterElevation(south) - .07
-      const wallZ = side === 'north' ? wallSouth - .04 : wallSouth + .04
+      const dripStart = side === 'north' ? edge - .018 : edge - .03
+      wedge(rect(outline.x, dripStart, outline.width, .048), [roofOuterElevation(dripStart) + .008, roofOuterElevation(dripStart + .048) + .008], [roofOuterElevation(dripStart) + .012, roofOuterElevation(dripStart + .048) + .012], roofEdge, false).name = `main-eaves-drip-${side}`
+      for (const [index, endX] of [outline.x + .002, outerEast - .002].entries()) {
+        const cap = new THREE.Mesh(new THREE.CylinderGeometry(.07, .07, .004, 24, 1, false, Math.PI, Math.PI), roofEdge)
+        cap.rotation.z = Math.PI / 2; cap.position.set(endX, gutterY, south); group.add(cap); cap.name = `main-gutter-end-${side}-${index}`
+      }
+      for (const [index, lipZ] of [south - .07, south + .07].entries()) beam(new THREE.Vector3(outline.x, gutterY, lipZ), new THREE.Vector3(outerEast, gutterY, lipZ), .003, roofEdge).name = `main-gutter-bead-${side}-${index}`
+      const pipeX = house.west + .04, wallSouth = side === 'north' ? envelope.z : envelope.z + envelope.depth, bendRadius = .055, tubeRadius = .04
+      const wallZ = side === 'north' ? wallSouth - .14 : wallSouth + .14
       const pipeTop = gutterY - bendRadius
       const pipe = new THREE.Mesh(new THREE.CylinderGeometry(tubeRadius, tubeRadius, pipeTop + .14, 12), roofEdge)
       pipe.position.set(pipeX + .04, (-.14 + pipeTop) / 2, wallZ); group.add(pipe)
@@ -695,6 +720,11 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
       elbow.name = `main-downpipe-${side}-elbow`; elbow.castShadow = true; elbow.receiveShadow = true; group.add(elbow)
       const connector = beam(new THREE.Vector3(pipeX + .04, gutterY, side === 'north' ? wallZ - bendRadius : wallZ + bendRadius), new THREE.Vector3(pipeX + .04, gutterY, south), tubeRadius, roofEdge)
       connector.name = `main-downpipe-${side}-gutter-connector`
+      for (let height = 1; height < pipeTop - .3; height += 2) {
+        const collar = new THREE.Mesh(new THREE.TorusGeometry(.044, .006, 6, 16), roofEdge)
+        collar.rotation.x = Math.PI / 2; collar.position.set(pipeX + .04, height, wallZ); group.add(collar); collar.name = `main-downpipe-${side}-collar`
+        beam(new THREE.Vector3(pipeX + .04, height, wallZ), new THREE.Vector3(pipeX + .04, height, wallSouth), .008, roofEdge).name = `main-downpipe-${side}-fixing`
+      }
     }
     for (const skylight of skylights) {
       const southSlope = skylight.z >= house.depth / 2
@@ -727,14 +757,12 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
     const entranceStart = entranceWall.z + Math.min(...entranceOpenings.map(opening => opening.start))
     const entranceEnd = entranceWall.z + Math.max(...entranceOpenings.map(opening => opening.start + opening.width))
     addBox(rect(envelope.x + envelope.width, entranceStart - .1, .9, entranceEnd - entranceStart + .2), -.2, .2, stone).name = 'entry-step'
-    const canopy = entryCanopy(makeFloor('EG', includeSite ? 'east' : 'west'))
-    addBox(canopy, canopy.bottom, canopy.height, entryDoorMaterial).name = 'entry-canopy-roof'
-    addBox(rect(canopy.x, canopy.z + canopy.depth - canopy.sideThickness, canopy.width, canopy.sideThickness), 0, canopy.bottom, entryDoorMaterial).name = 'entry-canopy-side'
-    addBox(rect(canopy.x + .17, canopy.z + canopy.depth - .095, .5, .11), .9, .5, dark).name = 'entry-mailbox'
-    addBox(rect(canopy.x + .21, canopy.z + canopy.depth - .101, .42, .015), 1.3, .035, steel).name = 'entry-mail-slot'
-    addBox(rect(canopy.x + .7, canopy.z + canopy.depth - .101, .1, .02), 1.35, .22, steel).name = 'entry-intercom'
-    const entryLed = mat('#fff1ce', .3); entryLed.emissive.set('#fff1ce'); entryLed.emissiveIntensity = .6
-    addBox(rect(canopy.x + .18, canopy.z + .12, .025, canopy.depth - .24), canopy.bottom - .006, .005, entryLed, false).name = 'entry-canopy-led'
+    if (canopy) {
+      const entry = new THREE.Group(); entry.name = 'entry-canopy'; group.add(entry)
+      addBox(canopy, canopy.bottom, canopy.height, cladding.materials[0], true, false, entry).name = 'entry-canopy-roof'
+      addBox(rect(canopy.x, canopy.z, canopy.width, canopy.sideThickness), 0, canopy.bottom, cladding.materials[0], true, false, entry).name = 'entry-canopy-side'
+      entry.add(cladding.canopyGroup)
+    }
     if (furnished) for (const item of includeSite ? terraceFurniture : westTerraceFurniture) addFurniture(item, 0)
   }
   if (walk || showRoof || floorId === 'KG') {
@@ -784,7 +812,7 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
     }
     triangles.push(...siteTriangles)
   }
-  const west = includeSite ? buildScene(floorId, walk, showRoof, furnished, cutWalls, false) : undefined
+  const west = includeSite ? buildScene(floorId, walk, showRoof, furnished, cutWalls, false, { east: entryCanopies.west }) : undefined
   const indirectLighting = createIndirectLighting(renderedFloors, materials, coordinates, includeSite ? 'east' : 'west')
   if (west) {
     west.group.name = 'house-west'; west.group.scale.x = -1; west.group.position.set(-housePlacement.x, 0, partner.z + housePlacement.z); group.add(west.group)
