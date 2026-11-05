@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { elevations, house, slabThickness } from './model'
-import { facadeCompositions, woodProfiles, woodTones } from './context'
+import { facadeCompositions, woodTones } from './context'
 import type { FacadeComposition, WoodProfile } from './context'
 
 export function createFacadeMaterial(texture: THREE.Texture, alwaysWood = false, coordinates = new THREE.Matrix4()) {
@@ -39,5 +39,5 @@ export function createFacadeMaterial(texture: THREE.Texture, alwaysWood = false,
     `)
   }
   material.customProgramCacheKey = () => 'facade-profiles-v4'
-  return { material, setComposition(composition: FacadeComposition, tone: number, profile: WoodProfile = 'boards') { uniforms.claddingMode.value = facadeCompositions.findIndex(option => option.id === composition); uniforms.claddingColor.value.set(woodTones[tone]?.color ?? woodTones[0].color); uniforms.claddingProfile.value = woodProfiles.findIndex(option => option.id === profile) } }
+  return { material, setComposition(composition: FacadeComposition, tone: number, profile: WoodProfile = 'boards') { uniforms.claddingMode.value = facadeCompositions.findIndex(option => option.id === composition); uniforms.claddingColor.value.set(woodTones[tone]?.color ?? woodTones[0].color); uniforms.claddingProfile.value = profile === 'slats' ? 1 : profile === 'open-slats' ? 2 : 0 } }
 }

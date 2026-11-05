@@ -13,6 +13,8 @@ import type { FloorId, Furniture, Rect, Solid } from './model'
 import { finishes, initialAppearance, partner, partnerEnvelope, siteBoundary, siteHouseEnvelope, siteHouseRect } from './context'
 import type { FacadeComposition, FinishKey, WoodProfile } from './context'
 import { createFacadeMaterial } from './facade'
+import { createTimberCladding } from './timberCladding'
+import type { TimberOptions } from './timberCladding'
 import { raffstores } from './raffstore'
 import { createRaffstore } from './raffstoreScene'
 import { flatGeometry } from './geometry'
@@ -20,7 +22,7 @@ import { createSummerLawnTexture, createSurroundings } from './surroundings'
 
 export type ColliderShape = { position: THREE.Vector3; size: THREE.Vector3; rotation: THREE.Quaternion }
 export type DoorModel = { id: string; label: string; kind: 'door' | 'window'; pivot: THREE.Group; closedAngle: number; closedPitch?: number; direction?: number; amount: number; open: boolean; size: THREE.Vector3; center: THREE.Vector3; position: THREE.Vector3; object: THREE.Mesh; sliding: boolean }
-export type SceneModel = { activateVehicle: (object: THREE.Object3D) => boolean; updateVehicle: (delta: number, reducedMotion?: boolean) => boolean; setDaylight: (strength: number) => void; group: THREE.Group; colliders: ColliderShape[]; triangles: { vertices: Float32Array; indices: Uint32Array }[]; doors: DoorModel[]; setLighting: (states: Record<string, boolean>, activeFloor: FloorId) => void; updateAnimations: (seconds: number) => boolean; setOpening: (id: string, amount: number) => boolean; toggleOpening: (id: string) => boolean; setFinish: (key: FinishKey, color: string, house?: 'east' | 'west') => void; setCladding: (composition: FacadeComposition, tone: number, profile?: WoodProfile, house?: 'east' | 'west') => void; setRaffstores: (extension: number, tilt: number) => void; setGroundOpacity: (value: number) => void; dispose: () => void }
+export type SceneModel = { activateVehicle: (object: THREE.Object3D) => boolean; updateVehicle: (delta: number, reducedMotion?: boolean) => boolean; setDaylight: (strength: number) => void; group: THREE.Group; colliders: ColliderShape[]; triangles: { vertices: Float32Array; indices: Uint32Array }[]; doors: DoorModel[]; setLighting: (states: Record<string, boolean>, activeFloor: FloorId) => void; updateAnimations: (seconds: number) => boolean; setOpening: (id: string, amount: number) => boolean; toggleOpening: (id: string) => boolean; setFinish: (key: FinishKey, color: string, house?: 'east' | 'west') => void; setCladding: (composition: FacadeComposition, tone: number, profile?: WoodProfile, house?: 'east' | 'west', options?: TimberOptions) => void; setRaffstores: (extension: number, tilt: number) => void; setGroundOpacity: (value: number) => void; dispose: () => void }
 
 function oakTexture() {
   const canvas = document.createElement('canvas'); canvas.width = 512; canvas.height = 512
@@ -492,6 +494,9 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
     if (collide) triangles.push({ vertices, indices })
   }
   const renderedFloors = walk || showRoof ? floorIds : [floorId]
+  const cladding = createTimberCladding(renderedFloors, cutWalls && !walk && !showRoof, includeSite ? 'east' : 'west')
+  group.add(cladding.group)
+  cladding.set(initialAppearance.composition, initialAppearance.woodTone, initialAppearance.woodProfile)
   const envelope = houseEnvelope()
   const blinds: ReturnType<typeof createRaffstore>[] = []
   const roomLighting = createRoomLighting(includeSite ? renderedFloors : [], materials, furnished); group.add(roomLighting.group)
@@ -777,7 +782,7 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
   group.updateMatrixWorld(true)
   const surroundings = includeSite && (walk || showRoof || floorId === 'KG') ? createSurroundings() : undefined
   if (surroundings) { group.add(surroundings.neighborhood, surroundings.garden); colliders.push(...surroundings.colliders) }
-  const model: SceneModel = { setRaffstores(extension, tilt) { for (const blind of blinds) blind.set(extension, tilt); west?.setRaffstores(extension, tilt) }, activateVehicle(object) { return surroundings?.activateVehicle(object) ?? false }, updateVehicle(delta, reducedMotion = false) { return surroundings?.updateVehicle(delta, reducedMotion) ?? false }, setDaylight(strength) { indirectLighting.setDaylight(strength); west?.setDaylight(strength) }, group, colliders, triangles, doors, setLighting(states, activeFloor) { roomLighting.update(states, activeFloor); indirectLighting.update(states, activeFloor); party?.setEnabled(states['KG-party-effects'] ?? true, activeFloor === 'KG'); west?.setLighting(Object.fromEntries(Object.entries(states).filter(([id]) => id.startsWith('west-')).map(([id, value]) => [id.slice(5), value])), activeFloor) }, updateAnimations(seconds) { party?.update(seconds); const westActive = west?.updateAnimations(seconds); return !!party || !!westActive }, setCladding(composition, tone, profile = 'boards', house = 'east') { surroundings?.setWoodTone(house, tone); if (house === 'west') { west?.setCladding(composition, tone, profile); return } facadeFinish.setComposition(composition, tone, profile); canopyFinish.setComposition(composition, tone, 'boards') }, toggleOpening(id) {
+  const model: SceneModel = { setRaffstores(extension, tilt) { for (const blind of blinds) blind.set(extension, tilt); west?.setRaffstores(extension, tilt) }, activateVehicle(object) { return surroundings?.activateVehicle(object) ?? false }, updateVehicle(delta, reducedMotion = false) { return surroundings?.updateVehicle(delta, reducedMotion) ?? false }, setDaylight(strength) { indirectLighting.setDaylight(strength); west?.setDaylight(strength) }, group, colliders, triangles, doors, setLighting(states, activeFloor) { roomLighting.update(states, activeFloor); indirectLighting.update(states, activeFloor); party?.setEnabled(states['KG-party-effects'] ?? true, activeFloor === 'KG'); west?.setLighting(Object.fromEntries(Object.entries(states).filter(([id]) => id.startsWith('west-')).map(([id, value]) => [id.slice(5), value])), activeFloor) }, updateAnimations(seconds) { party?.update(seconds); const westActive = west?.updateAnimations(seconds); return !!party || !!westActive }, setCladding(composition, tone, profile = 'boards', house = 'east', options) { surroundings?.setWoodTone(house, tone); if (house === 'west') { west?.setCladding(composition, tone, profile, 'east', options); return } facadeFinish.setComposition('plaster', tone, profile); cladding.set(composition, tone, profile, options); canopyFinish.setComposition(composition, tone, 'boards') }, toggleOpening(id) {
     const door = doors.find(door => door.id === id); if (!door) return false
     return model.setOpening(id, door.amount > 0 ? 0 : 1)
   }, setOpening(id, value) {
@@ -807,7 +812,7 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
     }
   }, setGroundOpacity(value) { groundMaterial.opacity = value; groundMaterial.transparent = value < 1; groundMaterial.depthWrite = value === 1 }, dispose() { if (surroundings) { group.remove(surroundings.neighborhood, surroundings.garden); surroundings.dispose() } if (west) { group.remove(west.group); west.dispose() } const geometries = new Set<THREE.BufferGeometry>(); group.traverse(object => { if (object instanceof THREE.Mesh) geometries.add(object.geometry); if (object instanceof THREE.SpotLight || object instanceof THREE.PointLight) object.dispose() }); for (const geometry of geometries) geometry.dispose(); for (const material of materials) material.dispose(); for (const texture of textures) texture.dispose() } }
   const dispose = model.dispose
-  model.dispose = () => { for (const blind of blinds) blind.dispose(); dispose() }
+  model.dispose = () => { for (const blind of blinds) blind.dispose(); cladding.dispose(); dispose() }
   model.setLighting({}, floorId)
   return model
 }

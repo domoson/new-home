@@ -1,0 +1,25 @@
+.timber-comparison { position: fixed; inset: 0; width: calc(100% - 32px); max-width: 1800px; height: calc(100dvh - 32px); max-height: none; margin: auto; padding: 0 24px 24px; border: 1px solid #bdc7be; border-radius: 6px; background: #f7f9f7; color: #30483b; overflow: auto; }
+.timber-comparison::backdrop { background: #17231d99; }
+.timber-comparison header { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 20px 0 16px; }
+.timber-comparison h2 { font-size: 22px; margin: 0 0 4px; letter-spacing: 0; }
+.timber-comparison header span { font-size: 12px; color: #64776b; }
+.timber-comparison nav { display: flex; gap: 6px; flex-wrap: wrap; border-bottom: 1px solid #c9d3ca; padding-bottom: 12px; }
+.timber-comparison nav button { border: 0; border-radius: 3px; padding: 9px 14px; background: transparent; color: #40594b; font-size: 13px; }
+.timber-comparison nav button[aria-pressed=true] { background: #3c5e4c; color: #fff; }
+.timber-comparison-status { min-height: 32px; padding: 8px 0; font-size: 12px; font-variant-numeric: tabular-nums; }
+.timber-comparison-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px; }
+.timber-comparison-grid.species-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.timber-comparison-grid figure { min-width: 0; margin: 0; }
+.timber-comparison-grid figcaption { min-height: 76px; padding: 8px 0; display: flex; flex-direction: column; gap: 5px; font-size: 12px; overflow-wrap: anywhere; }
+.timber-comparison-grid figcaption span { color: #67796c; font-size: 11px; }
+.timber-render { position: relative; aspect-ratio: 1.2; margin-bottom: 10px; background: #e6ebe6; overflow: hidden; }
+.timber-image { display: block; width: 100%; height: 100%; padding: 0; border: 0; border-radius: 0; cursor: zoom-in; }
+.timber-image img { display: block; width: 100%; height: 100%; object-fit: contain; }
+.timber-render a { position: absolute; right: 5px; bottom: 5px; width: 30px; height: 30px; display: grid; place-items: center; background: #fffffff0; color: #30483b; border-radius: 3px; }
+.timber-render-pending { display: block; width: 100%; height: 100%; background: linear-gradient(110deg, #e2e8e2, #f2f5f2, #e2e8e2); }
+.timber-zoom { position: fixed; inset: 0; background: #e9eeebf5; display: grid; place-items: center; z-index: 2; padding: 48px 16px 16px; }
+.timber-zoom img { max-width: 100%; max-height: 100%; object-fit: contain; min-height: 0; }
+.timber-zoom button { position: absolute; right: 12px; top: 12px; }
+.timber-compare-button { display: inline-flex; align-items: center; gap: 8px; width: 100%; justify-content: center; padding: 10px; font-size: 12px; }
+@media (max-width: 1000px) { .timber-comparison-grid, .timber-comparison-grid.species-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 540px) { .timber-comparison { width: calc(100% - 12px); height: calc(100dvh - 12px); padding: 0 12px 16px; } .timber-comparison-grid, .timber-comparison-grid.species-grid { grid-template-columns: minmax(0, 1fr); } .timber-comparison-grid figcaption { min-height: 58px; } .timber-comparison nav button { padding: 8px 10px; font-size: 12px; } }

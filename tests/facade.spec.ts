@@ -1,6 +1,142 @@
 import { expect, test } from '@playwright/test'
 import { PNG } from 'pngjs'
 
+test('Holzprofile sind echte zugeschnittene 3D-Koerper ohne Aenderung der Architektur', async ({ page }) => {
+  await page.goto('/')
+  const result = await page.evaluate(async () => {
+    const THREE = await import('/node_modules/.vite/deps/three.js')
+    const { buildScene } = await import('/src/scene.ts')
+    const { makeFloor, housePlacement, elevations } = await import('/src/model.ts')
+    const model = buildScene('EG', false, true, false)
+    const east = model.group.getObjectByName('house-east'), west = model.group.getObjectByName('house-west')
+    const cladding = east.getObjectByName('timber-cladding'), westCladding = west.getObjectByName('timber-cladding')
+    const architecture = () => {
+      const parts = []
+      east.traverse(object => { if (object.isMesh && (object.name.includes('-wall-') || object.name === 'main-roof-panel' || object.userData.windowFrame)) parts.push({ name: object.name, position: object.position.toArray(), vertices: Array.from(object.geometry.attributes.position.array) }) })
+      return JSON.stringify(parts)
+    }
+    const before = architecture()
+    const profiles = ['boards', 'board-batten', 'rhombus', 'slats', 'horizontal'].map(profile => {
+      model.setCladding('upper', 0, profile)
+      model.group.updateMatrixWorld(true)
+      const holes = []
+      for (const id of ['OG', 'DG']) for (const wall of makeFloor(id).walls.filter(wall => ['east', 'north', 'south'].includes(wall.id))) for (const opening of wall.openings) {
+        const along = (wall.axis === 'x' ? wall.x : wall.z) + opening.start + opening.width / 2
+        const height = elevations[id] + opening.sill + opening.height / 2
+        const origin = wall.id === 'east' ? new THREE.Vector3(wall.x + wall.width + 1, height, along) : new THREE.Vector3(along, height, wall.id === 'north' ? wall.z - 1 : wall.z + wall.depth + 1)
+        origin.x += housePlacement.x; origin.z += housePlacement.z
+        const direction = wall.id === 'east' ? new THREE.Vector3(-1, 0, 0) : new THREE.Vector3(0, 0, wall.id === 'north' ? 1 : -1)
+        holes.push(new THREE.Raycaster(origin, direction, 0, 1.4).intersectObject(cladding, true).length)
+      }
+      const bounds = new THREE.Box3().setFromObject(cladding)
+      return { profile, batches: cladding.children.length, pieces: cladding.userData.pieces, holes, top: bounds.max.y, bottom: bounds.min.y, triangles: cladding.children.reduce((sum, mesh) => sum + mesh.geometry.attributes.position.count / 3, 0) }
+    })
+    const geometry = cladding.children[0].geometry
+    model.setCladding('upper', 8, 'horizontal', 'east', { surface: 'oiled' })
+    const reused = geometry === cladding.children[0].geometry
+    const colors = cladding.children.filter(mesh => mesh.name.startsWith('timber-boards')).map(mesh => mesh.material.color.getHexString())
+    const roughness = cladding.children.find(mesh => mesh.name.startsWith('timber-boards')).material.roughness
+    const westEmpty = westCladding.children.length === 0
+    model.setCladding('upper', 9, 'rhombus', 'west', { windows: 'screen' })
+    const mirrored = new THREE.Box3().setFromObject(westCladding).max.x < .1
+    const eastUnchanged = cladding.userData.profile === 'horizontal'
+    const unchanged = before === architecture()
+    model.setCladding('plaster', 0, 'boards')
+    const cleared = cladding.children.length === 0
+    model.dispose()
+    return { profiles, reused, colors, roughness, westEmpty, mirrored, eastUnchanged, unchanged, cleared }
+  })
+  for (const profile of result.profiles) {
+    expect(profile.batches).toBeLessThanOrEqual(14)
+    expect(profile.pieces).toBeGreaterThan(300)
+    expect(profile.triangles).toBeGreaterThan(3000)
+    expect(profile.holes.every(count => count === 0)).toBe(true)
+    expect(profile.bottom).toBeCloseTo(2.77)
+    expect(profile.top).toBeGreaterThan(9)
+  }
+  expect(result.reused && result.westEmpty && result.mirrored && result.eastUnchanged && result.unchanged && result.cleared).toBe(true)
+  expect(new Set(result.colors).size).toBeGreaterThan(5)
+  expect(result.roughness).toBe(.6)
+})
+
+test('Holzfassadenvergleich rendert Profile Holzarten Fensterdetails und Bewitterung', async ({ page }, testInfo) => {
+  test.setTimeout(240000)
+  const errors: string[] = []
+  page.on('pageerror', error => errors.push(error.message))
+  page.on('console', message => { if (message.type() === 'error') errors.push(message.text()) })
+  await page.goto('/')
+  await page.getByRole('button', { name: '3D', exact: true }).click()
+  await page.locator('.scene-settings summary').click()
+  await page.getByLabel('Außenstil', { exact: true }).selectOption('timber-natural')
+  await page.getByLabel('Holzprofil', { exact: true }).selectOption('rhombus')
+  await page.getByLabel('Oberfläche', { exact: true }).selectOption('weathered')
+  await page.getByLabel('Fensteranschluss', { exact: true }).selectOption('reveals')
+  await page.getByLabel('Haushälfte', { exact: true }).selectOption('west')
+  await expect(page.getByLabel('Fassadenentwurf', { exact: true })).toHaveValue('plaster')
+  await page.getByLabel('Haushälfte', { exact: true }).selectOption('east')
+  await expect(page.getByLabel('Holzprofil', { exact: true })).toHaveValue('rhombus')
+  await expect(page.getByLabel('Oberfläche', { exact: true })).toHaveValue('weathered')
+  await page.getByRole('button', { name: 'Fassadenvergleich', exact: true }).click()
+  const dialog = page.locator('.timber-comparison')
+  await expect(dialog).toBeVisible()
+  const signatures = []
+  for (const [name, count] of [['Profile A–E', 5], ['Holzarten', 8], ['Fensterdetails', 3], ['Bewitterung', 3]] as const) {
+    await dialog.getByRole('button', { name, exact: true }).click()
+    await expect(dialog.getByRole('status')).toHaveText(`${count} / ${count}`, { timeout: 90000 })
+    const images = dialog.locator('.timber-image img')
+    await expect(images).toHaveCount(count * 2)
+    const stats = await images.evaluateAll(async elements => {
+      return Promise.all(elements.map(async element => {
+        const image = element as HTMLImageElement
+        await image.decode()
+        const canvas = document.createElement('canvas'); canvas.width = 168; canvas.height = 140
+        const context = canvas.getContext('2d')!
+        context.drawImage(image, 0, 0, 168, 140)
+        const data = context.getImageData(0, 0, 168, 140).data
+        const colors = new Set<string>(); let signature = 0
+        for (let offset = 0; offset < data.length; offset += 4) {
+          colors.add(`${data[offset]},${data[offset + 1]},${data[offset + 2]}`)
+          signature = (signature + data[offset] * (offset + 1) + data[offset + 1] * 17) % 2147483647
+        }
+        return { colors: colors.size, signature, width: image.naturalWidth, height: image.naturalHeight }
+      }))
+    })
+    expect(stats.every(image => image.colors > 350 && image.width === 840 && image.height === 700)).toBe(true)
+    expect(new Set(stats.filter((_, index) => index % 2 === 0).map(image => image.signature)).size).toBe(count)
+    signatures.push(stats[0].signature)
+    expect(await dialog.evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true)
+    await dialog.evaluate(element => { element.scrollTop = 0 })
+    await page.screenshot({ path: `test-results/${testInfo.project.name}-timber-${name === 'Profile A–E' ? 'profiles' : name === 'Holzarten' ? 'species' : name === 'Fensterdetails' ? 'windows' : 'weathering'}.png` })
+    const download = page.waitForEvent('download')
+    await dialog.locator('.timber-render a').first().click()
+    const file = await download
+    expect(file.suggestedFilename()).toContain('Holzfassade-')
+    await file.saveAs(testInfo.outputPath(file.suggestedFilename()))
+  }
+  expect(signatures[0]).toBe(signatures[3])
+  await dialog.locator('.timber-image').first().click()
+  await expect(dialog.locator('.timber-zoom img')).toBeVisible()
+  await dialog.getByRole('button', { name: 'Detail schließen', exact: true }).click()
+  await dialog.getByRole('button', { name: 'Vergleich schließen', exact: true }).click()
+  await expect(dialog).toHaveCount(0)
+  await expect(page.getByLabel('Oberfläche', { exact: true })).toHaveValue('weathered')
+  await page.locator('.scene-settings summary').click()
+  await page.getByRole('button', { name: 'Dach', exact: true }).click()
+  await page.locator('.scene-settings summary').click()
+  await page.getByRole('button', { name: 'Fassadenansicht', exact: true }).click()
+  await page.locator('.scene-settings summary').click()
+  const canvas = page.locator('.scene-container canvas')
+  const before = PNG.sync.read(await canvas.screenshot())
+  const box = (await canvas.boundingBox())!
+  await page.mouse.move(box.x + box.width * .5, box.y + box.height * .5)
+  await page.mouse.down(); await page.mouse.move(box.x + box.width * .6, box.y + box.height * .5, { steps: 8 }); await page.mouse.up()
+  const after = PNG.sync.read(await canvas.screenshot({ path: `test-results/${testInfo.project.name}-timber-live.png` }))
+  let changed = 0
+  for (let offset = 0; offset < before.data.length; offset += 4) if (Math.abs(before.data[offset] - after.data[offset]) > 5) changed++
+  expect(changed).toBeGreaterThan(1000)
+  expect(errors).toEqual([])
+})
+
 test('Innentueren und Zargen wechseln gemeinsam zwischen Eiche und Lackfarben', async ({ page }, testInfo) => {
   const errors: string[] = []
   page.on('pageerror', error => errors.push(error.message))

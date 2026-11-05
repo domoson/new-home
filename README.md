@@ -567,7 +567,7 @@ Planungsannahmen in der Anwendung. Umgebungsmodelle bleiben weiterverwendet.
 - Szene: Uhrzeit und drei Vergleichstage veraendern den Sonnenstand ohne Kamerasprung.
   Neun Putz-, sechs Dach-, sieben Rahmenfarben und acht Fassadenkompositionen sind frei kombinierbar.
   Bei eingeschaltetem Dach zoomt das Haussymbol zur Fassade; Ansicht zuruecksetzen
-  zeigt wieder das ganze Grundstueck. Acht Holztoene und drei Profile sind waehlbar;
+  zeigt wieder das ganze Grundstueck. Elf Holztoene und sechs echte 3D-Profile sind waehlbar;
   das L-Vordach folgt dem Holzton auch bei reiner Putzfassade.
   Standard fuer beide Haelften: Rahmen Eiche (3. Farbe), Putz Muschelweiss
   (4. Farbe), Holz Eiche hell (4. Ton). Terrassentuer, Fenster und feste
@@ -1208,17 +1208,59 @@ Grenzabstaende, Entwaesserung und tatsaechliche Zugaenge bleiben ungeprueft.
 
 Fassadenkompositionen: Putz durchgehend, Holz ab EG, Holz OG/DG, Holz nur OG
 ohne DG, OG plus Eingang, Ostgiebel, Eingang oder vertikale Holzfelder.
-Profile: vertikale 14-cm-Bretter, schmale Lamellen im 6-cm-Raster oder offene
-Lamellenfelder auf Putz im 16-cm-Raster (45 Prozent Holzanteil). Lokal generierte
-Holztextur und acht Toene. Die Profile sind Shaderdarstellungen ohne echte
-Lamellentiefe oder eigene Fugenschatten. Vordach und Seitenwange folgen dem Holzton.
-Fenster und Tueren bleiben ausgespart, Innenwaende und Deckenunterseiten weiss.
-Die Bekleidung laeuft ueber aeussere Wandkanten und die aeussere Haelfte der
-Laibungen bis zur mittig angenommenen Fensterebene. Die innere Laibung bleibt weiss.
-Die Zuordnung basiert auf Weltkoordinaten statt nur der Flaechennormale; auch
-Giebelseiten und Eckrueckspruenge behalten deshalb den gewaehlten Fassadenentwurf.
-Bekleidung ist nur Materialdarstellung: keine zusaetzliche Wanddicke,
-Unterkonstruktion, Hinterlueftung, Brandschutz- oder Anschlussplanung.
+Die Holzbekleidung besteht jetzt aus echten, einzeln zugeschnittenen Profilkoerpern
+auf Ost-, Nord- und Suedfassade, einschliesslich Giebeldreieck und Eckanschluessen.
+Die gemeinsame Westwand bleibt frei. Architektur, Dach, Fenster und Tueren werden
+nicht verschoben. Zusaetzliche Bekleidungsdicke liegt ausserhalb der bestehenden Wand.
+
+| Profil | Sichtbreite / Fuge | Brettdicke |
+| --- | --- | --- |
+| A: vertikal, Nut-und-Feder-Anmutung | 135 / 3 mm | 22 mm |
+| B: Boden-Deckel | 115 mm Boden, 40 mm Deckel, 130 mm Raster | 22 + 20 mm |
+| C: vertikale Rhombusleisten | 60 / 12 mm, schraeger Querschnitt | 26 mm |
+| D: schmale vertikale Leisten | 38 / 15 mm | 32 mm |
+| E: horizontale Schalung | 140 / 3 mm, geneigte Vorderseite | 24 mm |
+| Zusaetzliche offene Leisten | 38 / 42 mm | 32 mm |
+
+40 mm Abstand zur Wand, dunkle Hintergrundbahn, quer zur Bekleidung angeordnete
+Traglattung sowie Abschluss- und Fensterbleche sind geometrisch sichtbar.
+Geschossweise Brettabschnitte erhalten einen schmalen Metallabschluss.
+Bei A/E schliesst eine vereinfachte hinterlegte Feder die Fugen; verdeckte
+Nutgeometrie und Befestiger sind nicht einzeln konstruiert. Die offenen Systeme
+setzen eine geeignete UV- und witterungsbestaendige Fassadenbahn voraus.
+
+Fichte, europaeische Laerche, Douglasie und Thermofichte erhalten unterschiedliche
+Farben und lokal erzeugte Maserungs-/Astbilder mit dezenter Brettstreuung;
+die bisherigen Farbtoene bleiben zusaetzlich erhalten. Naturbelassen, leicht
+geoelt und silbergrau bewittert sind getrennt waehlbar. Bewitterung ist ein
+visueller Endzustand, keine zeit-, standort- oder holzartspezifische Prognose.
+PBR-Materialien mit Rauheit, feinem Bump und echten Schlagschatten; keine
+Pathtracing-Aufnahme und keine physikalische globale Beleuchtung/AO-Simulation.
+
+Standard sind schmale Metalllaibungen. Optional werden Seiten und Sturz mit
+Holz ausgekleidet; die Fensterbank bleibt Metall. Ein weiterer Entwurf setzt
+30 x 40 mm Leisten mit 70 mm Luecken vor maximal etwa 28 Prozent der Breite
+des noerdlichen OG-Giebelfensters. Rund 90 Prozent der gesamten Fensterflaeche
+bleiben frontal frei. Der Schirm liegt vor dem Raffstore, nicht im Schwenkweg
+der nach innen oeffnenden Fluegel. Der Raffstore-Auslass am Sturz bleibt frei.
+Keine Rettungsweg-, Tageslicht-, Wartungs-, Brandschutz- oder Anschlussfreigabe;
+Hinterlueftungsquerschnitte, Befestigung, Fensterbankgefaelle, Abdichtung und
+Entwaesserung muessen fachlich geplant werden. Neue Fassadenteile sind visuell,
+nicht zusaetzliche Rundgang-Kollisionskoerper. 2D-Grundriss und Abstandsberechnung
+bleiben unveraendert und enthalten die neue Bekleidungsdicke nicht.
+
+Bedienung: 3D > Szene > Aussenstil "Holz / Laerche" fuer OG und DG mit hellem Putz
+und warmgrauen Fenstern. Unter "Holzfassade / 3D" Profil, Holzart, Oberflaeche und
+Fensteranschluss pro Haushaelfte einstellen. "Fassadenvergleich" oeffnet vier
+Uebersichten: A-E in Laerche, A/C in vier Holzarten, drei Fensteranschluesse und
+drei Oberflaechenzustaende. Jede der 19 Kombinationen hat eine Gesamt- und
+Detailansicht (840 x 700 Pixel), vergroesserbar und einzeln als PNG ladbar.
+Alle Gesamtansichten haben dieselbe Kamera, Beleuchtung, Belichtung und Groesse.
+Fensterdetails erhalten innerhalb ihrer Vergleichsreihe einen engeren OG-Ausschnitt.
+Der Vergleich isoliert Haus Ost; Grundstueck und Partnerhaus bleiben im Hauptmodell
+erhalten. Die Vergleichsbilder veraendern keine Einstellung der Hauptansicht.
+Geometrie wird pro Haus in maximal 14 Materialgruppen gebuendelt; reine Farb- und
+Oberflaechenwechsel verwenden die bestehende Geometrie weiter.
 
 ## Grenzen
 

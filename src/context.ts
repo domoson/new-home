@@ -1,6 +1,7 @@
 import * as SunCalc from 'suncalc'
 import { house, houseEnvelope, housePlacement } from './model'
 import type { Rect } from './model'
+import type { TimberOptions } from './timberCladding'
 
 export const siteBoundary: [number, number][] = [[-10.056098883413, -1.667802356868], [10.250012281990, -4.480603334238], [13.648101413502, 20.791970540504], [-14.323750719705, 23.472546642384]]
 export const siteLengths = [20.5, 25.5, 28.1, 25.5] as const
@@ -35,10 +36,10 @@ export const finishes = {
 export type FinishKey = keyof typeof finishes | 'frameInside'
 export const facadeCompositions = [{ id: 'plaster', name: 'Putz durchgehend' }, { id: 'timber', name: 'Holzfassade ab EG' }, { id: 'upper', name: 'Putz + Holz OG und DG' }, { id: 'gable', name: 'Putz + Holzgiebelfeld' }, { id: 'entry', name: 'Putz + Holz am Eingang' }, { id: 'og', name: 'Nur OG in Holz' }, { id: 'og-entry', name: 'OG + Eingang in Holz' }, { id: 'panels', name: 'Vertikale Holzfelder' }] as const
 export type FacadeComposition = typeof facadeCompositions[number]['id']
-export const woodTones = [{ name: 'Lärche natur', color: '#b99e74' }, { name: 'Silbergrau', color: '#92968f' }, { name: 'Dunkel lasiert', color: '#514f48' }, { name: 'Eiche hell', color: '#d2bb91' }, { name: 'Thermoesche', color: '#88644c' }, { name: 'Zeder', color: '#b97b5b' }, { name: 'Gekälkt', color: '#ddd7c8' }, { name: 'Verkohlt', color: '#303330' }] as const
-export const woodProfiles = [{ id: 'boards', name: 'Vertikale Bretter' }, { id: 'slats', name: 'Schmale Lamellen' }, { id: 'open-slats', name: 'Lamellenfelder auf Putz' }] as const
+export const woodTones = [{ name: 'Lärche natur', color: '#b99e74' }, { name: 'Silbergrau', color: '#92968f' }, { name: 'Dunkel lasiert', color: '#514f48' }, { name: 'Eiche hell', color: '#d2bb91' }, { name: 'Thermoesche', color: '#88644c' }, { name: 'Zeder', color: '#b97b5b' }, { name: 'Gekälkt', color: '#ddd7c8' }, { name: 'Verkohlt', color: '#303330' }, { name: 'Fichte', color: '#d7c39c' }, { name: 'Douglasie', color: '#bc8d70' }, { name: 'Thermofichte', color: '#876b53' }] as const
+export const woodProfiles = [{ id: 'boards', name: 'A · Nut und Feder · 135 mm' }, { id: 'board-batten', name: 'B · Boden-Deckel · 115 / 40 mm' }, { id: 'rhombus', name: 'C · Rhombus · 60 / 12 mm' }, { id: 'slats', name: 'D · Schmale Leisten · 38 / 15 mm' }, { id: 'horizontal', name: 'E · Horizontal · 140 mm' }, { id: 'open-slats', name: 'Offene Leisten · 38 / 42 mm' }] as const
 export type WoodProfile = typeof woodProfiles[number]['id']
-export type HouseAppearance = { facade: string; roof: string; roofTrim: string; entryDoor: string; frame: string; frameInside: string; composition: FacadeComposition; woodTone: number; woodProfile: WoodProfile }
+export type HouseAppearance = { facade: string; roof: string; roofTrim: string; entryDoor: string; frame: string; frameInside: string; composition: FacadeComposition; woodTone: number; woodProfile: WoodProfile; timber?: TimberOptions }
 export type SceneSettings = HouseAppearance & { people: boolean; peopleMoving: boolean; interiorDoor: string; hour: number; season: 'summer' | 'spring' | 'winter'; west: HouseAppearance; surroundings: boolean; landscaping: boolean; transparentGround: boolean; lights: Record<string, boolean>; lightingMode: 'room' | 'global'; raffstoreExtension: number; raffstoreTilt: number }
 export const initialAppearance: HouseAppearance = { facade: finishes.facade[3].color, roof: finishes.roof[4].color, roofTrim: finishes.roofTrim[1].color, entryDoor: finishes.entryDoor[1].color, frame: finishes.frame[7].color, frameInside: finishes.frame[0].color, composition: 'plaster', woodTone: 3, woodProfile: 'boards' }
 type ExteriorAppearance = Omit<HouseAppearance, 'frameInside'>
@@ -50,9 +51,10 @@ export const exteriorStyles: { id: string; name: string; appearance: ExteriorApp
   { id: 'graphite-terracotta', name: 'Graphit & Terrakotta', appearance: { ...originalExterior, facade: finishes.facade[8].color, frame: finishes.frame[1].color, entryDoor: finishes.entryDoor[2].color, roof: finishes.roof[4].color, roofTrim: finishes.roofTrim[2].color, composition: 'plaster' } },
   { id: 'oak-terracotta', name: 'Eiche & Terrakotta', appearance: { ...originalExterior, facade: finishes.facade[8].color, frame: finishes.frame[2].color, entryDoor: finishes.entryDoor[0].color, roof: finishes.roof[4].color, roofTrim: finishes.roofTrim[3].color, composition: 'plaster' } },
   { id: 'original', name: 'Bisheriger Entwurf', appearance: originalExterior },
+  { id: 'timber-natural', name: 'Holz · Lärche / heller Putz', appearance: { ...originalExterior, composition: 'upper', woodTone: 0, woodProfile: 'boards', frame: finishes.frame[7].color, roofTrim: finishes.roofTrim[1].color, entryDoor: finishes.entryDoor[1].color, timber: { surface: 'fresh', windows: 'none' } } },
 ]
 export function exteriorStyleId(appearance: HouseAppearance) {
-  return exteriorStyles.find(style => (Object.keys(style.appearance) as (keyof ExteriorAppearance)[]).every(key => appearance[key] === style.appearance[key]))?.id ?? 'custom'
+  return exteriorStyles.find(style => (Object.keys(style.appearance) as (keyof ExteriorAppearance)[]).every(key => key === 'timber' ? (appearance.timber?.surface ?? 'fresh') === (style.appearance.timber?.surface ?? 'fresh') && (appearance.timber?.windows ?? 'none') === (style.appearance.timber?.windows ?? 'none') : appearance[key] === style.appearance[key]))?.id ?? 'custom'
 }
 export const initialSettings: SceneSettings = { ...initialAppearance, people: false, peopleMoving: true, interiorDoor: finishes.interiorDoor[1].color, west: { ...initialAppearance }, hour: 14, season: 'summer', surroundings: true, landscaping: true, transparentGround: false, lights: {}, lightingMode: 'global', raffstoreExtension: 0, raffstoreTilt: 30 }
 export function sunPosition(hour: number, season: SceneSettings['season']) {

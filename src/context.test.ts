@@ -20,7 +20,7 @@ it('ordnet Aussenstile den Menuefarben zu und erkennt individuelle Anpassungen',
     }
   }
   expect(exteriorStyles[0].appearance).toMatchObject({ facade: '#eee8d8', frame: '#bcbdb7', roof: '#424749', roofTrim: '#c4c7c4', composition: 'plaster' })
-  expect(exteriorStyles.map(style => style.name)).toEqual(['Kiesel & Creme', 'Bronze & Schiefer', 'Silber & Terrakotta', 'Graphit & Terrakotta', 'Eiche & Terrakotta', 'Bisheriger Entwurf'])
+  expect(exteriorStyles.map(style => style.name)).toEqual(['Kiesel & Creme', 'Bronze & Schiefer', 'Silber & Terrakotta', 'Graphit & Terrakotta', 'Eiche & Terrakotta', 'Bisheriger Entwurf', 'Holz · Lärche / heller Putz'])
   const expected = [
     { frame: '#8b7760', entryDoor: '#8b7760', roof: '#353b43', roofTrim: '#3b4243' },
     { frame: '#bcbdb7', entryDoor: '#bcbdb7', roof: '#b66b52', roofTrim: '#c4c7c4' },

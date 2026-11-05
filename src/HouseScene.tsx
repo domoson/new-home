@@ -1,7 +1,7 @@
-import { useEffect, useImperativeHandle, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import type { RefObject } from 'react'
 import { canvasPng } from './exportImage'
-import { DoorOpen, House, Lightbulb, LightbulbOff, MousePointer2, RotateCcw, Settings2, Sun } from 'lucide-react'
+import { Columns3, DoorOpen, House, Lightbulb, LightbulbOff, MousePointer2, RotateCcw, Settings2, Sun } from 'lucide-react'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js'
@@ -13,7 +13,10 @@ import { daylightLevels, lightingCircuits } from './lighting'
 import { createOutdoorLighting } from './outdoorLighting'
 import { exteriorStyleId, exteriorStyles, facadeCompositions, finishes, siteBoundary, sunPosition, woodProfiles, woodTones } from './context'
 import type { FacadeComposition, HouseAppearance, SceneSettings, WoodProfile } from './context'
+import type { WindowTimber, WoodSurface } from './timberCladding'
 import './scene-controls.css'
+
+const TimberComparison = lazy(() => import('./TimberComparison'))
 
 type SceneDebug = { people?: () => { visible: boolean; positions: number[][] }; vehicle?: () => { position: number[]; screen: number[] } | null; position: () => { x: number; y: number; z: number }; teleport: (x: number, y: number, z: number) => void; look: (yaw: number) => void; door: (id?: string) => boolean; mode: string; meshes: number; snapshot: () => { openings: { id: string; open: boolean; rotation: number[]; tip: number[] }[]; sun: number[]; slabs: { name: string; colors: string[]; maps: boolean[] }[]; site: boolean } }
 declare global { interface Window { __house?: SceneDebug } }
@@ -161,9 +164,9 @@ export default function HouseScene({ floorId, mode, furnished, roof, cutWalls, s
         sun.color.set(solar.altitude < .25 ? '#ffd2a3' : '#fff7e9'); ambient.intensity = levels.ambient
         applyRoomLights(value)
         for (const key of ['facade', 'roof', 'roofTrim', 'entryDoor', 'frame', 'frameInside'] as const) model.setFinish(key, value[key])
-        model.setCladding(value.composition, value.woodTone, value.woodProfile)
+        model.setCladding(value.composition, value.woodTone, value.woodProfile, 'east', value.timber)
         for (const key of ['facade', 'roof', 'roofTrim', 'entryDoor', 'frame', 'frameInside'] as const) model.setFinish(key, value.west[key], 'west')
-        model.setCladding(value.west.composition, value.west.woodTone, value.west.woodProfile, 'west')
+        model.setCladding(value.west.composition, value.west.woodTone, value.west.woodProfile, 'west', value.west.timber)
         for (const side of ['east', 'west'] as const) model.setFinish('interiorDoor', value.interiorDoor, side)
         model.setRaffstores(value.raffstoreExtension, value.raffstoreTilt)
         model.setGroundOpacity(value.transparentGround ? .2 : 1)
@@ -283,6 +286,7 @@ export default function HouseScene({ floorId, mode, furnished, roof, cutWalls, s
     return () => { cancelled = true; cleanup?.() }
   }, [floorId, mode, furnished, roof, cutWalls, selected, reset])
   const update = (patch: Partial<SceneSettings>) => onSettings({ ...settings, ...patch, ...(patch.lights ? { lightingMode: 'room' as const } : {}) })
+  const [compareTimber, setCompareTimber] = useState(false)
   const lightPrefix = lightHouse === 'west' ? 'west-' : ''
   const setFloorLights = (on: boolean) => update({ lights: { ...settings.lights, ...Object.fromEntries(lightingCircuits.filter(circuit => circuit.floor === lightFloor).map(circuit => [lightPrefix + circuit.id, on])) } })
   const appearance = materialHouse === 'east' ? settings : settings.west
@@ -307,8 +311,15 @@ export default function HouseScene({ floorId, mode, furnished, roof, cutWalls, s
       <fieldset className="finish-settings"><legend>Raffstores · beide Häuser</legend><label htmlFor="raffstore-extension">Absenkung <output>{Math.round(settings.raffstoreExtension * 100)} %</output></label><input id="raffstore-extension" type="range" min="0" max="1" step=".01" value={settings.raffstoreExtension} onChange={event => update({ raffstoreExtension: Number(event.target.value) })} /><label htmlFor="raffstore-tilt">Lamellenwinkel <output>{settings.raffstoreTilt}°</output></label><input id="raffstore-tilt" type="range" min="0" max="75" step="5" value={settings.raffstoreTilt} onChange={event => update({ raffstoreTilt: Number(event.target.value) })} /></fieldset>
       <label className="check-setting"><input type="checkbox" checked={settings.transparentGround} onChange={event => update({ transparentGround: event.target.checked })} />Gelände transparent</label>
       <label className="check-setting"><input type="checkbox" checked={settings.surroundings} onChange={event => update({ surroundings: event.target.checked })} />Nachbarschaft</label><label className="check-setting"><input type="checkbox" checked={settings.landscaping} onChange={event => update({ landscaping: event.target.checked })} />Garten, Hecke und Zaun</label>
-      <label htmlFor="wood-profile">Holzprofil</label><select id="wood-profile" value={appearance.woodProfile} onChange={event => updateAppearance({ woodProfile: event.target.value as WoodProfile })}>{woodProfiles.map(profile => <option key={profile.id} value={profile.id}>{profile.name}</option>)}</select>
+      <fieldset className="finish-settings"><legend>Holzfassade · 3D</legend>
+        <label htmlFor="wood-profile">Holzprofil</label><select id="wood-profile" value={appearance.woodProfile} onChange={event => updateAppearance({ woodProfile: event.target.value as WoodProfile })}>{woodProfiles.map(profile => <option key={profile.id} value={profile.id}>{profile.name}</option>)}</select>
+        <label htmlFor="wood-species">Holzart / Farbton</label><select id="wood-species" value={appearance.woodTone} onChange={event => updateAppearance({ woodTone: Number(event.target.value) })}>{woodTones.map((tone, index) => <option key={tone.name} value={index}>{tone.name}</option>)}</select>
+        <label htmlFor="wood-surface">Oberfläche</label><select id="wood-surface" value={appearance.timber?.surface ?? 'fresh'} onChange={event => updateAppearance({ timber: { ...appearance.timber, surface: event.target.value as WoodSurface } })}><option value="fresh">Naturbelassen</option><option value="oiled">Leicht geölt</option><option value="weathered">Silbergrau bewittert</option></select>
+        <label htmlFor="wood-windows">Fensteranschluss</label><select id="wood-windows" value={appearance.timber?.windows ?? 'none'} onChange={event => updateAppearance({ timber: { ...appearance.timber, windows: event.target.value as WindowTimber } })}><option value="none">Metallanschluss</option><option value="reveals">Holzlaibung</option><option value="screen">Partieller Fensterschirm</option></select>
+        <button className="timber-compare-button" onClick={() => setCompareTimber(true)}><Columns3 size={17} />Fassadenvergleich</button>
+      </fieldset>
       {appearance.composition === 'plaster' && <div className="finish-row wood-tone"><span>Vordach</span><div>{woodTones.map((tone, index) => <button key={tone.name} className="color-swatch" style={{backgroundColor: tone.color}} title={tone.name} aria-label={`Holz ${tone.name}`} aria-pressed={appearance.woodTone === index} onClick={() => updateAppearance({woodTone: index})} />)}</div></div>}
     </div></details>}
+    {compareTimber && <Suspense fallback={null}><TimberComparison onClose={() => setCompareTimber(false)} /></Suspense>}
     {loading && <div className="loading">Raummodell wird aufgebaut…</div>}{error && <div className="scene-error"><strong>3D ist hier nicht verfügbar.</strong><p>{error}</p><p>Der 2D-Grundriss bleibt verfügbar.</p></div>}{mode === 'walk' && !loading && !error && <><div className="crosshair" /><Joystick onMove={(x, y) => commands.current?.move(x, y)} /><div className="walk-actions"><button className="icon-button" title="Nächste Tür öffnen/schließen (E)" aria-label="Tür öffnen oder schließen" onClick={() => commands.current?.door()}><DoorOpen size={19} /></button><button className="icon-button" title="Mausblick aktivieren; Escape zum Freigeben" aria-label="Mausblick" onClick={() => commands.current?.lock()}><MousePointer2 size={19} /></button><button className="icon-button" title="Zum Raumeinstieg zurück" aria-label="Zum Raumeinstieg" onClick={() => commands.current?.home()}><RotateCcw size={19} /></button></div><div className="walk-floor">{currentFloor}</div></>}</>
 }
