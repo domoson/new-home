@@ -1,6 +1,134 @@
 import { expect, test } from '@playwright/test'
 import { PNG } from 'pngjs'
 
+test('Freie Holzflächen bearbeiten Seiten Geschosse und Ausschnitte ohne Kamerasprung', async ({ page }, testInfo) => {
+  test.setTimeout(120000)
+  const errors: string[] = []
+  page.on('pageerror', error => errors.push(error.message))
+  await page.goto('/')
+  const modelCheck = await page.evaluate(async () => {
+    const { buildScene } = await import('/src/scene.ts')
+    const model = buildScene('EG', false, true, false)
+    const east = model.group.getObjectByName('house-east').getObjectByName('timber-cladding')
+    const west = model.group.getObjectByName('house-west').getObjectByName('timber-cladding')
+    const area = { id: 'area', face: 'east', floor: 'OG', from: 0, to: 100, bottom: 0, top: 100, material: 'wood' }
+    model.setCladding('custom', 0, 'grooved', 'east', { areas: [area] })
+    const count = () => east.children.reduce((sum, mesh) => sum + mesh.geometry.attributes.position.count, 0)
+    const full = count(), original = east.children[0].geometry
+    let disposed = false; original.addEventListener('dispose', () => { disposed = true })
+    model.setCladding('custom', 0, 'grooved', 'east', { areas: [{ ...area, to: 40 }] })
+    const partial = count(), partialGeometry = east.children[0].geometry
+    model.setCladding('custom', 9, 'grooved', 'east', { surface: 'oiled', areas: [{ ...area, to: 40 }] })
+    const reused = partialGeometry === east.children[0].geometry
+    model.setCladding('custom', 0, 'shiplap', 'west', { areas: [{ ...area, face: 'north', floor: 'EG' }] })
+    const westCount = west.children.length
+    model.setCladding('custom', 0, 'grooved', 'east', { areas: [area, { ...area, id: 'remove', material: 'plaster' }] })
+    const removed = east.children.length === 0, westRetained = west.children.length === westCount
+    model.dispose()
+    return { full, partial, disposed, reused, removed, westCount, westRetained }
+  })
+  expect(modelCheck.full).toBeGreaterThan(modelCheck.partial)
+  expect(modelCheck.partial).toBeGreaterThan(0)
+  expect(modelCheck.disposed && modelCheck.reused && modelCheck.removed && modelCheck.westRetained).toBe(true)
+  expect(modelCheck.westCount).toBeGreaterThan(0)
+  await page.getByRole('button', { name: '3D', exact: true }).click()
+  await page.getByRole('button', { name: 'Dach', exact: true }).click()
+  const menu = page.locator('.scene-settings summary')
+  const setRangeHandle = async (name: string, value: number) => {
+    const handle = page.getByRole('slider', { name, exact: true })
+    if (value === 0 || value === 100) {
+      await handle.focus()
+      await handle.press(value === 0 ? 'Home' : 'End')
+    } else {
+      const vertical = name.startsWith('Vertikal')
+      const root = page.locator(`.timber-range[data-orientation="${vertical ? 'vertical' : 'horizontal'}"]`)
+      await root.scrollIntoViewIfNeeded()
+      const track = (await root.boundingBox())!, thumb = (await handle.boundingBox())!
+      await page.mouse.move(thumb.x + thumb.width / 2, thumb.y + thumb.height / 2)
+      await page.mouse.down()
+      await page.mouse.move(vertical ? track.x + track.width / 2 : track.x + track.width * value / 100, vertical ? track.y + track.height * (1 - value / 100) : track.y + track.height / 2, { steps: 4 })
+      await page.mouse.up()
+    }
+    expect(Math.abs(Number(await handle.getAttribute('aria-valuenow')) - value)).toBeLessThan(1)
+  }
+  await menu.click()
+  await page.getByLabel('Außenstil', { exact: true }).selectOption('timber-natural')
+  await page.getByRole('button', { name: 'Fassadenansicht', exact: true }).click()
+  await page.getByRole('button', { name: 'Vorlage als Holzflächen', exact: true }).click()
+  await expect(page.getByLabel('Fassadenentwurf', { exact: true })).toHaveValue('custom')
+  await expect(page.getByRole('checkbox', { name: 'Holz Nord OG', exact: true })).toBeChecked()
+  await expect(page.getByRole('checkbox', { name: 'Holz Süd EG', exact: true })).not.toBeChecked()
+  const initialCount = await page.locator('#timber-area option').count()
+  expect(initialCount).toBe(6)
+  await page.getByRole('checkbox', { name: 'Holz Nord OG', exact: true }).uncheck()
+  await page.getByRole('button', { name: 'Holzfläche', exact: true }).click()
+  await page.getByLabel('Fläche Seite', { exact: true }).selectOption('east')
+  await page.getByLabel('Fläche Geschoss', { exact: true }).selectOption('EG')
+  await expect(page.locator('.timber-coverage [role="slider"]')).toHaveCount(4)
+  await expect(page.locator('.timber-coverage input[type="number"]')).toHaveCount(0)
+  await setRangeHandle('Horizontal Beginn', 10)
+  await setRangeHandle('Horizontal Ende', 60)
+  await setRangeHandle('Vertikal Unterkante', 20)
+  await setRangeHandle('Vertikal Oberkante', 90)
+  const startHandle = page.getByRole('slider', { name: 'Horizontal Beginn', exact: true })
+  const initialStart = Number(await startHandle.getAttribute('aria-valuenow'))
+  await startHandle.focus(); await startHandle.press('ArrowRight')
+  expect(Number(await startHandle.getAttribute('aria-valuenow'))).toBeCloseTo(initialStart + .1)
+  const copiedStart = await startHandle.getAttribute('aria-valuenow')
+  expect(await page.getByRole('checkbox', { name: 'Holz Ost EG', exact: true }).evaluate(input => input.indeterminate)).toBe(true)
+  await page.getByRole('button', { name: 'Fläche duplizieren', exact: true }).click()
+  await expect(startHandle).toHaveAttribute('aria-valuenow', copiedStart!)
+  await page.getByRole('button', { name: 'Fläche löschen', exact: true }).click()
+  await page.getByRole('button', { name: 'Putzausschnitt', exact: true }).click()
+  await page.getByLabel('Fläche Seite', { exact: true }).selectOption('east')
+  await page.getByLabel('Fläche Geschoss', { exact: true }).selectOption('OG')
+  await setRangeHandle('Horizontal Beginn', 0)
+  await setRangeHandle('Horizontal Ende', 100)
+  await setRangeHandle('Vertikal Unterkante', 30)
+  await setRangeHandle('Vertikal Oberkante', 60)
+  const camera = await page.evaluate(() => window.__house.position())
+  const canvas = page.locator('.scene-container canvas')
+  await menu.click()
+  const withCutout = PNG.sync.read(await canvas.screenshot({ path: `test-results/${testInfo.project.name}-timber-coverage-cutout.png` }))
+  await menu.click()
+  await page.getByRole('checkbox', { name: 'Fläche aktiv', exact: true }).uncheck()
+  await menu.click()
+  const withoutCutout = PNG.sync.read(await canvas.screenshot({ path: `test-results/${testInfo.project.name}-timber-coverage-solid.png` }))
+  let changed = 0
+  const colors = new Set<string>()
+  for (let offset = 0; offset < withCutout.data.length; offset += 4) {
+    if (Math.abs(withCutout.data[offset] - withoutCutout.data[offset]) > 8) changed++
+    colors.add(`${withCutout.data[offset]},${withCutout.data[offset + 1]},${withCutout.data[offset + 2]}`)
+  }
+  expect(changed).toBeGreaterThan(300)
+  expect(colors.size).toBeGreaterThan(200)
+  expect(await page.evaluate(() => window.__house.position())).toEqual(camera)
+  await menu.click()
+  await page.getByRole('checkbox', { name: 'Fläche aktiv', exact: true }).check()
+  const draftCount = await page.locator('#timber-area option').count()
+  await page.getByLabel('Fassadenentwurf', { exact: true }).selectOption('plaster')
+  await page.getByLabel('Fassadenentwurf', { exact: true }).selectOption('custom')
+  await expect(page.locator('#timber-area option')).toHaveCount(draftCount)
+  await page.getByLabel('Haushälfte', { exact: true }).selectOption('west')
+  await expect(page.getByLabel('Fassadenentwurf', { exact: true })).toHaveValue('plaster')
+  await page.getByLabel('Fassadenentwurf', { exact: true }).selectOption('custom')
+  await page.getByRole('checkbox', { name: 'Holz West EG', exact: true }).check()
+  await expect(page.locator('#timber-area option')).toHaveCount(1)
+  await page.getByLabel('Haushälfte', { exact: true }).selectOption('east')
+  await expect(page.locator('#timber-area option')).toHaveCount(draftCount)
+  await page.locator('#timber-area').selectOption({ index: draftCount - 1 })
+  await page.getByRole('slider', { name: 'Vertikal Oberkante', exact: true }).scrollIntoViewIfNeeded()
+  expect(await page.locator('.settings-body').evaluate(element => element.scrollWidth <= element.clientWidth)).toBe(true)
+  await page.screenshot({ path: `test-results/${testInfo.project.name}-timber-coverage-controls.png` })
+  await menu.click()
+  await page.getByRole('button', { name: '2D', exact: true }).click()
+  await page.getByRole('button', { name: '3D', exact: true }).click()
+  await menu.click()
+  await expect(page.getByLabel('Fassadenentwurf', { exact: true })).toHaveValue('custom')
+  await expect(page.locator('#timber-area option')).toHaveCount(draftCount)
+  expect(errors).toEqual([])
+})
+
 test('Holz-L am Eingang steht hinten, folgt der Fassade und ist je Haus abschaltbar', async ({ page }, testInfo) => {
   test.setTimeout(120000)
   const errors: string[] = []

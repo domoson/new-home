@@ -1297,6 +1297,34 @@ Entwaesserung muessen fachlich geplant werden. Neue Fassadenteile sind visuell,
 nicht zusaetzliche Rundgang-Kollisionskoerper. 2D-Grundriss und Abstandsberechnung
 bleiben unveraendert und enthalten die neue Bekleidungsdicke nicht.
 
+Flexible Belegung: 3D > Szene > Fassadenentwurf > "Freie Holzflaechen".
+Pro Haushaelfte sind Nordseite, freier Ost-/Westgiebel und Suedseite jeweils
+fuer EG, OG und DG getrennt waehlbar. Das Raster schaltet ganze Seitenabschnitte
+eines Geschosses; ein Zwischenzustand kennzeichnet Teilflaechen.
+"Vorlage als Holzflaechen" uebernimmt den aktuellen Fassadenentwurf als neuen
+editierbaren Entwurf. Der normale Wechsel zwischen Vorlage und freiem Modus
+behaelt einen bereits vorhandenen freien Entwurf bei.
+
+Holzflaechen und Putzausschnitte sind beliebig kombinierbare Rechtecke je
+Seite/Geschoss: Beginn/Ende entlang der Fassade und Unter-/Oberkante in Prozent.
+Zwei Bereichsregler mit je zwei Griffen ersetzen die Zahlenfelder: waagerecht
+fuer Beginn/Ende und senkrecht fuer Unter-/Oberkante. Die Prozentbereiche werden
+angezeigt; Tastaturpfeile erlauben Feinanpassungen in 0,1-Prozent-Schritten.
+Am Giebel verlaeuft die Breitenachse von Nord nach Sued, an Nord-/Suedseite von
+der Haustrennwand zum freien Giebel, auch am gespiegelten Westhaus.
+Hoehen beziehen sich auf den Geschossabschnitt einschliesslich unterem
+Deckenrand; im DG auf die maximale Giebelhoehe bzw. die niedrige Trauffassade.
+Das Dach schneidet die Rechtecke automatisch zu. Fenster und Tueren bleiben
+ausgespart. Ueberlappende Holzflaechen werden vereinigt; aktive Putzausschnitte
+werden danach abgezogen, unabhaengig von ihrer Reihenfolge. Profilraster und
+Maserung bleiben beim Zuschneiden durchgehend. Freie Schnittkanten sind
+Entwurfsgeometrie, keine geplanten Blech-/Abdichtungsanschluesse.
+Flaechen lassen sich deaktivieren, duplizieren, verschieben, vergroessern und
+loeschen. Holzprofil, Farbe und Oberflaeche gelten weiterhin pro Haushaelfte.
+Vordach bleibt unabhaengig schaltbar. Aenderungen erfolgen im laufenden
+3D-Modell ohne Kamerasprung. Entwuerfe bleiben bei Ansichts-/Geschosswechseln
+erhalten, werden aber nicht ueber ein vollstaendiges Neuladen hinaus gespeichert.
+
 Bedienung: 3D > Szene > Aussenstil "Holz / Laerche" fuer OG und DG mit hellem Putz
 und warmgrauen Fenstern. Unter "Holzfassade / 3D" Profil, Holzart, Oberflaeche und
 Fensteranschluss pro Haushaelfte einstellen. "Fassadenvergleich" oeffnet vier

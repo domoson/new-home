@@ -21,7 +21,8 @@ export const timberProfiles = {
 export type TimberProfile = keyof typeof timberProfiles
 export type WoodSurface = 'fresh' | 'oiled' | 'weathered'
 export type WindowTimber = 'none' | 'reveals' | 'screen'
-export type TimberOptions = { surface?: WoodSurface; windows?: WindowTimber }
+export type TimberArea = { id: string; face: 'east' | 'north' | 'south'; floor: 'EG' | 'OG' | 'DG'; from: number; to: number; bottom: number; top: number; material: 'wood' | 'plaster'; enabled?: boolean }
+export type TimberOptions = { surface?: WoodSurface; windows?: WindowTimber; areas?: TimberArea[] }
 export const timberStoreyJoint = { height: .04, projection: .018, gap: .006 } as const
 type Point = [number, number]
 type Face = 'east' | 'north' | 'south'
@@ -89,7 +90,55 @@ function subtract(polygon: Point[], hole: Bounds): Point[][] {
   return [left, right, clip(middle, point => hole.bottom - point[1]), clip(middle, point => point[1] - hole.top)].filter(part => part.length >= 3 && Math.abs(THREE.ShapeUtils.area(part.map(point => new THREE.Vector2(...point)))) > 1e-8)
 }
 
-export function timberPieces(floors: FloorId[], composition: FacadeComposition, profile: TimberProfile, cut = false, side: 'east' | 'west' = 'east', windows: WindowTimber = 'none'): TimberPiece[] {
+function areaBounds(area: TimberArea, extent: Bounds): Bounds {
+  const percent = (value: number) => Math.max(0, Math.min(100, Number.isFinite(value) ? value : 0)) / 100
+  return { left: extent.left + percent(area.from) * (extent.right - extent.left), right: extent.left + percent(area.to) * (extent.right - extent.left), bottom: extent.bottom + percent(area.bottom) * (extent.top - extent.bottom), top: extent.bottom + percent(area.top) * (extent.top - extent.bottom) }
+}
+
+function coverageBounds(areas: TimberArea[], extent: Bounds): Bounds[] {
+  const result: Bounds[] = []
+  const valid = areas.filter(area => area.enabled !== false).map(area => ({ material: area.material, bounds: areaBounds(area, extent) })).filter(({ bounds }) => bounds.right > bounds.left && bounds.top > bounds.bottom)
+  const boundsOf = (polygon: Point[]): Bounds => ({ left: Math.min(...polygon.map(point => point[0])), right: Math.max(...polygon.map(point => point[0])), bottom: Math.min(...polygon.map(point => point[1])), top: Math.max(...polygon.map(point => point[1])) })
+  for (const { bounds } of valid.filter(area => area.material === 'wood')) {
+    let parts = [rectangle(bounds)]
+    for (const previous of result) parts = parts.flatMap(part => subtract(part, previous))
+    result.push(...parts.map(boundsOf))
+  }
+  let parts = result.map(rectangle)
+  for (const { bounds } of valid.filter(area => area.material === 'plaster')) parts = parts.flatMap(part => subtract(part, bounds))
+  return parts.map(boundsOf)
+}
+
+function presetRegions(composition: FacadeComposition, face: TimberArea['face'], extent: Bounds, base: number): Bounds[] {
+  const regions: Bounds[] = [], upper = elevations.OG - slabThickness('OG'), attic = elevations.DG - slabThickness('DG')
+  if (composition === 'timber' || composition === 'custom') regions.push(extent)
+  if (composition === 'upper') regions.push({ ...extent, bottom: Math.max(extent.bottom, upper) })
+  if (composition === 'gable' && face === 'east') regions.push({ ...extent, bottom: Math.max(base, elevations.DG) })
+  if (composition === 'og' || composition === 'og-entry') regions.push({ ...extent, bottom: Math.max(extent.bottom, upper), top: Math.min(extent.top, attic) })
+  if ((composition === 'entry' || composition === 'og-entry') && face === 'east') regions.push({ left: .1, right: 1.9, bottom: 0, top: Math.min(2.7, extent.top) })
+  if (composition === 'panels') regions.push({ ...extent, left: face === 'east' ? 2.7 : 4.2, right: face === 'east' ? 4.9 : 6.4 })
+  return regions
+}
+
+export function timberPresetAreas(composition: FacadeComposition, profile: TimberProfile): TimberArea[] {
+  const result: TimberArea[] = [], envelope = houseEnvelope(), spec = timberProfiles[profile]
+  const front = .04 + spec.thickness + (profile === 'rhombus' ? .16 * spec.width : profile === 'board-batten' ? .02 : 0)
+  for (const floorId of ['EG', 'OG', 'DG'] as const) {
+    const floor = makeFloor(floorId)
+    for (const face of ['east', 'north', 'south'] as const) {
+      const roofTop = face === 'east' ? roofHeight(house.depth / 2) : roofHeight(face === 'north' ? envelope.z : envelope.z + envelope.depth) - .1 * Math.tan(house.pitch * Math.PI / 180)
+      const extent = { left: face === 'east' ? envelope.z - .04 : envelope.x, right: face === 'east' ? envelope.z + envelope.depth + .04 : envelope.x + envelope.width + front, bottom: Math.max(0, floor.elevation - slabThickness(floorId)), top: floor.elevation + (floorId === 'DG' ? roofTop + roofFacadeRise : floor.height) }
+      for (const [index, region] of presetRegions(composition, face, extent, floor.elevation).entries()) {
+        const from = Math.max(0, (region.left - extent.left) / (extent.right - extent.left) * 100), to = Math.min(100, (region.right - extent.left) / (extent.right - extent.left) * 100)
+        const bottom = Math.max(0, (region.bottom - extent.bottom) / (extent.top - extent.bottom) * 100), top = Math.min(100, (region.top - extent.bottom) / (extent.top - extent.bottom) * 100)
+        if (to > from && top > bottom) result.push({ id: `${floorId}-${face}-${index}`, floor: floorId, face, from, to, bottom, top, material: 'wood' })
+      }
+    }
+  }
+  return result
+}
+
+export function timberPieces(floors: FloorId[], composition: FacadeComposition, profile: TimberProfile, cut = false, side: 'east' | 'west' = 'east', windows: WindowTimber = 'none', areas: TimberArea[] = []): TimberPiece[] {
   if (composition === 'plaster') return []
   const pieces: TimberPiece[] = [], spec = timberProfiles[profile]
   const horizontal = profile === 'horizontal'
@@ -103,14 +152,12 @@ export function timberPieces(floors: FloorId[], composition: FacadeComposition, 
       const envelope = houseEnvelope()
       const front = .04 + spec.thickness + (profile === 'rhombus' ? .16 * spec.width : profile === 'board-batten' ? .02 : 0)
       const extent: Bounds = { left: face === 'east' ? along - .04 : envelope.x, right: face === 'east' ? along + length + .04 : envelope.x + envelope.width + front, bottom: Math.max(0, base - slabThickness(id)), top: base + (cut ? 1.05 : id === 'DG' ? roofHeight(house.depth / 2) + roofFacadeRise : floor.height) }
-      const regions: Bounds[] = []
-      const upper = elevations.OG - slabThickness('OG'), attic = elevations.DG - slabThickness('DG')
-      if (composition === 'timber') regions.push(extent)
-      if (composition === 'upper') regions.push({ ...extent, bottom: Math.max(extent.bottom, upper) })
-      if (composition === 'gable' && face === 'east') regions.push({ ...extent, bottom: Math.max(base, elevations.DG) })
-      if (composition === 'og' || composition === 'og-entry') regions.push({ ...extent, bottom: Math.max(extent.bottom, upper), top: Math.min(extent.top, attic) })
-      if ((composition === 'entry' || composition === 'og-entry') && face === 'east') regions.push({ left: .1, right: 1.9, bottom: 0, top: Math.min(2.7, extent.top) })
-      if (composition === 'panels') regions.push({ ...extent, left: face === 'east' ? 2.7 : 4.2, right: face === 'east' ? 4.9 : 6.4 })
+      const regions = presetRegions(composition, face, extent, base)
+      const roofTop = face === 'east' ? roofHeight(house.depth / 2) : roofHeight(plane) - .1 * Math.tan(house.pitch * Math.PI / 180)
+      const fullExtent = { ...extent, top: base + (id === 'DG' ? roofTop + roofFacadeRise : floor.height) }
+      const coverage = composition === 'custom' ? coverageBounds(areas.filter(area => area.face === face && area.floor === id), fullExtent) : undefined
+      if (coverage && coverage.length === 0) continue
+      const cover = (polygon: Point[]) => coverage ? coverage.map(bounds => clip(clip(clip(clip(polygon, point => point[0] - bounds.left), point => bounds.right - point[0]), point => point[1] - bounds.bottom), point => bounds.top - point[1])).filter(part => part.length >= 3 && Math.abs(THREE.ShapeUtils.area(part.map(point => new THREE.Vector2(...point)))) > 1e-8) : [polygon]
       const holes = wall.openings.map(opening => ({ left: along + opening.start - .012, right: along + opening.start + opening.width + .012, bottom: base + opening.sill - .012, top: base + opening.sill + opening.height + .012 }))
       const roofClip = (polygon: Point[]) => id !== 'DG' ? polygon : face === 'east'
         ? clip(clip(polygon, point => base + house.knee + roofFacadeRise + (point[0] - house.north) * Math.tan(house.pitch * Math.PI / 180) - point[1]), point => base + house.knee + roofFacadeRise + (house.south - point[0]) * Math.tan(house.pitch * Math.PI / 180) - point[1])
@@ -122,7 +169,7 @@ export function timberPieces(floors: FloorId[], composition: FacadeComposition, 
           if (kind === 'board' || kind === 'batten') polygon = clip(polygon, point => point[1] - bounds.bottom - timberStoreyJoint.height - timberStoreyJoint.gap)
           let parts = [roofClip(polygon)]
           for (const hole of holes) parts = parts.flatMap(part => subtract(part, hole))
-          for (const part of parts.filter(part => part.length >= 3)) pieces.push({ face, plane, polygon: part, kind, board, back, thickness, slope, slopeOrigin, frontSlope, horizontal })
+          for (const part of parts.flatMap(cover).filter(part => part.length >= 3)) pieces.push({ face, plane, polygon: part, kind, board, back, thickness, slope, slopeOrigin, frontSlope, horizontal })
         }
         emit(rectangle(bounds), 'backing', 0, .002, .003)
         const supportStart = horizontal ? bounds.left : bounds.bottom, supportEnd = horizontal ? bounds.right : bounds.top
@@ -144,7 +191,9 @@ export function timberPieces(floors: FloorId[], composition: FacadeComposition, 
         }
         for (const hole of holes) {
           if (hole.bottom < bounds.bottom || hole.top > bounds.top || hole.left < bounds.left || hole.right > bounds.right) continue
-          const addDetail = (detail: Bounds, kind: TimberPiece['kind'], back: number, thickness: number) => pieces.push({ face, plane, polygon: rectangle(detail), kind, board: 0, back, thickness, slope: 0, horizontal: false })
+          const addDetail = (detail: Bounds, kind: TimberPiece['kind'], back: number, thickness: number) => {
+            for (const polygon of cover(rectangle(detail))) pieces.push({ face, plane, polygon, kind, board: 0, back, thickness, slope: 0, horizontal: false })
+          }
           const inner = -.5 * (face === 'east' ? wall.width : wall.depth) + .045
           const lining = .016
           // 4 mm ragen in die Öffnung, damit keine Fläche mit Wand- oder Rahmenflächen zusammenfällt; Seiten liegen zwischen Bank und Sturz ohne Überlappung.
@@ -284,7 +333,7 @@ export function createTimberCladding(floors: FloorId[], cut: boolean, side: 'eas
         material.roughness = surface === 'oiled' ? .6 : surface === 'weathered' ? .94 : .82
         material.bumpScale = tone === 8 || tone === 10 ? .0003 : .0006
       }
-      const key = `${composition}:${profile}:${windows}`
+      const key = `${composition}:${profile}:${windows}:${composition === 'custom' ? JSON.stringify(options.areas ?? []) : ''}`
       if (key === currentGeometry) return
       currentGeometry = key; clear()
       if (canopy) {
@@ -295,7 +344,7 @@ export function createTimberCladding(floors: FloorId[], cut: boolean, side: 'eas
         }
         canopyGroup.userData.profile = profile
       }
-      const pieces = timberPieces(floors, composition, profile, cut, side, windows)
+      const pieces = timberPieces(floors, composition, profile, cut, side, windows, options.areas)
       const batches = new Map<number, THREE.BufferGeometry[]>()
       for (const piece of pieces) {
         const material = piece.kind === 'backing' ? 12 : piece.kind === 'flashing' || piece.kind === 'storey-joint' ? 13 : ((piece.board * 7) % 12 + 12) % 12

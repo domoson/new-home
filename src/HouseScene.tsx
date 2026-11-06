@@ -1,7 +1,8 @@
 import { lazy, Suspense, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import type { RefObject } from 'react'
+import * as Slider from '@radix-ui/react-slider'
 import { canvasPng } from './exportImage'
-import { Columns3, DoorOpen, House, Lightbulb, LightbulbOff, MousePointer2, RotateCcw, Settings2, Sun } from 'lucide-react'
+import { Columns3, Copy, DoorOpen, House, Lightbulb, LightbulbOff, MousePointer2, Plus, RotateCcw, Settings2, Sun, Trash2 } from 'lucide-react'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js'
@@ -13,13 +14,62 @@ import { daylightLevels, lightingCircuits } from './lighting'
 import { createOutdoorLighting } from './outdoorLighting'
 import { exteriorStyleId, exteriorStyles, facadeCompositions, finishes, siteBoundary, sunPosition, woodProfiles, woodTones } from './context'
 import type { FacadeComposition, HouseAppearance, SceneSettings, WoodProfile } from './context'
-import type { WindowTimber, WoodSurface } from './timberCladding'
+import { timberPresetAreas } from './timberCladding'
+import type { TimberArea, WindowTimber, WoodSurface } from './timberCladding'
 import './scene-controls.css'
 
 const TimberComparison = lazy(() => import('./TimberComparison'))
 
 type SceneDebug = { people?: () => { visible: boolean; positions: number[][] }; vehicle?: () => { position: number[]; screen: number[] } | null; position: () => { x: number; y: number; z: number }; teleport: (x: number, y: number, z: number) => void; look: (yaw: number) => void; door: (id?: string) => boolean; mode: string; meshes: number; snapshot: () => { openings: { id: string; open: boolean; rotation: number[]; tip: number[] }[]; sun: number[]; slabs: { name: string; colors: string[]; maps: boolean[] }[]; site: boolean } }
 declare global { interface Window { __house?: SceneDebug } }
+
+function TimberCoverageEditor({ areas, onChange, house }: { areas: TimberArea[]; onChange: (areas: TimberArea[]) => void; house: 'east' | 'west' }) {
+  const [selectedId, setSelectedId] = useState('')
+  const selected = areas.find(area => area.id === selectedId) ?? areas[0]
+  const faces: { id: TimberArea['face']; name: string }[] = [{ id: 'north', name: 'Nord' }, { id: 'east', name: house === 'east' ? 'Ost' : 'West' }, { id: 'south', name: 'Süd' }]
+  const levels = ['DG', 'OG', 'EG'] as const
+  const fullArea = (area: TimberArea) => area.enabled !== false && area.material === 'wood' && area.from === 0 && area.to === 100 && area.bottom === 0 && area.top === 100
+  const setCell = (face: TimberArea['face'], floor: TimberArea['floor'], checked: boolean) => {
+    const remaining = areas.filter(area => area.face !== face || area.floor !== floor)
+    const id = crypto.randomUUID()
+    onChange(checked ? [...remaining, { id, face, floor, from: 0, to: 100, bottom: 0, top: 100, material: 'wood' }] : remaining)
+    if (checked) setSelectedId(id)
+  }
+  const addArea = (material: TimberArea['material'], duplicate = false) => {
+    const id = crypto.randomUUID()
+    onChange([...areas, duplicate && selected ? { ...selected, id } : { id, face: selected?.face ?? 'east', floor: selected?.floor ?? 'OG', material, from: 25, to: 75, bottom: 0, top: 100 }])
+    setSelectedId(id)
+  }
+  const editArea = (patch: Partial<TimberArea>) => onChange(areas.map(area => area.id === selected?.id ? { ...area, ...patch } : area))
+  return <div className="timber-coverage">
+    <div className="timber-coverage-grid" role="group" aria-label="Holz nach Seite und Geschoss">
+      <span />{faces.map(face => <strong key={face.id}>{face.name}</strong>)}
+      {levels.map(floor => <div className="timber-coverage-row" key={floor}><strong>{floor}</strong>{faces.map(face => {
+        const cell = areas.filter(area => area.face === face.id && area.floor === floor && area.enabled !== false)
+        const full = cell.some(fullArea) && !cell.some(area => area.material === 'plaster')
+        const partial = !full && cell.some(area => area.material === 'wood')
+        return <label key={face.id} className={partial ? 'partial' : ''} title={`${face.name} · ${floor}`}><input type="checkbox" aria-label={`Holz ${face.name} ${floor}`} checked={full} ref={input => { if (input) input.indeterminate = partial }} onChange={event => setCell(face.id, floor, event.target.checked)} /></label>
+      })}</div>)}
+    </div>
+    <div className="timber-area-actions"><button onClick={() => addArea('wood')}><Plus size={15} />Holzfläche</button><button onClick={() => addArea('plaster')}><Plus size={15} />Putzausschnitt</button></div>
+    {selected ? <>
+      <label htmlFor="timber-area">Fläche</label><select id="timber-area" value={selected.id} onChange={event => setSelectedId(event.target.value)}>{areas.map((area, index) => <option key={area.id} value={area.id}>{index + 1} · {area.material === 'wood' ? 'Holz' : 'Putz'} · {faces.find(face => face.id === area.face)?.name} · {area.floor}</option>)}</select>
+      <div className="timber-area-toolbar"><label className="check-setting"><input type="checkbox" checked={selected.enabled !== false} onChange={event => editArea({ enabled: event.target.checked })} />Fläche aktiv</label><button className="icon-button" aria-label="Fläche duplizieren" title="Fläche duplizieren" onClick={() => addArea(selected.material, true)}><Copy size={16} /></button><button className="icon-button" aria-label="Fläche löschen" title="Fläche löschen" onClick={() => onChange(areas.filter(area => area.id !== selected.id))}><Trash2 size={16} /></button></div>
+      <div className="timber-area-fields"><label>Seite<select aria-label="Fläche Seite" value={selected.face} onChange={event => editArea({ face: event.target.value as TimberArea['face'] })}>{faces.map(face => <option key={face.id} value={face.id}>{face.name}</option>)}</select></label><label>Geschoss<select aria-label="Fläche Geschoss" value={selected.floor} onChange={event => editArea({ floor: event.target.value as TimberArea['floor'] })}>{levels.map(floor => <option key={floor}>{floor}</option>)}</select></label></div>
+      <label htmlFor="timber-area-material">Material</label><select id="timber-area-material" value={selected.material} onChange={event => editArea({ material: event.target.value as TimberArea['material'] })}><option value="wood">Holz</option><option value="plaster">Putz / Ausschnitt</option></select>
+      <div className="timber-area-ranges">{([
+        { name: 'Horizontal', orientation: 'horizontal', keys: ['from', 'to'], labels: ['Beginn', 'Ende'] },
+        { name: 'Vertikal', orientation: 'vertical', keys: ['bottom', 'top'], labels: ['Unterkante', 'Oberkante'] },
+      ] as const).map(axis => <div className="timber-area-range" key={axis.orientation}>
+        <div className="timber-range-heading"><span id={`timber-range-${axis.orientation}`}>{axis.name}</span><output aria-live="off">{Number(selected[axis.keys[0]].toFixed(1))} – {Number(selected[axis.keys[1]].toFixed(1))} %</output></div>
+        <Slider.Root className="timber-range" orientation={axis.orientation} aria-labelledby={`timber-range-${axis.orientation}`} min={0} max={100} step={.1} minStepsBetweenThumbs={1} value={[selected[axis.keys[0]], selected[axis.keys[1]]]} onValueChange={([start, end]) => editArea({ [axis.keys[0]]: start, [axis.keys[1]]: end })}>
+          <Slider.Track className="timber-range-track"><Slider.Range className="timber-range-selection" /></Slider.Track>
+          {axis.keys.map((key, index) => <Slider.Thumb className="timber-range-thumb" key={key} aria-label={`${axis.name} ${axis.labels[index]}`} aria-valuetext={`${Number(selected[key].toFixed(1))} %`} />)}
+        </Slider.Root>
+      </div>)}</div>
+    </> : <output className="timber-coverage-empty">Keine Holzflächen</output>}
+  </div>
+}
 
 function Joystick({ onMove }: { onMove: (x: number, y: number) => void }) {
   const activePointerId = useRef<number | null>(null)
@@ -302,8 +352,12 @@ export default function HouseScene({ floorId, mode, furnished, roof, cutWalls, s
       {lightingCircuits.length > 0 && settings.lightingMode === 'room' && <fieldset className="finish-settings"><legend>Raumbeleuchtung</legend><label htmlFor="light-house">Licht · Haushälfte</label><select id="light-house" value={lightHouse} onChange={event => setLightHouse(event.target.value as 'east' | 'west')}><option value="east">Haus Ost</option><option value="west">Haus West</option></select><label htmlFor="light-floor">Licht · Geschoss</label><select id="light-floor" value={lightFloor} onChange={event => setLightFloor(event.target.value as FloorId)}>{['KG', 'EG', 'OG', 'DG'].map(level => <option key={level} value={level}>{level}</option>)}</select><div className="settings-heading"><strong>{lightFloor} · {lightHouse === 'east' ? 'Ost' : 'West'}</strong><button className="icon-button" aria-label="Geschosslicht einschalten" title="Alle Leuchten dieses Geschosses einschalten" onClick={() => setFloorLights(true)}><Lightbulb size={18} /></button><button className="icon-button" aria-label="Geschosslicht ausschalten" title="Alle Leuchten dieses Geschosses ausschalten" onClick={() => setFloorLights(false)}><LightbulbOff size={18} /></button></div>{lightingCircuits.filter(circuit => circuit.floor === lightFloor).map(circuit => <label className="check-setting" key={circuit.id}><input type="checkbox" checked={settings.lights[lightPrefix + circuit.id] ?? circuit.defaultOn} onChange={event => update({ lights: { ...settings.lights, [lightPrefix + circuit.id]: event.target.checked } })} />{circuit.label}</label>)}</fieldset>}
       <fieldset className="finish-settings"><legend>Oberflächen</legend>
         <label htmlFor="material-house">Haushälfte</label><select id="material-house" value={materialHouse} onChange={event => setMaterialHouse(event.target.value as 'east' | 'west')}><option value="east">Haus Ost</option><option value="west">Haus West</option></select>
-        <label htmlFor="exterior-style">Außenstil</label><select id="exterior-style" value={exteriorStyleId(appearance)} onChange={event => { const style = exteriorStyles.find(style => style.id === event.target.value); if (style) updateAppearance(style.appearance) }}><option value="custom" disabled>Individuell</option>{exteriorStyles.map(style => <option key={style.id} value={style.id}>{style.name}</option>)}</select>
-        <div className="facade-label"><label htmlFor="facade-composition">Fassadenentwurf</label>{mode === 'orbit' && roof && <button className="icon-button" title="Gebäude heranzoomen" aria-label="Fassadenansicht" onClick={() => commands.current?.facade()}><House size={18} /></button>}</div><select id="facade-composition" value={appearance.composition} onChange={event => updateAppearance({ composition: event.target.value as FacadeComposition })}>{facadeCompositions.map(option => <option key={option.id} value={option.id}>{option.name}</option>)}</select>
+        <label htmlFor="exterior-style">Außenstil</label><select id="exterior-style" value={exteriorStyleId(appearance)} onChange={event => { const style = exteriorStyles.find(style => style.id === event.target.value); if (style) updateAppearance({ ...style.appearance, timber: { ...appearance.timber, ...style.appearance.timber } }) }}><option value="custom" disabled>Individuell</option>{exteriorStyles.map(style => <option key={style.id} value={style.id}>{style.name}</option>)}</select>
+        <div className="facade-label"><label htmlFor="facade-composition">Fassadenentwurf</label>{mode === 'orbit' && roof && <button className="icon-button" title="Gebäude heranzoomen" aria-label="Fassadenansicht" onClick={() => commands.current?.facade()}><House size={18} /></button>}</div><select id="facade-composition" value={appearance.composition} onChange={event => {
+          const composition = event.target.value as FacadeComposition
+          updateAppearance({ composition, ...(composition === 'custom' ? { timber: { ...appearance.timber, areas: appearance.timber?.areas ?? timberPresetAreas(appearance.composition, appearance.woodProfile) } } : {}) })
+        }}>{facadeCompositions.map(option => <option key={option.id} value={option.id}>{option.name}</option>)}</select>
+        {appearance.composition === 'custom' ? <TimberCoverageEditor key={materialHouse} house={materialHouse} areas={appearance.timber?.areas ?? []} onChange={areas => updateAppearance({ timber: { ...appearance.timber, areas } })} /> : <button className="timber-area-preset" onClick={() => updateAppearance({ composition: 'custom', timber: { ...appearance.timber, areas: timberPresetAreas(appearance.composition, appearance.woodProfile) } })}><Copy size={15} />Vorlage als Holzflächen</button>}
         {appearance.composition !== 'plaster' && <div className="finish-row wood-tone"><span>Holzton</span><div>{woodTones.map((tone, index) => <button key={tone.name} className="color-swatch" style={{ backgroundColor: tone.color }} title={tone.name} aria-label={`Holz ${tone.name}`} aria-pressed={appearance.woodTone === index} onClick={() => updateAppearance({ woodTone: index })} />)}</div></div>}
         {(['facade', 'roof', 'roofTrim', 'entryDoor', 'frame', 'frameInside'] as const).map(key => <div className="finish-row" key={key}><span>{{ facade: 'Putzfarbe', roof: 'Dach', roofTrim: 'Dachunterbau', entryDoor: 'Haustür', frame: 'Fenster außen', frameInside: 'Fenster innen' }[key]}</span><div>{finishes[key === 'frameInside' ? 'frame' : key].map(finish => <button key={finish.color} className="color-swatch" style={{ backgroundColor: finish.color }} title={finish.name} aria-label={`${{ facade: 'Fassade', roof: 'Dach', roofTrim: 'Dachunterbau', entryDoor: 'Haustür', frame: 'Fenster außen', frameInside: 'Fenster innen' }[key]} ${finish.name}`} aria-pressed={appearance[key] === finish.color} onClick={() => updateAppearance({ [key]: finish.color })} />)}</div></div>)}
       </fieldset>

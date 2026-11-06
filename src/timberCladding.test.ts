@@ -1,8 +1,47 @@
 import { describe, expect, it } from 'vitest'
 import { elevations, entryCanopy, house, makeFloor, roofEdgeDetail, roofEnvelope, roofFacadeRise, roofHeight, roofOuterElevation, slabThickness } from './model'
-import { canopyTimberGeometry, timberBoardSections, timberGeometry, timberPieces, timberProfiles, timberStoreyJoint } from './timberCladding'
+import { canopyTimberGeometry, timberBoardSections, timberGeometry, timberPieces, timberPresetAreas, timberProfiles, timberStoreyJoint } from './timberCladding'
+import type { TimberArea } from './timberCladding'
 
 describe('3D timber facade', () => {
+  it('limits custom wood to selected floors and sides, unions overlaps and subtracts plaster areas', () => {
+    const area: TimberArea = { id: 'wood', face: 'east', floor: 'OG', from: 10, to: 70, bottom: 20, top: 80, material: 'wood' }
+    const pieces = timberPieces(['EG', 'OG', 'DG'], 'custom', 'bevelled', false, 'east', 'none', [area])
+    expect(pieces.length).toBeGreaterThan(0)
+    expect(pieces.every(piece => piece.face === 'east')).toBe(true)
+    expect(pieces.every(piece => piece.polygon.every(([, height]) => height > elevations.OG && height < elevations.DG))).toBe(true)
+    expect(timberPieces(['EG', 'OG', 'DG'], 'custom', 'bevelled', false, 'east', 'none', [area, { ...area, id: 'duplicate' }])).toEqual(pieces)
+    expect(timberPieces(['EG', 'OG', 'DG'], 'custom', 'bevelled', false, 'east', 'none', [area, { ...area, id: 'cutout', material: 'plaster' }])).toEqual([])
+    expect(timberPieces(['EG', 'OG', 'DG'], 'custom', 'bevelled', false, 'east', 'none', [{ ...area, enabled: false }])).toEqual([])
+    expect(timberPieces(['EG', 'OG', 'DG'], 'custom', 'bevelled')).toEqual([])
+  })
+  it('preserves preset coverage and clips partial masks without overlapping backing surfaces', () => {
+    const surfaceArea = (pieces: ReturnType<typeof timberPieces>) => pieces.filter(piece => piece.kind === 'backing').reduce((sum, piece) => sum + Math.abs(piece.polygon.reduce((value, point, index, points) => { const next = points[(index + 1) % points.length]; return value + point[0] * next[1] - next[0] * point[1] }, 0)) / 2, 0)
+    for (const preset of ['plaster', 'timber', 'upper', 'gable', 'entry', 'og', 'og-entry', 'panels'] as const) {
+      const areas = timberPresetAreas(preset, 'grooved')
+      expect(surfaceArea(timberPieces(['EG', 'OG', 'DG'], 'custom', 'grooved', false, 'east', 'none', areas))).toBeCloseTo(surfaceArea(timberPieces(['EG', 'OG', 'DG'], preset, 'grooved')), 5)
+    }
+    const full: TimberArea = { id: 'full', face: 'south', floor: 'OG', from: 0, to: 100, bottom: 0, top: 100, material: 'wood' }
+    const pieces = (areas: TimberArea[]) => timberPieces(['EG', 'OG', 'DG'], 'custom', 'shiplap', false, 'east', 'none', areas)
+    const overlap = [{ ...full, id: 'left', to: 70 }, { ...full, id: 'right', from: 30 }]
+    expect(surfaceArea(pieces(overlap))).toBeCloseTo(surfaceArea(pieces([full])), 5)
+    const cutout: TimberArea = { ...full, id: 'cutout', from: 25, to: 75, bottom: 20, top: 80, material: 'plaster' }
+    const after = surfaceArea(pieces([...overlap, cutout]))
+    expect(after).toBeGreaterThan(0)
+    expect(after).toBeLessThan(surfaceArea(pieces([full])))
+    expect(surfaceArea(pieces([cutout, ...overlap]))).toBeCloseTo(after)
+    expect(surfaceArea(pieces([{ ...full, from: -20, to: 120 }]))).toBeCloseTo(surfaceArea(pieces([full])))
+    expect(pieces([{ ...full, from: 90, to: 10 }])).toEqual([])
+  })
+  it('uses the actual eaves height for DG percentages and retains masks in cutaway and mirrored houses', () => {
+    const band: TimberArea = { id: 'band', face: 'north', floor: 'DG', from: 0, to: 100, bottom: 50, top: 100, material: 'wood' }
+    for (const side of ['east', 'west'] as const) {
+      const pieces = timberPieces(['DG'], 'custom', 'alternating-depth', false, side, 'none', [band])
+      expect(pieces.filter(piece => piece.kind === 'board').length).toBeGreaterThan(0)
+      expect(pieces.every(piece => piece.face === 'north')).toBe(true)
+    }
+    expect(timberPieces(['OG'], 'custom', 'boards', true, 'east', 'none', [{ ...band, floor: 'OG', bottom: 70 }])).toEqual([])
+  })
   it('builds regular F-J cross-sections with actual rebates, grooves, bevels and depth changes', () => {
     const variable = timberBoardSections('variable-width', 0, .432)
     expect(variable.map(section => Math.round((section.end - section.start) * 1000))).toEqual([90, 140, 190])
