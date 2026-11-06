@@ -7,6 +7,18 @@
 .settings-body select { font-size: 11px; padding: 9px 22px 9px 8px; }
 .settings-heading { display: flex; align-items: center; gap: 8px; font-size: 12px; }
 .settings-heading output { margin-left: auto; font-variant-numeric: tabular-nums; }
+.scene-designs { padding-bottom: 14px; border-bottom: 1px solid #b8c5ba; }
+.scene-designs select, .scene-designs input[type=text] { box-sizing: border-box; width: 100%; min-width: 0; }
+.scene-designs input[type=text] { padding: 9px 8px; border: 1px solid #b8c5ba; border-radius: 3px; font: inherit; font-size: 12px; color: #385044; background: #fff; }
+.scene-design-state { display: block; margin: 7px 0; font-size: 10px; color: #64776b; }
+.scene-design-state.is-dirty { color: #95602c; }
+.scene-design-save { display: flex; align-items: center; justify-content: center; gap: 7px; width: 100%; min-height: 38px; margin: 10px 0 7px; padding: 8px; background: #42604c; color: #fff; border: 1px solid #42604c; border-radius: 3px; font-size: 11px; }
+.scene-designs .scene-design-save:hover { background: #36503e; color: #fff; }
+.scene-design-actions { display: flex; gap: 6px; }
+.scene-design-actions .icon-button { width: 38px; height: 38px; flex-shrink: 0; }
+.scene-designs button:disabled { opacity: .4; cursor: default; }
+.scene-design-message, .scene-design-error { font-size: 11px; line-height: 1.5; margin: 8px 0 0; overflow-wrap: anywhere; }
+.scene-design-error { color: #9c3e32; }
 .lighting-mode { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); margin: 12px 0; border: 1px solid #b8c5ba; border-radius: 4px; overflow: hidden; }
 .lighting-mode button { min-height: 34px; border: 0; border-radius: 0; padding: 6px; background: #f4f6f1; color: #385044; font-size: 11px; }
 .lighting-mode button[aria-pressed=true] { background: #42604c; color: #fff; }
@@ -61,9 +73,30 @@
 .timber-range-thumb::after { content: ''; position: absolute; inset: -10px; }
 .timber-range-thumb:focus-visible { outline: 2px solid #385044; outline-offset: 3px; z-index: 1; }
 .timber-range-thumb:active { cursor: grabbing; background: #e5ede3; }
+.facade-overlay { position: absolute; left: 18px; bottom: 84px; z-index: 7; width: 276px; max-height: calc(100% - 190px); overflow-y: auto; box-sizing: border-box; padding: 10px 14px 12px; background: #fffffff5; border: 1px solid #d8e0d6; border-radius: 4px; box-shadow: 0 5px 20px #25362718; color: #385044; font-size: 11px; }
+.facade-overlay header { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 12px; }
+.facade-overlay header .icon-button { width: 30px; height: 30px; flex-shrink: 0; }
+.facade-overlay-note, .facade-overlay-hint { margin: 6px 0; color: #738172; font-size: 10px; line-height: 1.4; }
+.facade-overlay .check-setting { display: flex; align-items: center; gap: 8px; margin: 8px 0; }
+.facade-overlay-areas { display: flex; flex-wrap: wrap; gap: 4px; margin: 8px 0; }
+.facade-overlay-areas button { min-height: 28px; padding: 4px 8px; border: 1px solid #b8c5ba; border-radius: 3px; background: #f4f6f1; color: #385044; font-size: 11px; }
+.facade-overlay-areas button[aria-pressed=true] { background: #42604c; border-color: #42604c; color: #fff; }
+.facade-overlay .timber-area-actions { margin: 8px 0; }
+.facade-overlay .timber-area-ranges { display: grid; grid-template-columns: minmax(0, 1fr) 72px; align-items: center; gap: 12px; margin: 8px 0; }
+.facade-overlay .timber-range-heading { flex-wrap: wrap; gap: 2px 8px; }
+.facade-overlay .timber-range[data-orientation=vertical] { height: 92px; margin: 8px auto 0; }
+.facade-overlay-row { display: flex; align-items: center; gap: 6px; }
+.facade-overlay-row select { flex: 1; min-width: 0; padding: 8px; font-size: 11px; }
+.facade-overlay-row .icon-button { width: 32px; height: 32px; flex-shrink: 0; }
 .timber-coverage-empty { display: block; margin: 12px 0; font-size: 11px; color: #738172; }
 @media (max-width: 700px) {
   .scene-settings { top: 62px; right: 10px; }
   .settings-body { max-height: max(170px, calc(100dvh - 360px)); width: 244px; padding: 12px; }
   .scene-settings > summary { width: 78px; }
+  .facade-overlay { left: 10px; right: 10px; bottom: 62px; width: auto; max-height: 38dvh; padding: 8px 12px 10px; }
+  .facade-overlay-note, .facade-overlay-hint { display: none; }
+  .facade-overlay .check-setting, .facade-overlay-areas, .facade-overlay .timber-area-actions { margin: 5px 0; }
+  .facade-overlay .timber-range[data-orientation=vertical] { height: 72px; }
+  .facade-overlay .timber-range[data-orientation=horizontal] { height: 32px; margin-bottom: 0; }
+  .scene-settings[open] ~ .facade-overlay { display: none; }
 }

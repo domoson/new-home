@@ -120,15 +120,19 @@ function presetRegions(composition: FacadeComposition, face: TimberArea['face'],
   return regions
 }
 
-export function timberPresetAreas(composition: FacadeComposition, profile: TimberProfile): TimberArea[] {
-  const result: TimberArea[] = [], envelope = houseEnvelope(), spec = timberProfiles[profile]
+export function timberAreaExtent(face: TimberArea['face'], floorId: TimberArea['floor'], profile: TimberProfile) {
+  const envelope = houseEnvelope(), spec = timberProfiles[profile], floor = makeFloor(floorId)
   const front = .04 + spec.thickness + (profile === 'rhombus' ? .16 * spec.width : profile === 'board-batten' ? .02 : 0)
+  const roofTop = face === 'east' ? roofHeight(house.depth / 2) : roofHeight(face === 'north' ? envelope.z : envelope.z + envelope.depth) - .1 * Math.tan(house.pitch * Math.PI / 180)
+  return { left: face === 'east' ? envelope.z - .04 : envelope.x, right: face === 'east' ? envelope.z + envelope.depth + .04 : envelope.x + envelope.width + front, bottom: Math.max(0, floor.elevation - slabThickness(floorId)), top: floor.elevation + (floorId === 'DG' ? roofTop + roofFacadeRise : floor.height), base: floor.elevation }
+}
+
+export function timberPresetAreas(composition: FacadeComposition, profile: TimberProfile): TimberArea[] {
+  const result: TimberArea[] = []
   for (const floorId of ['EG', 'OG', 'DG'] as const) {
-    const floor = makeFloor(floorId)
     for (const face of ['east', 'north', 'south'] as const) {
-      const roofTop = face === 'east' ? roofHeight(house.depth / 2) : roofHeight(face === 'north' ? envelope.z : envelope.z + envelope.depth) - .1 * Math.tan(house.pitch * Math.PI / 180)
-      const extent = { left: face === 'east' ? envelope.z - .04 : envelope.x, right: face === 'east' ? envelope.z + envelope.depth + .04 : envelope.x + envelope.width + front, bottom: Math.max(0, floor.elevation - slabThickness(floorId)), top: floor.elevation + (floorId === 'DG' ? roofTop + roofFacadeRise : floor.height) }
-      for (const [index, region] of presetRegions(composition, face, extent, floor.elevation).entries()) {
+      const { base, ...extent } = timberAreaExtent(face, floorId, profile)
+      for (const [index, region] of presetRegions(composition, face, extent, base).entries()) {
         const from = Math.max(0, (region.left - extent.left) / (extent.right - extent.left) * 100), to = Math.min(100, (region.right - extent.left) / (extent.right - extent.left) * 100)
         const bottom = Math.max(0, (region.bottom - extent.bottom) / (extent.top - extent.bottom) * 100), top = Math.min(100, (region.top - extent.bottom) / (extent.top - extent.bottom) * 100)
         if (to > from && top > bottom) result.push({ id: `${floorId}-${face}-${index}`, floor: floorId, face, from, to, bottom, top, material: 'wood' })

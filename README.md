@@ -29,7 +29,7 @@ Im EG und KG gibt es eine kurze Gehbewegung mit Arm- und Beinschwingen.
 Ohne Moebel werden sitzende und liegende Figuren durch stehende ersetzt.
 
 Personen sind anfangs ausgeblendet; beide Einstellungen bleiben beim Ansichts-
-und Geschosswechsel erhalten, nicht beim Neuladen. Reduzierte Bewegung des
+und Geschosswechsel erhalten und werden mit einem Szenenentwurf gespeichert. Reduzierte Bewegung des
 Systems unterbindet die Animation. Figuren nur in 3D, nur in der Osthaelfte,
 ohne Rundgang-Kollisionskoerper oder automatische Wegfindung. Die Hoehen
 sind masshaltig, Koerperproportionen und Posen nur angenaehert; kein
@@ -46,27 +46,39 @@ dieselbe Geometrie; in 3D gehoert der Streifen zur Garten-Sichtbarkeit.
 Material und Hoehe sind Entwurfsannahmen. Kiesaufbau, Entwaesserung, Einfassung
 und Sockelabdichtung sind nicht als Ausfuehrungsdetail geplant.
 
-## Aussenstile
+## Gespeicherte Szenenentwuerfe
 
-Im 3D-Szenenmenue unter Oberflaechen steht pro Haushaelfte eine Stilauswahl
-mit fuenf Bildvorlagen und dem bisherigen Entwurf. Die Vorlagen setzen Putz, Dach, Dachunterbau, Haustuer,
-aeussere Fensterrahmen und Holzgestaltung gemeinsam; alle Einzelwerte bleiben
-anpassbar. Abweichende Kombinationen erscheinen als Individuell.
-Fensterinnenfarben, Sonnenstand und die andere Haushaelfte bleiben unveraendert.
-Die Einstellungen bleiben beim Ansichtswechsel erhalten, nicht beim Neuladen.
+Ganz oben in 3D > Szene ersetzt "Meine Entwuerfe" die bisherige Aussenstil-Auswahl.
+Namen eingeben und "Als neuen Entwurf speichern" waehlen: Jeder Speichervorgang
+legt einen unabhaengigen Stand an, ohne fruehere Staende zu ueberschreiben.
+Die Auswahl laedt fruehere Entwuerfe. Der Stift benennt den gewaehlten Stand mit
+dem eingegebenen Namen um; der Papierkorb loescht ihn nach Bestaetigung.
 
-Die fuenf Bildstile in der Reihenfolge der Vorlagen:
+Gespeichert werden saemtliche Szeneneinstellungen: Putz, Dach, Dachunterbau,
+Haustuer, Fenster innen/aussen, Holzprofil/-ton/-oberflaeche, Fensteranschluss,
+freie Holzflaechen und Putzausschnitte sowie Vordach fuer beide Haushaelften;
+ausserdem Innentueren, Lichtkreise/-modus, Uhrzeit/Jahreszeit, Sonnenschutz,
+Personen/Bewegung, Nachbarschaft, Garten und Gelaendetransparenz.
+Kamera, Geschoss, 2D/3D-Modus, Dach-/Moebelanzeige und offene Menues gehoeren
+nicht zum Szenenentwurf. Die Hausgeometrie selbst bleibt unveraendert.
 
-- Kiesel & Creme: cremeweisser Putz, hellgraue Fenster und Haustuer,
-  graphitgraue Ziegel, hellgrauer Dachunterbau.
-- Bronze & Schiefer: muschelweisser Putz, bronzefarbene Fenster und Haustuer,
-  schieferanthrazite Ziegel, anthrazitfarbener Dachunterbau.
-- Silber & Terrakotta: muschelweisser Putz, hellgraue Fenster und Haustuer,
-  naturrote Ziegel, hellgrauer Dachunterbau.
-- Graphit & Terrakotta: cremeweisser Putz, anthrazitfarbene Fenster und Haustuer,
-  naturrote Ziegel, anthrazitfarbener Dachunterbau.
-- Eiche & Terrakotta: cremeweisser Putz, Fenster in Eiche, Haustuer und
-  Dachunterbau mit Holztextur, naturrote Ziegel.
+Beim Start wird der zuletzt ausdruecklich gespeicherte Stand geladen, in der
+Auswahl mit "Start" markiert. Blosses Durchsehen oder Aendern speichert nichts.
+Beim Wechsel zu einem anderen Stand werden ungespeicherte Aenderungen erst nach
+Bestaetigung verworfen. Umbenennen aendert nur den Namen, nicht die Szene oder
+den Startstand. Wird der Startstand geloescht, folgt der letzte verbleibende
+Listeneintrag; ohne gespeicherte Entwuerfe gelten die Grundeinstellungen.
+
+Die Browserdaten liegen in localStorage unter `grundriss.scene-designs.v1` und
+sind an Browserprofil und Webadresse gebunden. Browserdaten-Loeschen entfernt
+auch diese Entwuerfe. Der Download exportiert die gesamte Sammlung samt
+aktuellem, gegebenenfalls ungespeichertem Stand als versionierte JSON-Datei;
+er aendert den Startstand im Browser nicht. Der Upload validiert die Datei und
+fuegt ihre Staende hinzu, ohne vorhandene Eintraege zu ersetzen. Bei leerer
+Sammlung wird der Startstand der importierten Sicherung uebernommen. Die
+aktuelle Ansicht bleibt beim Import unveraendert. Maximal 200 Staende,
+300 Flaechen je Haus und 5 MB je Datei. Fehlerhafte Dateien werden abgelehnt;
+bei gesperrtem oder vollem Browserspeicher bleibt JSON-Export verfuegbar.
 
 Farben sind visuelle Naeherungen, keine verbindlichen RAL- oder Materialangaben.
 Dachgeometrie, Ziegelraster und silberne Entwaesserung bleiben unveraendert.
@@ -77,8 +89,8 @@ Im Szenenmenue unter Innentueren lassen sich alle Innentuerblaetter und Zargen
 geschossuebergreifend gemeinsam auf Eiche natur (bisheriger Zustand), Reinweiss,
 gebrochenes Weiss oder Hellgrau stellen. Lackfarben haben keine Holzmaserung.
 Haustueren, Fenster, Glastueren und Beschlaege bleiben unveraendert;
-Aussenstile ueberschreiben die Innentuerfarbe nicht. Die Auswahl bleibt bei
-Geschoss- und Ansichtswechseln erhalten, nicht beim Neuladen der Seite.
+Aussenfarben ueberschreiben die Innentuerfarbe nicht. Die Auswahl bleibt bei
+Geschoss- und Ansichtswechseln erhalten und ist Teil gespeicherter Szenenentwuerfe.
 
 ## Sommerliche Gartenfarben
 
@@ -179,7 +191,7 @@ Aussenfarbe. Keine konstruktiv aufgeloeste Profil-/Dichtungssimulation.
   auch bei reiner Putzfassade. Briefkasten, Schlitz, Audiofeld und LED entfernt.
   "Eingangsueberdachung" unter Szene / Holzfassade schaltet jede Haelfte
   unabhaengig ein/aus, einschliesslich der Kollisionskoerper; die Eingangsstufe
-  bleibt erhalten. Auswahl gilt bis zum Neuladen. Abdichtung, Gefaelle,
+  bleibt erhalten. Die Auswahl ist Teil gespeicherter Szenenentwuerfe. Abdichtung, Gefaelle,
   Entwaesserung und Befestigung sind nicht konstruktiv ausgearbeitet.
   Ein einziges Haustuer-Seitenteil in gleicher Oberflaeche wie die Alu-Tuer:
   ersetzt das bisherige schmale Glas, keine zusaetzliche suedliche Verkleidung.
@@ -605,7 +617,7 @@ Planungsannahmen in der Anwendung. Umgebungsmodelle bleiben weiterverwendet.
   fuer Ost und West unabhaengig einstellen. Beide Haelften sind voll eingerichtet.
 - Szene / Raumbeleuchtung: Haushaelfte und Geschoss waehlen; Deckenleuchten
   raumweise oder fuer das ganze Geschoss schalten. Treppe und Partylicht sind eigene
-  Schaltkreise. Schalter bleiben bei Ansichtswechseln erhalten, nicht beim Neuladen.
+  Schaltkreise. Schalter bleiben bei Ansichtswechseln erhalten und werden im Szenenentwurf gespeichert.
   Anfangs ist nur das KG beleuchtet. Die Uhrzeit umfasst auch die ganze Nacht.
 - Szene / Beleuchtungsmodus: Raumlicht verwendet Leuchten, Schatten und
   angenaehertes Reflexionslicht. Global stellt die fruehere helle Aufhellung
@@ -625,9 +637,9 @@ Planungsannahmen in der Anwendung. Umgebungsmodelle bleiben weiterverwendet.
   Seitenleiste und Geschossauswahl bleiben beim ausgewaehlten Einstieg.
 - DG-Traufstreifen unter 1,20 m sind durch geschlossene Waende abgetrennt und
   nicht als Raumflaeche gerechnet. Kein separater Dachstauraum.
-- Nur ein Hauptentwurf mit kompakter U-Wendeltreppe. Keine Vergleichsgrundrisse oder
-  gespeicherte Entwurfsauswahl. Szeneneinstellungen bleiben beim Geschosswechsel
-  erhalten, werden beim Neuladen zurueckgesetzt. Kein CAD-Editor.
+- Nur ein geometrischer Hauptentwurf mit kompakter U-Wendeltreppe, keine
+  Vergleichsgrundrisse. Benannte Szenenentwuerfe speichern die Gestaltung und
+  Szenenoptionen; beim Neuladen gilt der zuletzt gespeicherte Stand. Kein CAD-Editor.
 
 ## Entwurf
 
@@ -1323,10 +1335,15 @@ Flaechen lassen sich deaktivieren, duplizieren, verschieben, vergroessern und
 loeschen. Holzprofil, Farbe und Oberflaeche gelten weiterhin pro Haushaelfte.
 Vordach bleibt unabhaengig schaltbar. Aenderungen erfolgen im laufenden
 3D-Modell ohne Kamerasprung. Entwuerfe bleiben bei Ansichts-/Geschosswechseln
-erhalten, werden aber nicht ueber ein vollstaendiges Neuladen hinaus gespeichert.
+erhalten und koennen unter "Meine Entwuerfe" fuer spaetere Sitzungen gespeichert werden.
 
-Bedienung: 3D > Szene > Aussenstil "Holz / Laerche" fuer OG und DG mit hellem Putz
-und warmgrauen Fenstern. Unter "Holzfassade / 3D" Profil, Holzart, Oberflaeche und
+Ein Klick auf eine freie Fassade im 3D-Modell waehlt Haus, Seite und Geschoss
+auch im Szenenmenue. Das eingeblendete Bedienfeld und die Rahmen-Griffe steuern
+dieselben Flaechen: Kanten aendern Grenzen, der mittlere Griff verschiebt die
+Flaeche. Erst eine Bearbeitung ueberfuehrt eine Vorlage in freie Holzflaechen.
+
+Bedienung: 3D > Szene > Fassadenentwurf "Putz + Holz OG und DG" fuer Holz in den
+oberen Geschossen. Unter "Holzfassade / 3D" Profil, Holzart, Oberflaeche und
 Fensteranschluss pro Haushaelfte einstellen. "Fassadenvergleich" oeffnet vier
 Uebersichten: A-J in Laerche, A/C in vier Holzarten, drei Fensteranschluesse und
 drei Oberflaechenzustaende. Jede der 24 Kombinationen hat eine Gesamt- und

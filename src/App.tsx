@@ -8,7 +8,8 @@ import SitePlan from './SitePlan'
 import SetbackDetails from './SetbackDetails'
 import { siteItems } from './sitePlanModel'
 import type { SiteItem } from './sitePlanModel'
-import { initialSettings, siteArea } from './context'
+import { siteArea } from './context'
+import { readDesignStorage, startupScene } from './sceneDesigns'
 import { referenceAreas } from './providerPlan'
 import ProviderDetails from './ProviderDetails'
 import { downloadBlob, planPng } from './exportImage'
@@ -20,7 +21,10 @@ export default function App() {
   const [floorId, setFloorId] = useState<FloorId>('EG')
   const [exterior, setExterior] = useState(false)
   const [siteItem, setSiteItem] = useState<SiteItem>(siteItems.find(item => item.id === 'carport-west')!)
-  const [settings, setSettings] = useState(initialSettings)
+  const [designStartup] = useState(() => readDesignStorage({ getItem: key => window.localStorage.getItem(key) }))
+  const [designLibrary, setDesignLibrary] = useState(designStartup.library)
+  const [designId, setDesignId] = useState(designStartup.library.lastSavedId ?? '')
+  const [settings, setSettings] = useState(() => startupScene(designStartup.library))
   const [mode, setMode] = useState<'plan' | 'orbit' | 'walk'>('plan')
   const [selected, setSelected] = useState('living')
   const [dimensions, setDimensions] = useState(true)
@@ -179,7 +183,7 @@ export default function App() {
       <main className="drawing-area">
         <div className="toolbar"><nav className="floor-tabs" aria-label="Geschoss">{floorIds.map(id => <button key={id} aria-pressed={!exterior && floorId === id} onClick={() => changeFloor(id)}>{id}</button>)}<button aria-label="Außenanlagen" title="Außenanlagen" aria-pressed={exterior} onClick={() => { setExterior(true); setMode('plan'); setSection(false); setZoom(1) }}><Trees size={18} /></button></nav><div className="mode-tabs" aria-label="Ansicht"><button aria-pressed={mode === 'plan'} onClick={() => setMode('plan')}><Layers2 size={16} />2D</button><button aria-pressed={mode === 'orbit'} onClick={() => { setMode('orbit'); if (exterior) { setRoof(true); setSettings(value => ({ ...value, transparentGround: false })) } }}><Box size={16} />3D</button><button aria-label="Rundgang" aria-pressed={mode === 'walk'} onClick={() => setMode('walk')}><Footprints size={16} /><span>Rundgang</span></button></div></div>
         <div className="canvas-area" ref={canvasArea}><div className="drawing-title"><span className="eyebrow">{mode === 'plan' ? exterior ? 'AUSSENANLAGEN' : section ? 'GEBÄUDESCHNITT' : 'GRUNDRISS' : mode === 'orbit' ? 'RAUMMODELL' : 'AUGENHÖHE · 1,65 M'}</span><span>{exterior ? 'Grundstück Ost + West' : mode === 'plan' && section ? 'Alle Geschosse' : floor.name} <i>/</i> Hauptentwurf</span></div>
-          {mode === 'plan' ? exterior ? <SitePlan key={reset} dimensions={dimensions} zoom={zoom} onZoom={setZoom} selected={siteItem.id} onSelect={item => { setSiteItem(item); setRoomsOpen(true) }} /> : section ? <SectionView key={reset} floorId={floorId} furnished={furnished} zoom={zoom} onZoom={setZoom} /> : <FloorPlan key={`${floorId}-${reset}`} floor={floor} selected={activeRoom.id} onSelect={inspect} dimensions={dimensions} furnished={furnished} zoom={zoom} onZoom={setZoom} /> : <Suspense fallback={<div className="loading">Raummodell wird aufgebaut…</div>}><HouseScene key={`${floorId}-${mode}-${furnished}-${roof}-${cutWalls}-${activeRoom.id}-${reset}`} floorId={floorId} mode={mode} furnished={furnished} roof={roof} cutWalls={cutWalls} selected={activeRoom.id} reset={reset} settings={settings} onSettings={setSettings} captureImage={captureImage} /></Suspense>}
+          {mode === 'plan' ? exterior ? <SitePlan key={reset} dimensions={dimensions} zoom={zoom} onZoom={setZoom} selected={siteItem.id} onSelect={item => { setSiteItem(item); setRoomsOpen(true) }} /> : section ? <SectionView key={reset} floorId={floorId} furnished={furnished} zoom={zoom} onZoom={setZoom} /> : <FloorPlan key={`${floorId}-${reset}`} floor={floor} selected={activeRoom.id} onSelect={inspect} dimensions={dimensions} furnished={furnished} zoom={zoom} onZoom={setZoom} /> : <Suspense fallback={<div className="loading">Raummodell wird aufgebaut…</div>}><HouseScene key={`${floorId}-${mode}-${furnished}-${roof}-${cutWalls}-${activeRoom.id}-${reset}`} floorId={floorId} mode={mode} furnished={furnished} roof={roof} cutWalls={cutWalls} selected={activeRoom.id} reset={reset} settings={settings} onSettings={setSettings} captureImage={captureImage} designs={{ library: designLibrary, onLibrary: setDesignLibrary, selectedId: designId, onSelect: setDesignId, storageError: designStartup.error }} /></Suspense>}
           {exportError && <div className="export-error" role="alert">{exportError}<button className="icon-button" aria-label="Exportmeldung schließen" onClick={() => setExportError('')}><X size={16} /></button></div>}
           {mode === 'orbit' && !roof && <button className={`icon-button section-toggle ${cutWalls ? 'on' : ''}`} title={cutWalls ? 'Volle Wandhöhe anzeigen' : 'Wände auf 1,05 m schneiden'} aria-label="Wände schneiden" aria-pressed={cutWalls} onClick={() => setCutWalls(!cutWalls)}><BrickWall size={19} /></button>}
           {mode === 'plan' && !exterior && <button className={`icon-button section-toggle ${section ? 'on' : ''}`} title={section ? 'Zurück zum Grundriss' : 'Gebäudeschnitt öffnen'} aria-label="Querschnitt" aria-pressed={section} onClick={() => { setSection(!section); setZoom(1) }}>{section ? <Layers2 size={19} /> : <Scissors size={19} />}</button>}
