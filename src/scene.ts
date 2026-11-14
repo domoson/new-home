@@ -9,7 +9,7 @@ import { createRoomLighting } from './lighting'
 import { createIndirectLighting } from './indirectLighting'
 import { stairPrism } from './winderStair'
 import { roofTileGeometry } from './roofTiles'
-import type { FloorId, Furniture, Rect, Solid } from './model'
+import type { FloorId, Furniture, Rect, Solid, WindowEdits } from './model'
 import { finishes, initialAppearance, partner, partnerEnvelope, siteBoundary, siteHouseEnvelope, siteHouseRect } from './context'
 import type { FacadeComposition, FinishKey, WoodProfile } from './context'
 import { createFacadeMaterial } from './facade'
@@ -69,7 +69,7 @@ function floorTexture() {
   return texture
 }
 
-export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, furnished: boolean, cutWalls = false, includeSite = true, entryCanopies: { east?: boolean; west?: boolean } = {}): SceneModel {
+export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, furnished: boolean, cutWalls = false, includeSite = true, entryCanopies: { east?: boolean; west?: boolean } = {}, windowEdits: { east?: WindowEdits; west?: WindowEdits } = {}): SceneModel {
   const group = new THREE.Group(), colliders: ColliderShape[] = [], triangles: SceneModel['triangles'] = [], doors: DoorModel[] = []
   const siteGroup = new THREE.Group(), siteTriangles: SceneModel['triangles'] = []
   const textures: THREE.Texture[] = [], materials: THREE.Material[] = []
@@ -497,7 +497,7 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
   }
   const renderedFloors = walk || showRoof ? floorIds : [floorId]
   const canopy = entryCanopies.east !== false && (walk || showRoof || floorId === 'EG') ? entryCanopy(makeFloor('EG', includeSite ? 'east' : 'west')) : undefined
-  const cladding = createTimberCladding(renderedFloors, cutWalls && !walk && !showRoof, includeSite ? 'east' : 'west', canopy)
+  const cladding = createTimberCladding(renderedFloors, cutWalls && !walk && !showRoof, includeSite ? 'east' : 'west', canopy, windowEdits.east)
   group.add(cladding.group)
   cladding.set(initialAppearance.composition, initialAppearance.woodTone, initialAppearance.woodProfile)
   const envelope = houseEnvelope()
@@ -506,7 +506,7 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
   const party = furnished && includeSite && makeFloor('KG').furniture.some(item => item.id === 'party-sofa') && renderedFloors.includes('KG') ? createPartyRoom(materials) : undefined
   if (party) group.add(party.group)
   for (const id of renderedFloors) {
-    const floor = makeFloor(id, includeSite ? 'east' : 'west'), base = floor.elevation
+    const floor = makeFloor(id, includeSite ? 'east' : 'west', windowEdits.east), base = floor.elevation
     for (const detail of raffstores(floor)) {
       const blind = createRaffstore(detail, base, facade, frameMaterial)
       blinds.push(blind); group.add(blind.group)
@@ -562,6 +562,7 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
           const fixedBox = (start: number, bottom: number, width: number, height: number, material: THREE.Material, thickness = .08) => {
             const bounds = wall.axis === 'x' ? rect(east + start, south - thickness / 2, width, thickness) : rect(east - thickness / 2, south + start, thickness, width)
             const mesh = addBox(bounds, base + opening.sill + bottom, height, material === frameMaterial ? frameFaces(wall.axis === 'z' ? 1 : wall.id === 'north' ? 4 : 5) : material)
+            mesh.userData.windowEdit = `${id}-${opening.id}`
             if (material === openingFrame) mesh.userData.windowFrame = `${id}-${opening.id}`
             return mesh
           }
@@ -581,6 +582,7 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
             const width = panel.width - 2 * windowGap, height = panel.height - 2 * windowGap
             const reverseHinge = panel.hinge === 'end', start = panel.start + windowGap + (reverseHinge ? width : 0)
             const pivot = new THREE.Group()
+            pivot.userData.windowEdit = `${id}-${opening.id}`
             pivot.position.set(east + (wall.axis === 'x' ? start : 0), base + opening.sill + panel.bottom + windowGap, south + (wall.axis === 'z' ? start : 0))
             pivot.rotation.y = (wall.axis === 'x' ? 0 : -Math.PI / 2) + (reverseHinge ? Math.PI : 0)
             group.add(pivot)
@@ -816,8 +818,8 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
     }
     triangles.push(...siteTriangles)
   }
-  const west = includeSite ? buildScene(floorId, walk, showRoof, furnished, cutWalls, false, { east: entryCanopies.west }) : undefined
-  const indirectLighting = createIndirectLighting(renderedFloors, materials, coordinates, includeSite ? 'east' : 'west')
+  const west = includeSite ? buildScene(floorId, walk, showRoof, furnished, cutWalls, false, { east: entryCanopies.west }, { east: windowEdits.west }) : undefined
+  const indirectLighting = createIndirectLighting(renderedFloors, materials, coordinates, includeSite ? 'east' : 'west', windowEdits.east)
   if (west) {
     west.group.name = 'house-west'; west.group.scale.x = -1; west.group.position.set(-housePlacement.x, 0, partner.z + housePlacement.z); group.add(west.group)
     for (const collider of west.colliders) colliders.push({ position: new THREE.Vector3(-collider.position.x - housePlacement.x, collider.position.y, collider.position.z + partner.z + housePlacement.z), size: collider.size.clone(), rotation: new THREE.Quaternion(collider.rotation.x, -collider.rotation.y, -collider.rotation.z, collider.rotation.w) })

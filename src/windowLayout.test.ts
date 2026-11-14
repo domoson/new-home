@@ -1,8 +1,54 @@
 import { describe, expect, it } from 'vitest'
 import { floorIds, makeFloor, type Opening } from './model'
 import { windowMullionStart, windowPanels } from './windowLayout'
+import { dragWindow, windowDraft } from './windowEdits'
+import { raffstores } from './raffstore'
 
 describe('Fensterteilungen', () => {
+  it('preserves exact window sizes when dragging and only changes the grabbed edge', () => {
+    const opening: Opening = { id: 'test', kind: 'window', start: .915, sill: .855, width: 1.105, height: 2.155 }
+    expect(dragWindow(opening, 'move', .043, .004)).toMatchObject({ sill: .855, width: 1.105, height: 2.155 })
+    expect(dragWindow(opening, 'move', .043, .004).start).toBeCloseTo(.955)
+    const left = dragWindow(opening, 'from', .043, .012)
+    expect(left.start + left.width).toBeCloseTo(opening.start + opening.width)
+    expect(left.height).toBe(opening.height)
+    expect(left.sill).toBe(opening.sill)
+    expect(dragWindow(opening, 'to', .043, .012)).toMatchObject({ start: opening.start, sill: opening.sill, height: opening.height })
+    const bottom = dragWindow(opening, 'bottom', .023, .061)
+    expect(bottom.sill + bottom.height).toBeCloseTo(opening.sill + opening.height)
+    expect(bottom.width).toBe(opening.width)
+    expect(bottom.start).toBe(opening.start)
+  })
+  it('applies window edits to apertures and blinds without changing the base or other house', () => {
+    const base = makeFloor('OG'), original = base.walls.find(wall => wall.id === 'south')!.openings.find(opening => opening.id === 'south-east')!
+    const draft = { ...windowDraft(original), start: original.start - .1, width: 1.2, height: 1.2 }
+    const edited = makeFloor('OG', 'east', { 'OG-south-east': draft })
+    expect(edited.walls.find(wall => wall.id === 'south')!.openings.find(opening => opening.id === 'south-east')).toMatchObject(draft)
+    expect(raffstores(edited).find(blind => blind.id.includes('south-east'))).not.toEqual(raffstores(base).find(blind => blind.id.includes('south-east')))
+    expect(makeFloor('OG')).toEqual(base)
+    expect(makeFloor('OG', 'west').walls.find(wall => wall.id === 'south')!.openings.find(opening => opening.id === 'south-east')!.width).toBe(1.73)
+    expect(() => makeFloor('OG', 'east', { 'OG-south-east': { ...draft, start: -1 } })).toThrow('innerhalb')
+    expect(() => makeFloor('OG', 'east', { 'OG-south-east': { ...draft, start: .9 } })).toThrow('überschneidet')
+    expect(() => makeFloor('OG', 'east', { 'OG-south-east': { ...draft, height: 3 } })).toThrow('Sonnenschutz')
+    expect(() => makeFloor('OG', 'east', { 'OG-south-east': { ...draft, width: NaN } })).toThrow('gültige')
+    expect(() => makeFloor('DG', 'east', { 'DG-gable-office': { ...draft, start: .5 } })).toThrow('Dach')
+  })
+  it('supports editable fields, unequal widths, hinges and fixed underlights', () => {
+    const opening: Opening = { id: 'test-fixed', kind: 'window', start: 0, width: 2, height: 2.1, sill: 0, windowLayout: { columns: 2, split: .35, lowerFixed: .6, fields: [{ fixed: false, hinge: 'end' }, { fixed: true, hinge: 'start' }] } }
+    const panels = windowPanels(opening)
+    expect(panels).toHaveLength(4)
+    expect(panels.filter(panel => !panel.fixed)).toEqual([expect.objectContaining({ column: 0, hinge: 'end' })])
+    expect(windowMullionStart(opening)).toBeCloseTo(.67)
+    expect(panels[0].width).toBeCloseTo(.62)
+    expect(panels[2].width).toBeCloseTo(1.22)
+    for (const panel of panels) {
+      expect(panel.width).toBeGreaterThan(0)
+      expect(panel.height).toBeGreaterThan(0)
+      expect(panel.start + panel.width).toBeLessThan(opening.width)
+      expect(panel.bottom + panel.height).toBeLessThan(opening.height)
+    }
+    expect(windowPanels({ ...opening, windowLayout: { columns: 1, fields: [{ fixed: false, hinge: 'start' }] } })).toEqual([expect.objectContaining({ fixed: false, width: 1.9 })])
+  })
   it('moves the OG bathroom window another 30 cm east and extends its bottom to 100 cm height while keeping south EG glazing fixed', () => {
     for (const side of ['east', 'west'] as const) {
       const north = makeFloor('OG', side).walls.find(wall => wall.id === 'north')!

@@ -30,7 +30,7 @@ function upperChildrenDivider(): number {
   return (southWidth * (house.south - interiorWallThickness) + mainWidth * stair.z - northWidth * (stair.z - house.north)) / (southWidth + mainWidth)
 }
 
-function shell(id: FloorId): Wall[] {
+function shell(id: FloorId, side: 'east' | 'west'): Wall[] {
   const fixedWindow = (name: string, start: number): Opening => ({ ...windowOpening(name, start, 1.105, 0, 2.155), windowLayout: { columns: 1, fixed: true } })
   const underlightWindow = (name: string, start: number): Opening => ({ ...fixedWindow(name, start), windowLayout: { columns: 1, lowerFixed: .9 } })
   const cornerReturn = Math.max(0, .4 - construction.exteriorWall)
@@ -40,6 +40,17 @@ function shell(id: FloorId): Wall[] {
   const terraceWidth = 2.98, terraceLeaf = terraceWidth / 2
   const terraceStart = southWallLength - terraceWidth - cornerReturn
   const south: Opening[] = id === 'KG' ? [windowOpening('well-hobby-south', .9, basementWindow.width, 1.35, basementWindow.height)] : id === 'EG' ? [fixedWindow('garden-west-fixed', 1.2 - house.west), opening('terrace', terraceStart, terraceLeaf, 'door', 0, 2.155), { ...windowOpening('garden-fixed', terraceStart + terraceLeaf, terraceLeaf, 0, 2.155), windowLayout: { columns: 1, fixed: true } }] : id === 'OG' ? [underlightWindow('south-west', 1.2 - house.west), windowOpening('south-east', 4.235, 1.73, .93, 1.23)] : []
+  if (side === 'east') {
+    const fixedStart = 1.2 - house.west, fixedWidth = 1.105, slidingLeaf = 1.73
+    const groupEnd = fixedStart + fixedWidth + slidingLeaf * 2
+    if (id === 'EG') {
+      south.find(opening => opening.id === 'terrace')!.start = fixedStart + fixedWidth
+      south.find(opening => opening.id === 'terrace')!.width = slidingLeaf
+      Object.assign(south.find(opening => opening.id === 'garden-fixed')!, { start: fixedStart + fixedWidth + slidingLeaf, width: slidingLeaf })
+    } else if (id === 'OG') {
+      Object.assign(south.find(opening => opening.id === 'south-east')!, { start: groupEnd - 1.3, width: 1.3, sill: .855, height: 1.3, windowLayout: { columns: 1 } })
+    }
+  }
   const envelope = id === 'KG' ? basementEnvelope() : houseEnvelope()
   const eastInner = id === 'KG' ? basement.east : house.east
   const westInner = id === 'KG' ? basement.west : house.west
@@ -48,7 +59,7 @@ function shell(id: FloorId): Wall[] {
 }
 
 export function buildProviderFloor(id: FloorId, side: 'east' | 'west'): Floor {
-  const floor: Floor = { id, name: { KG: 'Kellergeschoss', EG: 'Erdgeschoss', OG: 'Obergeschoss', DG: 'Dachgeschoss' }[id], elevation: elevations[id], height: id === 'KG' ? construction.basementClearHeight : construction.clearHeight, rooms: [], walls: shell(id), furniture: [] }
+  const floor: Floor = { id, name: { KG: 'Kellergeschoss', EG: 'Erdgeschoss', OG: 'Obergeschoss', DG: 'Dachgeschoss' }[id], elevation: elevations[id], height: id === 'KG' ? construction.basementClearHeight : construction.clearHeight, rooms: [], walls: shell(id, side), furniture: [] }
   const recesses = raffstores(floor).map(blind => blind.box)
   for (const wall of floor.walls) wall.recesses = recesses
   if (side === 'west') return floor

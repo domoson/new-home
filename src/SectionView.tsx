@@ -1,14 +1,14 @@
 import { useState } from 'react'
 import { Ruler, Trash2 } from 'lucide-react'
 import { atticCeiling, atticCeilingPanels, ceilingHeight, construction, elevations, frostSkirtDepth, frostSkirts, house, houseEnvelope, floorIds, floorSlabs, makeFloor, ridgeElevations, roofHeight, roofInnerElevation, roofOuterElevation, roofPanels, roofVerticalThickness, roofWindows, slabThickness, stairFor, stairGuards, stairInnerWall, stairSolids, storeyRise, wallSolids } from './model'
-import type { FloorId, Rect } from './model'
+import type { FloorId, Rect, WindowEdits } from './model'
 import { distance, furnitureName, metres } from './measure'
 import type { PlanPoint } from './measure'
 import { sectionSpan } from './section'
 import type { SectionAxis } from './section'
 import { usePlanGestures } from './planGestures'
 
-export default function SectionView({ furnished, zoom, floorId, onZoom }: { furnished: boolean; zoom: number; floorId: FloorId; onZoom: (zoom: number) => void }) {
+export default function SectionView({ furnished, zoom, floorId, onZoom, windows }: { furnished: boolean; zoom: number; floorId: FloorId; onZoom: (zoom: number) => void; windows?: WindowEdits }) {
   const [axis, setAxis] = useState<SectionAxis>('NS')
   const [position, setPosition] = useState(.9)
   const [heightProbe, setHeightProbe] = useState<number | null>(null)
@@ -39,7 +39,7 @@ export default function SectionView({ furnished, zoom, floorId, onZoom }: { furn
       <text x={length / 2} y={-construction.terrain + .36} fontSize=".28" textAnchor="middle" fill="#496044">OK Gelände / Urgelände {metres(construction.terrain)} · Annahme</text>
       {frostSkirts().map((skirt, index) => block(skirt, construction.terrain - frostSkirtDepth, frostSkirtDepth, '#7c887f', 'Frostschürze nicht unterkellerter Ostbereich (Annahme)', `frost-skirt-${index}`))}
       {floorIds.map(id => {
-        const floor = makeFloor(id), base = floor.elevation
+        const floor = makeFloor(id, 'east', windows), base = floor.elevation
         return <g key={id} opacity={id === floorId ? 1 : .82}>
           {floorSlabs(id).map((slab, index) => block(slab, base - slabThickness(id), slabThickness(id), '#69766c', id === 'KG' ? 'KG Boden-/Fundamentpaket (Annahme)' : `${id} Deckenpaket`, `${id}-slab-${index}`))}
           {floor.walls.flatMap(wall => wallSolids(wall, id === 'DG' ? ['north', 'south', 'east', 'west'].includes(wall.id) ? roofHeight(house.depth / 2) : atticCeiling.height : floor.height).map((solid, index) => {

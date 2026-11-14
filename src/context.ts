@@ -1,6 +1,6 @@
 import * as SunCalc from 'suncalc'
 import { basementEnvelope, house, houseEnvelope, housePlacement } from './model'
-import type { Rect } from './model'
+import type { Rect, WindowEdits } from './model'
 import type { TimberOptions } from './timberCladding'
 
 export const siteBoundary: [number, number][] = [[-10.056098883413, -1.667802356868], [10.250012281990, -4.480603334238], [13.648101413502, 20.791970540504], [-14.323750719705, 23.472546642384]]
@@ -52,7 +52,7 @@ export const woodProfiles = [
   { id: 'open-slats', name: 'Offene Leisten · 38 / 42 mm' },
 ] as const
 export type WoodProfile = typeof woodProfiles[number]['id']
-export type HouseAppearance = { facade: string; roof: string; roofTrim: string; entryDoor: string; frame: string; frameInside: string; composition: FacadeComposition; woodTone: number; woodProfile: WoodProfile; timber?: TimberOptions; entryCanopy?: boolean }
+export type HouseAppearance = { facade: string; roof: string; roofTrim: string; entryDoor: string; frame: string; frameInside: string; composition: FacadeComposition; woodTone: number; woodProfile: WoodProfile; timber?: TimberOptions; entryCanopy?: boolean; windows?: WindowEdits }
 export type SceneSettings = HouseAppearance & { people: boolean; peopleMoving: boolean; interiorDoor: string; hour: number; season: 'summer' | 'spring' | 'winter'; west: HouseAppearance; surroundings: boolean; landscaping: boolean; transparentGround: boolean; lights: Record<string, boolean>; lightingMode: 'room' | 'global'; raffstoreExtension: number; raffstoreTilt: number }
 export const initialAppearance: HouseAppearance = { facade: finishes.facade[3].color, roof: finishes.roof[4].color, roofTrim: finishes.roofTrim[1].color, entryDoor: finishes.entryDoor[1].color, frame: finishes.frame[7].color, frameInside: finishes.frame[0].color, composition: 'plaster', woodTone: 3, woodProfile: 'boards' }
 type ExteriorAppearance = Omit<HouseAppearance, 'frameInside'>

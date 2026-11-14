@@ -89,7 +89,31 @@
 .facade-overlay-row select { flex: 1; min-width: 0; padding: 8px; font-size: 11px; }
 .facade-overlay-row .icon-button { width: 32px; height: 32px; flex-shrink: 0; }
 .timber-coverage-empty { display: block; margin: 12px 0; font-size: 11px; color: #738172; }
+.window-edit-toggle { position: absolute; top: 74px; left: 18px; z-index: 7; display: flex; align-items: center; gap: 7px; height: 38px; padding: 0 12px; color: #385044; background: #fff; border: 1px solid #b8c5ba; border-radius: 4px; font-size: 12px; }
+.window-edit-toggle[aria-pressed=true] { color: #fff; background: #42604c; }
+.window-editor { width: 310px; }
+.window-editor header > div { display: flex; gap: 4px; }
+.window-editor label { display: block; min-width: 0; margin: 8px 0; }
+.window-selector { display: grid; grid-template-columns: 90px minmax(0, 1fr); gap: 6px; margin: 8px 0; }
+.window-editor select, .window-editor input[type=number] { box-sizing: border-box; width: 100%; min-width: 0; min-height: 34px; padding: 6px; border: 1px solid #b8c5ba; border-radius: 3px; color: #385044; background: #fff; font: inherit; }
+.window-dimensions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 10px; }
+.window-editor input[type=number] { display: block; margin-top: 4px; font-variant-numeric: tabular-nums; }
+.window-diagram { display: grid; gap: 4px; width: auto; height: 94px; max-width: 100%; margin: 10px auto; border: 5px solid #667569; background: #667569; }
+.window-diagram-column { display: grid; gap: 4px; min-width: 0; }
+.window-diagram-pane { position: relative; display: grid; place-items: center; min-height: 0; background: #dcebf0; color: #3a535b; overflow: hidden; }
+.window-diagram-pane svg { position: absolute; inset: 0; width: 100%; height: 100%; fill: none; stroke: #526f78; stroke-width: 1.5; }
+.window-diagram-pane span { z-index: 1; padding: 1px 3px; background: #dcebf0df; font-size: 10px; }
+.window-editor .lighting-mode { margin: 8px 0; }
+.window-editor .window-field { display: grid; grid-template-columns: 35px minmax(0, 1fr) 32px; align-items: center; gap: 5px; }
+.window-field .icon-button { width: 32px; height: 34px; }
+.window-split output { float: right; font-variant-numeric: tabular-nums; }
+.window-split input { width: 100%; height: 28px; accent-color: #526f5a; }
+.window-reset { display: flex; align-items: center; gap: 6px; padding: 7px 0; border: 0; background: transparent; color: #385044; font-size: 11px; }
+.window-editor button:disabled { opacity: .4; cursor: default; }
 @media (max-width: 700px) {
+  .window-edit-toggle { top: 62px; left: 10px; }
+  .window-editor { width: auto; max-height: 42dvh; }
+  .window-editor .window-diagram { height: 48px; margin: 6px auto; }
   .scene-settings { top: 62px; right: 10px; }
   .settings-body { max-height: max(170px, calc(100dvh - 360px)); width: 244px; padding: 12px; }
   .scene-settings > summary { width: 78px; }

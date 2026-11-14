@@ -2,11 +2,15 @@ import { winderCore, winderSteps } from './winderStair'
 import type { StairPoint } from './winderStair'
 import { buildProviderFloor } from './providerPlan'
 import { kitchenModules } from './kitchenStorage'
+import { applyWindowEdits } from './windowEdits'
 
 export type FloorId = 'KG' | 'EG' | 'OG' | 'DG'
 export type Rect = { x: number; z: number; width: number; depth: number; footprint?: StairPoint[] }
 export type Room = { id: string; name: string; parts: Rect[]; color: string; note: string; spawn: [number, number]; tileParts?: Rect[] }
-export type Opening = { start: number; width: number; sill: number; height: number; kind: 'door' | 'window' | 'passage'; id: string; hinge?: 'end'; swing?: 'reverse'; frame?: number; glazed?: boolean; infill?: 'aluminium'; cornerGlazing?: boolean; windowLayout?: { columns: 1 | 2; fixed?: boolean; lowerFixed?: number; ventilationWidth?: number; ventilationSide?: 'start' | 'end' } }
+export type WindowField = { fixed: boolean; hinge: 'start' | 'end' }
+export type WindowEdit = Pick<Opening, 'start' | 'width' | 'height' | 'sill'> & { windowLayout: NonNullable<Opening['windowLayout']> }
+export type WindowEdits = Record<string, WindowEdit>
+export type Opening = { start: number; width: number; sill: number; height: number; kind: 'door' | 'window' | 'passage'; id: string; hinge?: 'end'; swing?: 'reverse'; frame?: number; glazed?: boolean; infill?: 'aluminium'; cornerGlazing?: boolean; windowLayout?: { columns: 1 | 2; fixed?: boolean; lowerFixed?: number; ventilationWidth?: number; ventilationSide?: 'start' | 'end'; fields?: WindowField[]; split?: number } }
 export type Wall = Rect & { id: string; axis: 'x' | 'z'; openings: Opening[]; height?: number; recesses?: (Rect & { bottom: number; height: number })[] }
 export type Furniture = Rect & { id: string; kind: 'bed' | 'sofa' | 'chaise' | 'bookcase' | 'table' | 'chair' | 'bench' | 'cabinet' | 'coat-rack' | 'counter' | 'sink' | 'wc' | 'shower' | 'bath' | 'desk' | 'tv' | 'plant' | 'machine' | 'hob' | 'espresso'; height: number; bottom?: number; angle?: number; color?: string; shape?: 'round'; concealedFittings?: boolean; seatHeight?: number; front?: 'north' | 'south' | 'east' | 'west'; frontBottom?: number; niche?: { bottom: number; height: number }; baseInset?: { west: number; south: number } }
 export type Floor = { id: FloorId; name: string; elevation: number; height: number; rooms: Room[]; walls: Wall[]; furniture: Furniture[] }
@@ -124,8 +128,8 @@ export function roomArea(room: Room, floor: FloorId) {
   if (floor !== 'DG') return { floor: gross, living: gross * .97 }
   return { floor: gross, living: atticLivingArea(room) * .97 }
 }
-export function makeFloor(id: FloorId, houseSide: 'east' | 'west' = 'east'): Floor {
-  return buildProviderFloor(id, houseSide)
+export function makeFloor(id: FloorId, houseSide: 'east' | 'west' = 'east', windows: WindowEdits = {}): Floor {
+  return applyWindowEdits(buildProviderFloor(id, houseSide), windows)
 }
 export type Solid = Rect & { bottom: number; height: number; kind: 'wall' | 'stair' | 'floor' | 'rail'; id: string; footprint?: StairPoint[] }
 export function wallSolids(wallData: Wall, height: number): Solid[] {

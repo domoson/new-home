@@ -56,11 +56,11 @@ dem eingegebenen Namen um; der Papierkorb loescht ihn nach Bestaetigung.
 
 Gespeichert werden saemtliche Szeneneinstellungen: Putz, Dach, Dachunterbau,
 Haustuer, Fenster innen/aussen, Holzprofil/-ton/-oberflaeche, Fensteranschluss,
-freie Holzflaechen und Putzausschnitte sowie Vordach fuer beide Haushaelften;
+freie Holzflaechen und Putzausschnitte sowie Vordach und Fenstergeometrie fuer beide Haushaelften;
 ausserdem Innentueren, Lichtkreise/-modus, Uhrzeit/Jahreszeit, Sonnenschutz,
 Personen/Bewegung, Nachbarschaft, Garten und Gelaendetransparenz.
 Kamera, Geschoss, 2D/3D-Modus, Dach-/Moebelanzeige und offene Menues gehoeren
-nicht zum Szenenentwurf. Die Hausgeometrie selbst bleibt unveraendert.
+nicht zum Szenenentwurf. Gebaeudekubatur und Raumaufteilung bleiben unveraendert.
 
 Beim Start wird der zuletzt ausdruecklich gespeicherte Stand geladen, in der
 Auswahl mit "Start" markiert. Blosses Durchsehen oder Aendern speichert nichts.
@@ -82,6 +82,37 @@ bei gesperrtem oder vollem Browserspeicher bleibt JSON-Export verfuegbar.
 
 Farben sind visuelle Naeherungen, keine verbindlichen RAL- oder Materialangaben.
 Dachgeometrie, Ziegelraster und silberne Entwaesserung bleiben unveraendert.
+
+## Fenster im 3D bearbeiten
+
+In 3D den Schalter **Fenster** einschalten und ein Fenster anklicken oder im
+Panel auswaehlen. Breite, Hoehe, Bruestung und Abstand ab dem lokalen Wandbeginn
+werden in Zentimetern eingegeben; Enter oder Verlassen des Feldes uebernimmt sie.
+Die vier Randgriffe aendern die Groesse, der Mittelpunkt verschiebt das Fenster
+auf seiner Wand. Eine Vorschau folgt dem Ziehen; erst beim Loslassen wird die
+Geometrie uebernommen. Abbrechen einer Zeigergeste verwirft die Vorschau.
+
+Ein oder zwei Felder, Teilungsverhaeltnis, Festverglasung oder Drehfluegel mit
+linkem/rechtem Band sowie ein festes Unterlicht sind variierbar. Vorschau und
+Links-/Rechtsangaben beziehen sich auf die Innenansicht. Fluegel koennen im Panel
+probeweise geoeffnet werden; eine Kippstellung wird nicht simuliert.
+Zuruecksetzen stellt dieses Fenster auf den aktuellen Grundentwurf zurueck.
+
+Bearbeitbar sind die normalen Fassadenfenster in EG, OG und DG, getrennt fuer
+Ost und West. Dachfenster, KG-Lichtschachtfenster, Haustuer-Seitenteil und die
+gekoppelte Hebeschiebetuer bleiben unveraendert. Ein Wechsel auf eine andere
+Wand oder das Hinzufuegen/Loeschen von Oeffnungen ist nicht enthalten.
+Wandoeffnungen, Holzlaibungen, Sonnenschutz, Kollisionen und Tageslicht sowie
+Grundriss und Schnitt des Osthauses folgen den Varianten. Kamera und unveraenderte
+Fluegelstellungen bleiben bei Geometrieaenderungen erhalten. Varianten werden
+erst ueber **Szene > Meine Entwuerfe** dauerhaft gespeichert und mit JSON exportiert.
+Alte gespeicherte Entwuerfe ohne Fensterdaten bleiben kompatibel.
+
+Abgewiesen werden nicht-endliche/zu kleine Masse, Oeffnungsueberschneidungen,
+Fenster ausserhalb der Wand, Innenwandanschluesse und fehlender Platz unter
+Decke/Dach einschliesslich 24 cm Sonnenschutzkasten. Das ist eine geometrische
+Plausibilitaetspruefung, keine Freigabe fuer Statik, Mindestpfeiler, Beschlaege,
+Absturzsicherung, Rettungswege, Fensterfertigung oder Kollisionen mit Moebeln.
 
 ## Innentueren
 
@@ -127,6 +158,23 @@ unterkellerte Oststreifen (unter Eingang, Kuechenzeile und Essbank) besitzt eine
 EG-Bodenplatte mit schematischer Frostschuerze bis -1,00 m. Baugrundgutachten,
 Nachweise nach DIN 4123 / DIN 4124, Lastabtrag/Plattenueberbrueckung am
 Kellerversprung sowie Hausanschlussfuehrung sind fachlich zu planen.
+
+## Suedfassade nach Skizze, 14.11.2026
+
+Nur Osthaelfte: Das EG-Festfeld 110,5 x 215,5 cm bleibt bei lokal x=1,20 m.
+Direkt anschliessend folgt die HST 346 x 215,5 cm (173 cm Schiebefluegel
+nach rechts vor 173 cm Festfeld), ohne Mauerpfeiler zwischen den drei Feldern.
+Gesamtgruppe x=1,20 bis 5,765 m, Breite 456,5 cm. OG links unveraendert
+110,5 x 215,5 cm mit 90 cm festem Unterlicht; rechts jetzt einfluegelig
+130 x 130 cm, BRH 85,5 cm. Linke bzw. rechte Aussenkante fluchten mit der
+EG-Gruppe; beide OG-Oberkanten liegen bei 215,5 cm.
+
+Masse aus der groben Skizze als Entwurfsannahme, keine Bestellfreigabe.
+Westhaelfte, Dachfenster, uebrige Fassaden und Moebel bleiben unveraendert.
+HST-Durchgang mit vorhandenem Sofa im Modell geprueft; OG-Drehfluegel vor
+dem Schreibtisch weiterhin ohne Kollisionsfreigabe. Gekoppelte Rahmen,
+Sonnenschutzfuehrungen, Sturz/Lastabtrag und Sicherheitsglas fachlich planen.
+Diese Suedseiten-Variante ersetzt dort die folgenden Wolf-Ausgangsmasse.
 
 ## Wolf-Angebot: Fenster und Fassade, 01.11.2026
 

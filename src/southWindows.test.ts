@@ -1,49 +1,49 @@
 import { expect, test } from 'vitest'
-import { house, makeFloor, wallSolids } from './model'
-import { roomDaylight } from './roomDaylight'
+import { construction, floorIds, house, makeFloor, wallSolids } from './model'
+import { raffstores } from './raffstore'
+import { windowPanels } from './windowLayout'
 
-test('east ground floor groups full-height glazing at the southeast corner', () => {
-  const floor = makeFloor('EG')
-  const south = floor.walls.find(wall => wall.id === 'south')!
-  const east = floor.walls.find(wall => wall.id === 'east')!
-  const garden = south.openings.find(opening => opening.id === 'garden-fixed')!
-  const sliding = south.openings.find(opening => opening.id === 'terrace')!
-  const fixed = south.openings.find(opening => opening.id === 'terrace-fixed')!
-  const corner = east.openings.find(opening => opening.id === 'corner-fixed')!
-  expect(south.x + garden.start).toBeCloseTo(2.6)
-  expect(garden.width).toBe(1.05)
-  expect(sliding.start - garden.start - garden.width).toBeGreaterThan(.5)
-  expect(sliding.width).toBe(1.2)
-  expect(sliding.start + sliding.width).toBeCloseTo(fixed.start)
-  expect(fixed.width).toBe(sliding.width)
-  expect(south.x + fixed.start + fixed.width).toBeCloseTo(house.east)
-  expect(corner.width).toBe(.7)
-  expect(corner.start + corner.width).toBeCloseTo(house.south)
-  for (const opening of [garden, sliding, fixed, corner]) {
-    expect(opening.sill).toBe(0)
-    expect(opening.height).toBe(2.35)
-  }
-  const bench = floor.furniture.find(item => item.id === 'dining-bench')!
-  expect(bench.z + bench.depth).toBeLessThan(corner.start - .025)
-  const cornerPost = wallSolids(east, floor.height).find(solid => solid.z >= house.south - .001 && solid.bottom === 0)!
-  expect(cornerPost).toBeDefined()
-  expect(cornerPost.depth).toBeCloseTo(.38)
+test('south sketch joins the fixed pane and HST and aligns the upper windows', () => {
+  const ground = makeFloor('EG')
+  const south = ground.walls.find(wall => wall.id === 'south')!
+  const [fixed, sliding, companion] = south.openings
+  expect(fixed).toMatchObject({ id: 'garden-west-fixed', width: 1.105, sill: 0, height: 2.155 })
+  expect(south.x + fixed.start).toBeCloseTo(1.2)
+  expect(sliding.start).toBeCloseTo(fixed.start + fixed.width)
+  expect(sliding.width).toBe(1.73)
+  expect(companion.start).toBeCloseTo(sliding.start + sliding.width)
+  expect(companion.width).toBe(sliding.width)
+  expect(companion.start + companion.width).toBeLessThan(south.width)
+  expect(windowPanels(fixed).every(panel => panel.fixed)).toBe(true)
+  expect(windowPanels(companion).every(panel => panel.fixed)).toBe(true)
+  expect(wallSolids(south, ground.height).filter(solid => solid.bottom < 2.155 && solid.x > south.x + fixed.start && solid.x < south.x + companion.start + companion.width)).toEqual([])
+
+  const upper = makeFloor('OG').walls.find(wall => wall.id === 'south')!
+  const [left, right] = upper.openings
+  expect(left.start).toBe(fixed.start)
+  expect(left.width).toBe(fixed.width)
+  expect(left.windowLayout).toMatchObject({ columns: 1, lowerFixed: .9 })
+  expect(right).toMatchObject({ width: 1.3, height: 1.3, sill: .855, windowLayout: { columns: 1 } })
+  expect(right.start + right.width).toBeCloseTo(companion.start + companion.width)
+  expect(right.sill + right.height).toBeCloseTo(left.sill + left.height)
+  expect(windowPanels(right).filter(panel => !panel.fixed)).toHaveLength(1)
+  const blind = raffstores(ground).find(blind => blind.id === 'EG-terrace')!
+  expect(blind.width).toBeCloseTo(3.46)
+  expect(blind.x).toBeCloseTo(south.x + sliding.start)
 })
 
-test('west house retains its original glazing and other floors stay identical', () => {
-  const west = makeFloor('EG', 'west')
-  const south = west.walls.find(wall => wall.id === 'south')!
-  expect(south.openings.map(opening => [opening.id, south.x + opening.start, opening.width])).toEqual([
-    ['garden-fixed', .7, 2], ['terrace', 3.2, 1.5], ['terrace-fixed', 4.7, 1.5],
+test('west south facade and all other exterior walls retain their existing openings', () => {
+  const westSouth = makeFloor('EG', 'west').walls.find(wall => wall.id === 'south')!
+  const cornerReturn = Math.max(0, .4 - construction.exteriorWall)
+  const start = house.east - house.west - 2.98 - cornerReturn
+  expect(westSouth.openings.map(opening => [opening.id, opening.start, opening.width])).toEqual([
+    ['garden-west-fixed', 1.2 - house.west, 1.105], ['terrace', start, 1.49], ['garden-fixed', start + 1.49, 1.49],
   ])
-  expect(west.walls.flatMap(wall => wall.openings).some(opening => opening.id === 'corner-fixed')).toBe(false)
-  for (const floorId of ['KG', 'OG', 'DG'] as const) expect(makeFloor(floorId, 'east')).toEqual(makeFloor(floorId, 'west'))
-})
-
-test('daylight uses the glazing of each house independently', () => {
-  const east = roomDaylight('EG', 'east').find(room => room.id === 'EG-living')!
-  const west = roomDaylight('EG', 'west').find(room => room.id === 'EG-living')!
-  expect(east.glazing).toBeCloseTo((1.05 + 2.4 + .7) * 2.35 + (1.05 + .6) * .9)
-  expect(west.glazing).toBeCloseTo(2 * 2.25 + 3 * 2.35 + (1.05 + .6) * .9)
-  expect(east.center.x).toBeGreaterThan(west.center.x)
+  expect(makeFloor('OG', 'west').walls.find(wall => wall.id === 'south')!.openings[1]).toMatchObject({ start: 4.235, width: 1.73, sill: .93, height: 1.23 })
+  for (const floorId of floorIds) {
+    const east = makeFloor(floorId, 'east'), west = makeFloor(floorId, 'west')
+    for (const wallId of ['north', 'east', 'west', ...(['KG', 'DG'].includes(floorId) ? ['south'] : [])]) {
+      expect(east.walls.find(wall => wall.id === wallId)!.openings).toEqual(west.walls.find(wall => wall.id === wallId)!.openings)
+    }
+  }
 })

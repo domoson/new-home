@@ -1,6 +1,8 @@
 import { facadeCompositions, initialSettings, woodProfiles, woodTones } from './context'
 import type { HouseAppearance, SceneSettings } from './context'
 import type { TimberArea } from './timberCladding'
+import { floorIds, makeFloor } from './model'
+import type { WindowEdit, WindowEdits } from './model'
 
 export const sceneDesignStorageKey = 'grundriss.scene-designs.v1'
 export type SceneDesign = { id: string; name: string; savedAt: string; settings: SceneSettings }
@@ -41,8 +43,25 @@ function readArea(value: unknown): TimberArea {
   if (result.to <= result.from || result.top <= result.bottom) throw new Error('Ungültige Holzflächen-Grenzen.')
   return result
 }
-function readHouse(value: unknown): HouseAppearance {
+function readWindows(value: unknown, side: 'east' | 'west'): WindowEdits {
+  const entries = Object.entries(record(value))
+  if (entries.length > 40) throw new Error('Zu viele Fensteränderungen.')
+  const windows = Object.fromEntries(entries.sort(([left], [right]) => left.localeCompare(right)).map(([key, value]) => {
+    if (!/^(EG|OG|DG)-[a-z0-9-]+$/.test(key)) throw new Error('Unbekannte Fenster-ID.')
+    const edit = record(value), layout = record(edit.windowLayout), columns = number(layout.columns, 1, 2)
+    if (!Number.isInteger(columns) || !Array.isArray(layout.fields) || layout.fields.length !== columns) throw new Error('Ungültige Fensteraufteilung.')
+    const result: WindowEdit = {
+      start: number(edit.start, 0, 20), width: number(edit.width, .3, 10), height: number(edit.height, .3, 4), sill: number(edit.sill, 0, 4),
+      windowLayout: { columns: columns as 1 | 2, split: number(layout.split ?? .5, .05, .95), lowerFixed: number(layout.lowerFixed ?? 0, 0, 4), fields: layout.fields.map(value => { const field = record(value); return { fixed: boolean(field.fixed), hinge: choice(field.hinge, ['start', 'end']) } }) },
+    }
+    return [key, result]
+  }))
+  for (const floor of floorIds) if (entries.some(([key]) => key.startsWith(`${floor}-`))) makeFloor(floor, side, windows)
+  return windows
+}
+function readHouse(value: unknown, side: 'east' | 'west' = 'east'): HouseAppearance {
   const house = record(value), timber = house.timber === undefined ? {} : record(house.timber)
+  const windows = house.windows === undefined ? undefined : readWindows(house.windows, side)
   if (timber.areas !== undefined && (!Array.isArray(timber.areas) || timber.areas.length > 300)) throw new Error('Zu viele oder ungültige Holzflächen.')
   const areas = (timber.areas as unknown[] | undefined)?.map(readArea) ?? []
   if (new Set(areas.map(area => area.id)).size !== areas.length) throw new Error('Doppelte Holzflächen-ID.')
@@ -52,6 +71,7 @@ function readHouse(value: unknown): HouseAppearance {
     facade: color(house.facade), roof: color(house.roof), roofTrim: color(house.roofTrim), entryDoor: color(house.entryDoor),
     frame: color(house.frame), frameInside: color(house.frameInside), composition: choice(house.composition, facadeCompositions.map(option => option.id)),
     woodTone, woodProfile: choice(house.woodProfile, woodProfiles.map(option => option.id)), entryCanopy: house.entryCanopy === undefined ? true : boolean(house.entryCanopy),
+    ...(windows && Object.keys(windows).length ? { windows } : {}),
     timber: { surface: timber.surface === undefined ? 'fresh' : choice(timber.surface, ['fresh', 'oiled', 'weathered']), windows: timber.windows === undefined ? 'none' : choice(timber.windows, ['none', 'reveals', 'screen']), ...(timber.areas === undefined ? {} : { areas }) },
   }
 }
@@ -59,7 +79,7 @@ export function readSceneSettings(value: unknown): SceneSettings {
   const settings = record(value), lights = record(settings.lights)
   if (Object.keys(lights).length > 500) throw new Error('Zu viele Lichtkreise.')
   return {
-    ...readHouse(settings), west: readHouse(settings.west), interiorDoor: color(settings.interiorDoor),
+    ...readHouse(settings), west: readHouse(settings.west, 'west'), interiorDoor: color(settings.interiorDoor),
     people: boolean(settings.people), peopleMoving: boolean(settings.peopleMoving), surroundings: boolean(settings.surroundings), landscaping: boolean(settings.landscaping), transparentGround: boolean(settings.transparentGround),
     hour: number(settings.hour, 0, 23.75), season: choice(settings.season, ['summer', 'spring', 'winter']), lightingMode: choice(settings.lightingMode, ['room', 'global']),
     raffstoreExtension: number(settings.raffstoreExtension, 0, 1), raffstoreTilt: number(settings.raffstoreTilt, 0, 75),

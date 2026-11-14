@@ -2,14 +2,17 @@ import { lazy, Suspense, useEffect, useId, useImperativeHandle, useRef, useState
 import type { RefObject } from 'react'
 import SceneDesignControls from './SceneDesignControls'
 import type { SceneDesignControlsProps } from './SceneDesignControls'
+import WindowEditor from './WindowEditor'
+import type { WindowTarget } from './WindowEditor'
+import { dragWindow, editableWindow } from './windowEdits'
 import * as Slider from '@radix-ui/react-slider'
 import { canvasPng } from './exportImage'
-import { Columns3, Copy, DoorOpen, House, Lightbulb, LightbulbOff, MousePointer2, Plus, RotateCcw, Settings2, Sun, Trash2, X } from 'lucide-react'
+import { Columns3, Copy, DoorOpen, House, Lightbulb, LightbulbOff, MousePointer2, PanelsTopLeft, Plus, RotateCcw, Settings2, Sun, Trash2, X } from 'lucide-react'
 import * as THREE from 'three'
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js'
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js'
 import { elevations, floorIds, houseEnvelope, housePlacement, makeFloor } from './model'
-import type { FloorId } from './model'
+import type { FloorId, WindowEdit } from './model'
 import { buildScene } from './scene'
 import { createScalePeople } from './scalePeople'
 import { daylightLevels, lightingCircuits } from './lighting'
@@ -26,7 +29,7 @@ type House = 'east' | 'west'
 type FacadeHandle = 'from' | 'to' | 'bottom' | 'top' | 'move'
 type FacadePick = { house: House; face: TimberArea['face']; floor: TimberArea['floor']; along: number; height: number }
 type FacadeTarget = FacadePick & { overlay: boolean }
-type FacadeFrame = { house: House; face: TimberArea['face']; floor: TimberArea['floor']; profile: WoodProfile; area?: TimberArea }
+type FacadeFrame = { house: House; face: TimberArea['face']; floor: TimberArea['floor']; profile: WoodProfile; area?: TimberArea; window?: WindowTarget }
 type SceneDebug = { people?: () => { visible: boolean; positions: number[][] }; vehicle?: () => { position: number[]; screen: number[] } | null; position: () => { x: number; y: number; z: number }; teleport: (x: number, y: number, z: number) => void; look: (yaw: number) => void; door: (id?: string) => boolean; mode: string; meshes: number; snapshot: () => { openings: { id: string; open: boolean; rotation: number[]; tip: number[] }[]; sun: number[]; slabs: { name: string; colors: string[]; maps: boolean[] }[]; site: boolean }; facadePoint?: (house: House, face: TimberArea['face'], floor: TimberArea['floor'], along: number, height: number, offset?: number) => { x: number; y: number; pick: FacadePick | null } | null; facadeHandles?: () => { kind: FacadeHandle; x: number; y: number }[] }
 declare global { interface Window { __house?: SceneDebug } }
 
@@ -218,6 +221,12 @@ export default function HouseScene({ floorId, mode, furnished, roof, cutWalls, s
   const container = useRef<HTMLDivElement>(null)
   const commands = useRef<{ captureImage: () => Promise<Blob>; key: (key: string, down: boolean) => void; move: (x: number, y: number) => void; door: (id?: string) => boolean; opening: (id: string, amount: number) => void; lock: () => void; home: () => void; facade: () => void; settings: (value: SceneSettings) => void; facadeFrame: (frame: FacadeFrame | null) => void; viewInset: (pixels: number) => void } | null>(null)
   const facadeEditing = useRef<{ pick: (pick: FacadePick) => void; drag: (house: House, id: string, patch: Partial<TimberArea>) => void } | null>(null)
+  const windowEditing = useRef<{ active: boolean; pick: (target: WindowTarget) => void; drag: (target: WindowTarget, area: TimberArea, kind: FacadeHandle) => void } | null>(null)
+  const savedView = useRef<{ identity: string; position: THREE.Vector3; target: THREE.Vector3; windows: string; openings: { id: string; amount: number }[] } | null>(null)
+  const focusWindow = useRef<((target: WindowTarget) => void) | null>(null)
+  const [editingWindows, setEditingWindows] = useState(false), [windowTarget, setWindowTarget] = useState<WindowTarget | null>(null), [windowError, setWindowError] = useState('')
+  const viewIdentity = JSON.stringify([floorId, mode, furnished, roof, cutWalls, selected, reset, settings.entryCanopy, settings.west.entryCanopy])
+  const windowSignature = JSON.stringify([settings.windows, settings.west.windows])
   const frameRef = useRef<FacadeFrame | null>(null), insetRef = useRef(0), overlayRef = useRef<HTMLElement>(null)
   useImperativeHandle(captureImage, () => async () => {
     if (!commands.current) throw new Error('Die Ansicht ist noch nicht bereit. Bitte erneut versuchen.')
@@ -248,7 +257,7 @@ export default function HouseScene({ floorId, mode, furnished, roof, cutWalls, s
       const sky = new THREE.DirectionalLight('#e5efff', .55); sky.position.set(-8, 35, -12); sky.target.position.set(0, 0, 5)
       sky.castShadow = true; sky.shadow.mapSize.set(2048, 2048); sky.shadow.camera.left = -18; sky.shadow.camera.right = 18; sky.shadow.camera.top = 18; sky.shadow.camera.bottom = -18; sky.shadow.camera.far = 70; sky.shadow.normalBias = .015; sky.shadow.bias = -.0001; scene.add(sky, sky.target)
       const sun = new THREE.DirectionalLight('#fff4d9', 3); sun.castShadow = true; sun.shadow.mapSize.set(2048, 2048); sun.shadow.camera.left = -24; sun.shadow.camera.right = 24; sun.shadow.camera.top = 24; sun.shadow.camera.bottom = -24; sun.shadow.camera.far = 100; sun.shadow.normalBias = .025; sun.shadow.bias = -.00015; sun.target.position.set(1, 0, 6); scene.add(sun, sun.target)
-      const model = buildScene(floorId, mode === 'walk', roof, furnished, cutWalls, true, { east: latestSettings.current.entryCanopy, west: latestSettings.current.west.entryCanopy }); scene.add(model.group)
+      const model = buildScene(floorId, mode === 'walk', roof, furnished, cutWalls, true, { east: latestSettings.current.entryCanopy, west: latestSettings.current.west.entryCanopy }, { east: latestSettings.current.windows, west: latestSettings.current.west.windows }); scene.add(model.group)
       const people = createScalePeople(mode === 'walk' || roof ? floorIds : [floorId], furnished)
       people.group.position.set(housePlacement.x, 0, housePlacement.z)
       scene.add(people.group)
@@ -321,6 +330,14 @@ export default function HouseScene({ floorId, mode, furnished, roof, cutWalls, s
         }
       }
       home()
+      if (mode === 'orbit' && savedView.current?.identity === viewIdentity) {
+        camera.position.copy(savedView.current.position); controls.target.copy(savedView.current.target); controls.update()
+        const previous = JSON.parse(savedView.current.windows), current = JSON.parse(windowSignature)
+        for (const opening of savedView.current.openings) {
+          const side = opening.id.startsWith('west-') ? 1 : 0, key = opening.id.replace(/^west-/, '').replace(/-secondary$/, '')
+          if (JSON.stringify(previous[side]?.[key]) === JSON.stringify(current[side]?.[key])) model.setOpening(opening.id, opening.amount)
+        }
+      }
       let viewInset = insetRef.current
       const applyView = () => { if (viewInset > 0 && mode === 'orbit') camera.setViewOffset(host.clientWidth, host.clientHeight, 0, viewInset / 2, host.clientWidth, host.clientHeight); else camera.clearViewOffset() }
       const resize = () => { renderRequested = true; renderer.setSize(host.clientWidth, host.clientHeight); camera.aspect = host.clientWidth / Math.max(1, host.clientHeight); camera.updateProjectionMatrix(); if (mode === 'orbit' && camera.aspect < .75) { camera.fov = 67; camera.updateProjectionMatrix() } applyView() }
@@ -337,6 +354,16 @@ export default function HouseScene({ floorId, mode, furnished, roof, cutWalls, s
         return { x: bounds.left + (point.x + 1) / 2 * bounds.width, y: bounds.top + (1 - point.y) / 2 * bounds.height }
       }
       const doorOf = (hit: THREE.Intersection) => hit.object.userData.opening ?? model.doors.find(door => { let object: THREE.Object3D | null = hit.object; while (object) { if (object === door.pivot) return true; object = object.parent } return false })
+      const windowPick = (hit: THREE.Intersection): WindowTarget | null => {
+        let object: THREE.Object3D | null = hit.object, house: House = 'east', id = ''
+        while (object) { if (object.userData.windowEdit) id = object.userData.windowEdit; if (object.name === 'house-west') house = 'west'; object = object.parent }
+        const door = doorOf(hit)
+        if (!id && door?.kind === 'window') id = door.id.replace(/^west-/, '').replace(/-secondary$/, '')
+        const level = floorIds.find(floor => id.startsWith(`${floor}-`))
+        if (!id || !level) return null
+        const floor = makeFloor(level, house, (house === 'east' ? latestSettings.current : latestSettings.current.west).windows)
+        return floor.walls.some(wall => wall.openings.some(opening => `${level}-${opening.id}` === id && editableWindow(floor, wall, opening))) ? { house, floor: level, id } : null
+      }
       const facadePick = (hit: THREE.Intersection): FacadePick | null => {
         if (/^(main-|roof-|attic-)/.test(hit.object.name) || doorOf(hit)) return null
         let object: THREE.Object3D | null = hit.object, house: House | undefined
@@ -386,6 +413,7 @@ export default function HouseScene({ floorId, mode, furnished, roof, cutWalls, s
         const point = (along: number, height: number) => facadeLocal(value.face, extent.left + (extent.right - extent.left) * along / 100, extent.bottom + (extent.top - extent.bottom) * height / 100, .12)
         const corners = (from: number, to: number, bottom: number, top: number) => [point(from, bottom), point(to, bottom), point(to, top), point(from, top)]
         setLine(cellLine, corners(0, 100, 0, 100))
+        cellLine.visible = !value.window
         const area = value.area
         areaLine.visible = areaFill.visible = !!area
         for (const handle of handles) handle.visible = !!area
@@ -417,10 +445,14 @@ export default function HouseScene({ floorId, mode, furnished, roof, cutWalls, s
       }
       let drag: { kind: FacadeHandle; pointerId: number; start: { along: number; height: number }; area: TimberArea } | null = null
       let pendingDrag: Partial<TimberArea> | null = null, lastCommit = 0, commitTimer = 0
+      let pendingKind: FacadeHandle = 'move'
       const commitDrag = () => {
         commitTimer = 0
         if (!pendingDrag || !frame?.area) return
-        lastCommit = performance.now(); facadeEditing.current?.drag(frame.house, frame.area.id, pendingDrag); pendingDrag = null
+        lastCommit = performance.now()
+        if (frame.window) windowEditing.current?.drag(frame.window, { ...frame.area, ...pendingDrag }, pendingKind)
+        else facadeEditing.current?.drag(frame.house, frame.area.id, pendingDrag)
+        pendingDrag = null
       }
       const dragDown = (event: PointerEvent) => {
         const kind = handleAt(event.clientX, event.clientY), start = kind && facadePercent(event.clientX, event.clientY)
@@ -436,13 +468,20 @@ export default function HouseScene({ floorId, mode, furnished, roof, cutWalls, s
         const point = facadePercent(event.clientX, event.clientY)
         if (!point || !frame?.area) return
         pendingDrag = dragFacadeArea(drag.kind, drag.area, drag.start, point)
+        pendingKind = drag.kind
+        if (frame.window && drag.kind === 'move') {
+          pendingDrag.to = pendingDrag.from! + drag.area.to - drag.area.from
+          pendingDrag.top = pendingDrag.bottom! + drag.area.top - drag.area.bottom
+        }
         showFrame({ ...frame, area: { ...frame.area, ...pendingDrag } })
-        if (!commitTimer) commitTimer = window.setTimeout(commitDrag, Math.max(0, 90 - (performance.now() - lastCommit)))
+        if (!frame.window && !commitTimer) commitTimer = window.setTimeout(commitDrag, Math.max(0, 90 - (performance.now() - lastCommit)))
       }
       const dragUp = (event: PointerEvent) => {
         if (!drag || event.pointerId !== drag.pointerId) return
         event.stopImmediatePropagation()
-        window.clearTimeout(commitTimer); drag = null; commitDrag()
+        window.clearTimeout(commitTimer); drag = null
+        if (event.type === 'pointercancel') { pendingDrag = null; showFrame(frameRef.current) }
+        else { commitDrag(); showFrame(frameRef.current) }
         controls.enabled = mode === 'orbit'; renderer.domElement.style.cursor = ''
         if (renderer.domElement.hasPointerCapture(event.pointerId)) renderer.domElement.releasePointerCapture(event.pointerId)
       }
@@ -461,8 +500,12 @@ export default function HouseScene({ floorId, mode, furnished, roof, cutWalls, s
           else if (hit) {
             const door = doorOf(hit)
             const pick = mode === 'orbit' ? facadePick(hit) : null
-            if (door) toggleOpening(door.id)
-            else if (pick) facadeEditing.current?.pick(pick)
+            const window = mode === 'orbit' && windowEditing.current?.active ? windowPick(hit) : null
+            if (window) windowEditing.current?.pick(window)
+            else if (!windowEditing.current?.active || mode !== 'orbit') {
+              if (door) toggleOpening(door.id)
+              else if (pick) facadeEditing.current?.pick(pick)
+            }
           }
         }
         press = null; dragging = null
@@ -492,6 +535,19 @@ export default function HouseScene({ floorId, mode, furnished, roof, cutWalls, s
         const aspect = host.clientWidth / Math.max(1, host.clientHeight), vertical = camera.fov * Math.PI / 180
         const distance = 11 / Math.sin(Math.min(vertical, 2 * Math.atan(Math.tan(vertical / 2) * aspect)) / 2)
         controls.target.set(0, 4.5, 5.6); camera.position.copy(controls.target).addScaledVector(new THREE.Vector3(1, .55, 1.1).normalize(), distance); controls.update()
+      }
+      focusWindow.current = target => {
+        const house = houseObject(target.house)
+        if (!house || mode !== 'orbit') return
+        const floor = makeFloor(target.floor, target.house, (target.house === 'east' ? latestSettings.current : latestSettings.current.west).windows)
+        const wall = floor.walls.find(wall => wall.openings.some(opening => `${target.floor}-${opening.id}` === target.id))
+        const opening = wall?.openings.find(opening => `${target.floor}-${opening.id}` === target.id)
+        if (!wall || !opening) return
+        const face = wall.id as TimberArea['face'], along = (wall.axis === 'x' ? wall.x : wall.z) + opening.start + opening.width / 2
+        controls.target.copy(house.localToWorld(facadeLocal(face, along, floor.elevation + opening.sill + opening.height / 2)))
+        const direction = (face === 'east' ? new THREE.Vector3(1, .18, .2) : new THREE.Vector3(.2, .18, face === 'north' ? -1 : 1)).transformDirection(house.matrixWorld)
+        const distance = Math.max(5, (opening.width + 2) / (2 * Math.tan(camera.fov * Math.PI / 360) * camera.aspect))
+        camera.position.copy(controls.target).addScaledVector(direction, distance); controls.update(); renderRequested = true
       }
       commands.current = { captureImage() { const visible = editor.visible; editor.visible = false; renderer.render(scene, camera); const image = canvasPng(renderer.domElement); editor.visible = visible; renderRequested = true; return image }, key(key, pressed) { if (pressed) walker?.keys.add(key); else walker?.keys.delete(key) }, move(x, y) { if (walker) { walker.moveVector.x = x; walker.moveVector.y = y } }, door: toggleOpening, opening(id, amount) { const result = walker ? walker.setOpening(id, amount) : model.setOpening(id, amount); updateOpenings(); return result }, lock() { if (pointer.isLocked) pointer.unlock(); else pointer.lock() }, home, facade: facadeView, settings: applySettings, facadeFrame(value) { if (!drag) showFrame(value) }, viewInset(pixels) { viewInset = pixels; applyView(); scaleHandles(); renderRequested = true } }
       showFrame(frameRef.current)
@@ -538,11 +594,11 @@ export default function HouseScene({ floorId, mode, furnished, roof, cutWalls, s
         const rear = car.localToWorld(new THREE.Vector3(0, .58, -2.322)).project(camera)
         return { position: car.position.toArray(), screen: [rear.x, rear.y] }
       }
-      cleanup = () => { window.clearTimeout(commitTimer); commands.current = null; delete window.__house; renderer.setAnimationLoop(null); observer.disconnect(); pointer.unlock(); pointer.dispose(); controls.dispose(); walker?.dispose(); people.dispose(); model.dispose(); for (const object of [cellLine, areaLine, areaFill]) object.geometry.dispose(); for (const material of [cellLine.material, areaLine.material, areaFillMaterial, ...handleMaterials]) material.dispose(); handleGeometry.dispose(); sun.dispose(); sky.dispose(); renderer.dispose(); renderer.domElement.remove(); window.removeEventListener('keydown', keydown); window.removeEventListener('keyup', keyup); window.removeEventListener('blur', clear); document.removeEventListener('visibilitychange', clear) }
+      cleanup = () => { savedView.current = { identity: viewIdentity, position: camera.position.clone(), target: controls.target.clone(), windows: windowSignature, openings: model.doors.map(door => ({ id: door.id, amount: door.amount })) }; focusWindow.current = null; window.clearTimeout(commitTimer); commands.current = null; delete window.__house; renderer.setAnimationLoop(null); observer.disconnect(); pointer.unlock(); pointer.dispose(); controls.dispose(); walker?.dispose(); people.dispose(); model.dispose(); for (const object of [cellLine, areaLine, areaFill]) object.geometry.dispose(); for (const material of [cellLine.material, areaLine.material, areaFillMaterial, ...handleMaterials]) material.dispose(); handleGeometry.dispose(); sun.dispose(); sky.dispose(); renderer.dispose(); renderer.domElement.remove(); window.removeEventListener('keydown', keydown); window.removeEventListener('keyup', keyup); window.removeEventListener('blur', clear); document.removeEventListener('visibilitychange', clear) }
     }
     start().catch(reason => { if (!cancelled) { setError(reason instanceof Error ? reason.message : '3D konnte nicht gestartet werden.'); setLoading(false) } })
     return () => { cancelled = true; cleanup?.() }
-  }, [floorId, mode, furnished, roof, cutWalls, selected, reset, settings.entryCanopy, settings.west.entryCanopy])
+  }, [floorId, mode, furnished, roof, cutWalls, selected, reset, settings.entryCanopy, settings.west.entryCanopy, windowSignature, viewIdentity])
   const update = (patch: Partial<SceneSettings>) => onSettings({ ...settings, ...patch, ...(patch.lights ? { lightingMode: 'room' as const } : {}) })
   const [compareTimber, setCompareTimber] = useState(false)
   const lightPrefix = lightHouse === 'west' ? 'west-' : ''
@@ -550,6 +606,37 @@ export default function HouseScene({ floorId, mode, furnished, roof, cutWalls, s
   const appearance = materialHouse === 'east' ? settings : settings.west
   const updateAppearance = (patch: Partial<HouseAppearance>) => update(materialHouse === 'east' ? patch : { west: { ...settings.west, ...patch } })
   const houseSettings = (house: House) => house === 'east' ? settings : settings.west
+  const selectWindow = (target: WindowTarget) => {
+    setWindowTarget(target); setWindowError(''); setFacadeTarget(null)
+    if (target.id) focusWindow.current?.(target)
+    const menu = container.current?.parentElement?.querySelector<HTMLDetailsElement>('.scene-settings')
+    if (menu) menu.open = false
+  }
+  const changeWindow = (target: WindowTarget, edit?: WindowEdit) => {
+    const appearance = houseSettings(target.house), windows = { ...appearance.windows }
+    if (edit) windows[target.id] = edit
+    else delete windows[target.id]
+    try {
+      makeFloor(target.floor, target.house, windows)
+      update(target.house === 'east' ? { windows } : { west: { ...settings.west, windows } })
+      setWindowError('')
+    } catch (reason) { setWindowError(reason instanceof Error ? reason.message : 'Ungültige Fenstermaße.') }
+  }
+  useEffect(() => {
+    windowEditing.current = {
+      active: editingWindows,
+      pick: selectWindow,
+      drag(target, area, kind) {
+        const appearance = houseSettings(target.house), floor = makeFloor(target.floor, target.house, appearance.windows)
+        const wall = floor.walls.find(wall => wall.openings.some(opening => `${target.floor}-${opening.id}` === target.id))!
+        const opening = wall.openings.find(opening => `${target.floor}-${opening.id}` === target.id)!
+        const extent = timberAreaExtent(area.face, area.floor, appearance.woodProfile)
+        const along = extent.left + (extent.right - extent.left) * (kind === 'to' ? area.to : area.from) / 100 - (wall.axis === 'x' ? wall.x : wall.z) - opening.start - (kind === 'to' ? opening.width : 0)
+        const height = extent.bottom + (extent.top - extent.bottom) * (kind === 'top' ? area.top : area.bottom) / 100 - floor.elevation - opening.sill - (kind === 'top' ? opening.height : 0)
+        changeWindow(target, dragWindow(opening, kind, along, height))
+      },
+    }
+  })
   const editableAreas = (house: House) => { const value = houseSettings(house); return value.composition === 'custom' ? value.timber?.areas ?? [] : timberPresetAreas(value.composition, value.woodProfile) }
   const setHouseAreas = (house: House, areas: TimberArea[]) => {
     const patch = { composition: 'custom' as const, timber: { ...houseSettings(house).timber, areas } }
@@ -570,13 +657,24 @@ export default function HouseScene({ floorId, mode, furnished, roof, cutWalls, s
       drag(house, id, patch) { setHouseAreas(house, editableAreas(house).map(area => area.id === id ? { ...area, ...patch } : area)) },
     }
   })
-  const frameTarget = facadeTarget && mode === 'orbit' ? facadeTarget : null
-  const frameKey = frameTarget ? JSON.stringify({ house: frameTarget.house, face: frameTarget.face, floor: frameTarget.floor, profile: houseSettings(frameTarget.house).woodProfile, area: editableAreas(frameTarget.house).find(area => area.id === selectedAreas[frameTarget.house] && area.face === frameTarget.face && area.floor === frameTarget.floor) }) : ''
+  const frameTarget = !editingWindows && facadeTarget && mode === 'orbit' ? facadeTarget : null
+  let frameKey = frameTarget ? JSON.stringify({ house: frameTarget.house, face: frameTarget.face, floor: frameTarget.floor, profile: houseSettings(frameTarget.house).woodProfile, area: editableAreas(frameTarget.house).find(area => area.id === selectedAreas[frameTarget.house] && area.face === frameTarget.face && area.floor === frameTarget.floor) }) : ''
+  if (editingWindows && windowTarget?.id && mode === 'orbit' && (roof || floorId === windowTarget.floor)) {
+    const appearance = houseSettings(windowTarget.house), floor = makeFloor(windowTarget.floor, windowTarget.house, appearance.windows)
+    const wall = floor.walls.find(wall => wall.openings.some(opening => `${floor.id}-${opening.id}` === windowTarget.id))
+    const opening = wall?.openings.find(opening => `${floor.id}-${opening.id}` === windowTarget.id)
+    if (wall && opening && floor.id !== 'KG') {
+      const face = wall.id as TimberArea['face'], extent = timberAreaExtent(face, floor.id, appearance.woodProfile)
+      const along = (wall.axis === 'x' ? wall.x : wall.z) + opening.start
+      const area: TimberArea = { id: windowTarget.id, face, floor: floor.id, material: 'wood', from: (along - extent.left) / (extent.right - extent.left) * 100, to: (along + opening.width - extent.left) / (extent.right - extent.left) * 100, bottom: (floor.elevation + opening.sill - extent.bottom) / (extent.top - extent.bottom) * 100, top: (floor.elevation + opening.sill + opening.height - extent.bottom) / (extent.top - extent.bottom) * 100 }
+      frameKey = JSON.stringify({ house: windowTarget.house, face, floor: floor.id, profile: appearance.woodProfile, area, window: windowTarget })
+    }
+  }
   useEffect(() => {
     const value = frameKey ? JSON.parse(frameKey) as FacadeFrame : null
     frameRef.current = value; commands.current?.facadeFrame(value)
   }, [frameKey])
-  const overlayKey = facadeTarget?.overlay && mode === 'orbit' ? `${facadeTarget.house}-${facadeTarget.face}-${facadeTarget.floor}` : ''
+  const overlayKey = editingWindows && mode === 'orbit' ? `window-${windowTarget?.house}-${windowTarget?.id}` : facadeTarget?.overlay && mode === 'orbit' ? `${facadeTarget.house}-${facadeTarget.face}-${facadeTarget.floor}` : ''
   useEffect(() => {
     const measure = () => {
       const overlay = overlayRef.current, host = container.current
@@ -591,6 +689,7 @@ export default function HouseScene({ floorId, mode, furnished, roof, cutWalls, s
   const solar = sunPosition(settings.hour, settings.season)
   const clock = `${String(Math.floor(settings.hour)).padStart(2, '0')}:${String(Math.round(settings.hour % 1 * 60)).padStart(2, '0')}`
   return <><div ref={container} className="scene-container" />
+    {mode === 'orbit' && !loading && !error && <button className="window-edit-toggle" aria-label="Fenstermodus" aria-pressed={editingWindows} title="Fenster bearbeiten" onClick={() => { setEditingWindows(value => !value); setFacadeTarget(null); setWindowError(''); const menu = container.current?.parentElement?.querySelector<HTMLDetailsElement>('.scene-settings'); if (menu) menu.open = false }}><PanelsTopLeft size={17} /><span>Fenster</span></button>}
     {!loading && !error && <details className="scene-settings" onToggle={event => { if (!event.currentTarget.open) setFacadeTarget(previous => previous?.overlay ? previous : null) }}><summary title="Sonne, Materialien und Öffnungen" aria-label="Szeneneinstellungen"><Settings2 size={18} /><span>Szene</span></summary><div className="settings-body">
       <SceneDesignControls {...designs} settings={settings} onSettings={onSettings} />
       <fieldset className="finish-settings"><legend>Maßstabsfiguren</legend><label className="check-setting"><input type="checkbox" checked={settings.people} onChange={event => update({ people: event.target.checked })} />Personen</label><label className="check-setting"><input type="checkbox" checked={settings.peopleMoving} disabled={!settings.people} onChange={event => update({ peopleMoving: event.target.checked })} />Bewegung</label><output>175 · 165 · 120 · 95 cm</output></fieldset>
@@ -622,7 +721,8 @@ export default function HouseScene({ floorId, mode, furnished, roof, cutWalls, s
       </fieldset>
       {appearance.composition === 'plaster' && <div className="finish-row wood-tone"><span>Vordach</span><div>{woodTones.map((tone, index) => <button key={tone.name} className="color-swatch" style={{backgroundColor: tone.color}} title={tone.name} aria-label={`Holz ${tone.name}`} aria-pressed={appearance.woodTone === index} onClick={() => updateAppearance({woodTone: index})} />)}</div></div>}
     </div></details>}
-    {facadeTarget?.overlay && mode === 'orbit' && !loading && !error && <FacadeOverlay panelRef={overlayRef} target={facadeTarget} areas={editableAreas(facadeTarget.house)} template={houseSettings(facadeTarget.house).composition === 'custom' ? undefined : facadeCompositions.find(option => option.id === houseSettings(facadeTarget.house).composition)?.name} selectedId={selectedAreas[facadeTarget.house]} onSelect={area => focusArea(facadeTarget.house, area)} onAreas={areas => setHouseAreas(facadeTarget.house, areas)} onClose={() => setFacadeTarget(null)} />}
+    {!editingWindows && facadeTarget?.overlay && mode === 'orbit' && !loading && !error && <FacadeOverlay panelRef={overlayRef} target={facadeTarget} areas={editableAreas(facadeTarget.house)} template={houseSettings(facadeTarget.house).composition === 'custom' ? undefined : facadeCompositions.find(option => option.id === houseSettings(facadeTarget.house).composition)?.name} selectedId={selectedAreas[facadeTarget.house]} onSelect={area => focusArea(facadeTarget.house, area)} onAreas={areas => setHouseAreas(facadeTarget.house, areas)} onClose={() => setFacadeTarget(null)} />}
+    {editingWindows && mode === 'orbit' && !loading && !error && <WindowEditor key={`${windowTarget?.house}-${windowTarget?.id}`} panelRef={overlayRef} target={windowTarget} settings={settings} floors={roof ? floorIds : [floorId]} error={windowError} onSelect={selectWindow} onChange={changeWindow} onReset={target => changeWindow(target)} onToggle={id => { commands.current?.door(id) }} onFocus={target => focusWindow.current?.(target)} onClose={() => { setEditingWindows(false); setWindowError('') }} />}
     {compareTimber && <Suspense fallback={null}><TimberComparison onClose={() => setCompareTimber(false)} /></Suspense>}
     {loading && <div className="loading">Raummodell wird aufgebaut…</div>}{error && <div className="scene-error"><strong>3D ist hier nicht verfügbar.</strong><p>{error}</p><p>Der 2D-Grundriss bleibt verfügbar.</p></div>}{mode === 'walk' && !loading && !error && <><div className="crosshair" /><Joystick onMove={(x, y) => commands.current?.move(x, y)} /><div className="walk-actions"><button className="icon-button" title="Nächste Tür öffnen/schließen (E)" aria-label="Tür öffnen oder schließen" onClick={() => commands.current?.door()}><DoorOpen size={19} /></button><button className="icon-button" title="Mausblick aktivieren; Escape zum Freigeben" aria-label="Mausblick" onClick={() => commands.current?.lock()}><MousePointer2 size={19} /></button><button className="icon-button" title="Zum Raumeinstieg zurück" aria-label="Zum Raumeinstieg" onClick={() => commands.current?.home()}><RotateCcw size={19} /></button></div><div className="walk-floor">{currentFloor}</div></>}</>
 }

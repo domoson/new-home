@@ -1,8 +1,23 @@
 import { describe, expect, it } from 'vitest'
 import { initialSettings } from './context'
+import { makeFloor } from './model'
+import { windowDraft } from './windowEdits'
 import { deleteDesign, emptyDesignLibrary, mergeDesigns, parseDesignLibrary, readDesignStorage, readSceneSettings, savedSnapshot, sceneDesignStorageKey, settingsSignature, startupScene, writeDesignStorage } from './sceneDesigns'
 
 describe('saved scene designs', () => {
+  it('round trips independent window edits and rejects malformed or overlapping windows', () => {
+    const original = makeFloor('OG').walls.find(wall => wall.id === 'south')!.openings.find(opening => opening.id === 'south-east')!
+    const settings = { ...initialSettings, windows: { 'OG-south-east': { ...windowDraft(original), width: 1.2 } } }
+    const library = savedSnapshot(emptyDesignLibrary(), 'Fenster', settings)
+    expect(startupScene(parseDesignLibrary(JSON.stringify(library))).windows).toEqual(settings.windows)
+    expect(startupScene(library).west.windows).toBeUndefined()
+    expect(readSceneSettings(initialSettings).windows).toBeUndefined()
+    settings.windows['OG-south-east'].width = 1.1
+    expect(startupScene(library).windows!['OG-south-east'].width).toBe(1.2)
+    expect(() => readSceneSettings({ ...settings, windows: { 'OG-unknown': windowDraft(original) } })).toThrow()
+    expect(() => readSceneSettings({ ...settings, windows: { 'OG-south-east': { ...windowDraft(original), start: .9 } } })).toThrow('überschneidet')
+    expect(() => readSceneSettings({ ...settings, windows: { 'OG-south-east': { ...windowDraft(original), windowLayout: { columns: 2, fields: [] } } } })).toThrow('Fensteraufteilung')
+  })
   it('stores complete independent snapshots and restores only the explicitly saved version', () => {
     const working = readSceneSettings(initialSettings)
     working.composition = 'custom'
@@ -23,6 +38,7 @@ describe('saved scene designs', () => {
     expect(parseDesignLibrary(JSON.stringify(library))).toEqual(library)
   })
   it('normalizes optional defaults and light key order for dirty detection', () => {
+    expect(settingsSignature({ ...initialSettings, windows: {}, west: { ...initialSettings.west, windows: {} } })).toBe(settingsSignature(initialSettings))
     expect(readSceneSettings(initialSettings).timber?.areas).toBeUndefined()
     expect(readSceneSettings({ ...initialSettings, timber: { areas: [] } }).timber?.areas).toEqual([])
     expect(settingsSignature(initialSettings)).toBe(settingsSignature(readSceneSettings(initialSettings)))

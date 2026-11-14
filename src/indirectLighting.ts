@@ -1,13 +1,13 @@
 import * as THREE from 'three'
 import { area, elevations, makeFloor, roofHeight, stairOpeningParts } from './model'
-import type { FloorId } from './model'
+import type { FloorId, WindowEdits } from './model'
 import { roomDaylight } from './roomDaylight'
 import { interiorLightingEnabled } from './lighting'
 
-export function createIndirectLighting(floors: FloorId[], materials: THREE.Material[], coordinates = new THREE.Matrix4(), houseSide: 'east' | 'west' = 'east') {
+export function createIndirectLighting(floors: FloorId[], materials: THREE.Material[], coordinates = new THREE.Matrix4(), houseSide: 'east' | 'west' = 'east', windows?: WindowEdits) {
   const volumes = floors.flatMap(floorId => {
     const floor = makeFloor(floorId, houseSide)
-    const daylight = roomDaylight(floorId, houseSide)
+    const daylight = roomDaylight(floorId, houseSide, windows)
     return [...floor.rooms.map(room => ({ id: `${floorId}-${room.id}`, parts: room.parts, strength: room.id === 'living' ? .65 : THREE.MathUtils.clamp(800 / area(room.parts) / 55, .4, .85) })), { id: `${floorId}-stairs`, parts: stairOpeningParts, strength: .55 }].flatMap(room => room.parts.map(part => ({
       id: room.id, floor: floorId, strength: room.strength,
       daylight: daylight.find(source => source.id === room.id)!,

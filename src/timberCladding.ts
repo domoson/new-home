@@ -1,7 +1,7 @@
 import * as THREE from 'three'
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js'
 import { elevations, entryCanopy, house, houseEnvelope, makeFloor, roofFacadeRise, roofHeight, slabThickness } from './model'
-import type { FloorId } from './model'
+import type { FloorId, WindowEdits } from './model'
 import { woodTones } from './context'
 import type { FacadeComposition } from './context'
 
@@ -142,12 +142,12 @@ export function timberPresetAreas(composition: FacadeComposition, profile: Timbe
   return result
 }
 
-export function timberPieces(floors: FloorId[], composition: FacadeComposition, profile: TimberProfile, cut = false, side: 'east' | 'west' = 'east', windows: WindowTimber = 'none', areas: TimberArea[] = []): TimberPiece[] {
+export function timberPieces(floors: FloorId[], composition: FacadeComposition, profile: TimberProfile, cut = false, side: 'east' | 'west' = 'east', windows: WindowTimber = 'none', areas: TimberArea[] = [], windowEdits?: WindowEdits): TimberPiece[] {
   if (composition === 'plaster') return []
   const pieces: TimberPiece[] = [], spec = timberProfiles[profile]
   const horizontal = profile === 'horizontal'
   for (const id of floors.filter(floor => floor !== 'KG')) {
-    const floor = makeFloor(id, side), base = floor.elevation
+    const floor = makeFloor(id, side, windowEdits), base = floor.elevation
     for (const face of ['east', 'north', 'south'] as const) {
       const wall = floor.walls.find(wall => wall.id === face)!
       const along = face === 'east' ? wall.z : wall.x
@@ -307,7 +307,7 @@ export function canopyTimberGeometry(canopy: ReturnType<typeof entryCanopy>, pro
   })
 }
 
-export function createTimberCladding(floors: FloorId[], cut: boolean, side: 'east' | 'west', canopy?: ReturnType<typeof entryCanopy>) {
+export function createTimberCladding(floors: FloorId[], cut: boolean, side: 'east' | 'west', canopy?: ReturnType<typeof entryCanopy>, windowEdits?: WindowEdits) {
   const group = new THREE.Group(); group.name = 'timber-cladding'
   const canopyGroup = new THREE.Group(); canopyGroup.name = 'entry-canopy-cladding'
   const textures = [grainTexture(), grainTexture(.6, 3), grainTexture(1.3, 4), grainTexture(.75, 3)]
@@ -348,7 +348,7 @@ export function createTimberCladding(floors: FloorId[], cut: boolean, side: 'eas
         }
         canopyGroup.userData.profile = profile
       }
-      const pieces = timberPieces(floors, composition, profile, cut, side, windows, options.areas)
+      const pieces = timberPieces(floors, composition, profile, cut, side, windows, options.areas, windowEdits)
       const batches = new Map<number, THREE.BufferGeometry[]>()
       for (const piece of pieces) {
         const material = piece.kind === 'backing' ? 12 : piece.kind === 'flashing' || piece.kind === 'storey-joint' ? 13 : ((piece.board * 7) % 12 + 12) % 12
