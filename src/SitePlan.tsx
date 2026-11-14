@@ -104,7 +104,7 @@ export default function SitePlan({ dimensions, zoom, selected, onSelect, onZoom 
       </g>
       <g fill="#e2e4df" stroke="#8b938d" strokeWidth=".025">
         {siteEntrySteps.map((part, index) => <rect key={`step-${index}`} x={part.x} y={part.z} width={part.width} height={part.depth} />)}
-        {siteLightWells.map((well, index) => <g key={index} data-site-light-well="true"><title>Lichtschacht</title><rect x={well.x} y={well.z} width={well.width} height={well.depth} />{Array.from({ length: 7 }, (_, bar) => <line key={bar} x1={well.x} x2={well.x + well.width} y1={well.z + (bar + 1) * well.depth / 8} y2={well.z + (bar + 1) * well.depth / 8} />)}</g>)}
+        {siteLightWells.map((well, index) => <g key={index} data-site-light-well="true"><title>Lichtschacht</title><rect x={well.x} y={well.z} width={well.width} height={well.depth} />{Array.from({ length: 7 }, (_, bar) => well.width >= well.depth ? <line key={bar} x1={well.x} x2={well.x + well.width} y1={well.z + (bar + 1) * well.depth / 8} y2={well.z + (bar + 1) * well.depth / 8} /> : <line key={bar} x1={well.x + (bar + 1) * well.width / 8} x2={well.x + (bar + 1) * well.width / 8} y1={well.z} y2={well.z + well.depth} />)}</g>)}
       </g>
       {siteItems.map(item => <g key={item.id} data-site-object={item.id} role="button" tabIndex={0} aria-label={`${item.name}: ${item.details}`} onClick={() => { if (!measuring) onSelect(item) }} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onSelect(item) } }}>
         <title>{item.name}: {item.details}</title>
@@ -116,7 +116,7 @@ export default function SitePlan({ dimensions, zoom, selected, onSelect, onZoom 
       <g pointerEvents="none" fill="none" stroke="#6d7c70" strokeWidth=".03" strokeDasharray=".18 .12">
         {(['east', 'west'] as const).map(side => {
           const cellar = siteBasementEnvelope(side)
-          return <rect key={side} data-basement-outline={side} x={cellar.x} y={cellar.z} width={cellar.width} height={cellar.depth}><title>Teilunterkellerung ({side === 'east' ? 'Ost' : 'West'}): {metres(cellar.width)} × {metres(cellar.depth)}</title></rect>
+          return <rect key={side} data-basement-outline={side} x={cellar.x} y={cellar.z} width={cellar.width} height={cellar.depth}><title>Vollunterkellerung ({side === 'east' ? 'Ost' : 'West'}): {metres(cellar.width)} × {metres(cellar.depth)}</title></rect>
         })}
       </g>
       {siteParking.map(({ side, carport, covered, bins, gardenEdge, point, streetZ, open }) => <g key={side}>

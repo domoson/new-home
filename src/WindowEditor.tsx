@@ -17,7 +17,7 @@ function Dimension({ label, value, onCommit }: { label: string; value: number; o
   return <label>{label}<input aria-label={label} type="number" step="0.5" value={draft.text} onChange={event => { dirty.current = true; setDraft({ source: value, text: event.target.value }) }} onBlur={() => { if (!cancelled.current && dirty.current) onCommit(draft.text.trim() ? Number(draft.text) / 100 : NaN); cancelled.current = false; dirty.current = false }} onKeyDown={event => { if (event.key === 'Enter') event.currentTarget.blur(); if (event.key === 'Escape') { cancelled.current = true; setDraft({ source: value, text: format(value) }); event.currentTarget.blur() } }} /></label>
 }
 
-const names: Record<string, string> = { 'wc-window': 'Gästebad', 'hall-window-fixed': 'Diele', 'kitchen-east-window': 'Küche', 'living-corner-fixed': 'Wohnen', 'garden-west-fixed': 'Wohnen', 'bath-window': 'Bad', 'child-north-window': 'Kind Nord', 'east-north': 'Kind Nord', 'south-west': 'Kind Süd', 'south-east': 'Kind Süd', 'gable-office': 'Dachgeschoss Nord', 'gable-parents': 'Dachgeschoss Süd' }
+const names: Record<string, string> = { 'wc-window': 'DU Bad', 'hall-window-fixed': 'Diele', 'kitchen-east-window': 'Küche', 'living-corner-fixed': 'Wohnen', 'garden-west-fixed': 'Wohnen', 'bath-window': 'Bad', 'child-north-window': 'Kind 1', 'east-north': 'Kind 1', 'south-west': 'Kind 2', 'south-east': 'Kind 2', 'gable-office': 'Schlafen / Ankleide', 'gable-parents': 'Gast / Arbeiten' }
 
 export default function WindowEditor({ panelRef, target, settings, floors, error, onSelect, onChange, onReset, onToggle, onFocus, onClose }: {
   panelRef: RefObject<HTMLElement | null>; target: WindowTarget | null; settings: SceneSettings; floors: FloorId[]; error: string;

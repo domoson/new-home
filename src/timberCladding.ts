@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js'
-import { elevations, entryCanopy, house, houseEnvelope, makeFloor, roofFacadeRise, roofHeight, slabThickness } from './model'
+import { elevations, entryCanopy, house, houseEnvelope, makeFloor, roofEdgeDetail, roofFacadeRise, roofHeight, slabThickness } from './model'
 import type { FloorId, WindowEdits } from './model'
 import { woodTones } from './context'
 import type { FacadeComposition } from './context'
@@ -115,7 +115,7 @@ function presetRegions(composition: FacadeComposition, face: TimberArea['face'],
   if (composition === 'upper') regions.push({ ...extent, bottom: Math.max(extent.bottom, upper) })
   if (composition === 'gable' && face === 'east') regions.push({ ...extent, bottom: Math.max(base, elevations.DG) })
   if (composition === 'og' || composition === 'og-entry') regions.push({ ...extent, bottom: Math.max(extent.bottom, upper), top: Math.min(extent.top, attic) })
-  if ((composition === 'entry' || composition === 'og-entry') && face === 'east') regions.push({ left: .1, right: 1.9, bottom: 0, top: Math.min(2.7, extent.top) })
+  if ((composition === 'entry' || composition === 'og-entry') && face === 'east' && base === 0) regions.push({ left: .25, right: 2.38, bottom: 0, top: Math.min(upper, extent.top) })
   if (composition === 'panels') regions.push({ ...extent, left: face === 'east' ? 2.7 : 4.2, right: face === 'east' ? 4.9 : 6.4 })
   return regions
 }
@@ -181,7 +181,7 @@ export function timberPieces(floors: FloorId[], composition: FacadeComposition, 
           emit(rectangle(horizontal ? { ...bounds, left: position, right: Math.min(position + .04, supportEnd) } : { ...bounds, bottom: position, top: Math.min(position + .04, supportEnd) }), 'batten', 3, .02, .02)
         }
         if (profile === 'boards' || horizontal) emit(rectangle(bounds), 'batten', 0, .033, .007)
-        const jointFront = front + timberStoreyJoint.projection
+        const jointFront = Math.min(front + timberStoreyJoint.projection, roofEdgeDetail.eavesOverhang - .002)
         const jointBounds = {
           ...bounds,
           left: face === 'east' && bounds.left === extent.left ? along - jointFront : bounds.left,

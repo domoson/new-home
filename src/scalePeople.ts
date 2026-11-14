@@ -9,32 +9,36 @@ type Placement = { height: number; x: number; z: number; bottom?: number; angle?
 export function peoplePlacements(id: FloorId, furnished: boolean): Placement[] {
   const floor = makeFloor(id)
   const bed = (itemId: string, height: number): Placement => {
-    const item = floor.furniture.find(item => item.id === itemId)!
+    const item = floor.furniture.find(entry => entry.id === itemId)!
+    if (Math.abs(item.angle ?? 0) === Math.PI / 2) {
+      const eastHead = (item.angle ?? 0) < 0
+      return { height, x: eastHead ? item.x + .12 : item.x + item.width - .12, z: item.z + item.depth / 2, bottom: item.height + .015 + height * .065, angle: eastHead ? -Math.PI / 2 : Math.PI / 2, pose: 'lying' }
+    }
     const south = item.angle === Math.PI
     return { height, x: item.x + item.width / 2, z: south ? item.z + .12 : item.z + item.depth - .12, bottom: item.height + .015 + height * .065, angle: south ? Math.PI : 0, pose: 'lying' }
   }
   const seat = (itemId: string, height: number, seatHeight: number, angle = 0): Placement => {
-    const item = floor.furniture.find(item => item.id === itemId)!
+    const item = floor.furniture.find(entry => entry.id === itemId)!
     return { height, x: item.x + item.width / 2, z: item.z + item.depth / 2, pose: 'sitting', seat: seatHeight, angle }
   }
   const placements: Placement[] = id === 'EG' ? [
-    { height: 1.75, x: 3.5, z: 6.7, pose: 'walking' },
-    { height: 1.65, x: 1.95, z: 9.5, pose: 'sitting', seat: .43, angle: Math.PI },
-    { height: 1.2, x: 5.25, z: 6.85, pose: 'standing', angle: -.6 },
-    { height: .95, x: 2.8, z: 7.5, pose: 'standing', angle: .5 },
+    { height: 1.75, x: 3.6, z: 6.9, pose: 'walking' },
+    { height: 1.65, x: 1.95, z: 9.6, pose: 'sitting', seat: .43, angle: Math.PI },
+    { height: 1.2, x: 5.2, z: 6.95, pose: 'standing', angle: -.6 },
+    { height: .95, x: 2.9, z: 7.7, pose: 'standing', angle: .5 },
   ] : id === 'OG' ? [
-    { height: 1.75, x: 2.7, z: 1.3, pose: 'standing', angle: -Math.PI / 2 },
-    { height: 1.65, x: 2.85, z: 5.45, pose: 'standing' },
+    { height: 1.75, x: 2.6, z: 1.8, pose: 'standing', angle: -Math.PI / 2 },
+    { height: 1.65, x: 3.3, z: 5.5, pose: 'standing' },
     bed('bed-north', 1.2), seat('desk-chair-south', .95, .44),
   ] : id === 'DG' ? [
-    bed('parents-bed', 1.75), seat('office-chair', 1.65, .45),
-    { height: 1.2, x: 4.9, z: 4.2, pose: 'standing' },
-    { height: .95, x: 2.8, z: 6.5, pose: 'standing' },
+    bed('parents-bed', 1.75), seat('office-chair', 1.65, .45, Math.PI),
+    { height: 1.2, x: 4.7, z: 4.3, pose: 'standing' },
+    { height: .95, x: 3.2, z: 7.2, pose: 'standing' },
   ] : [
-    { height: 1.75, x: 2.1, z: 2.1, pose: 'standing' },
-    { height: 1.65, x: 3.2, z: 4.5, pose: 'standing' },
-    { height: 1.2, x: 2.2, z: 7, pose: 'walking' },
-    { height: .95, x: 1.6, z: 8.5, pose: 'standing' },
+    { height: 1.75, x: 2.6, z: 2.1, pose: 'standing' },
+    { height: 1.65, x: 3.3, z: 5.0, pose: 'standing' },
+    { height: 1.2, x: 3.9, z: 7.4, pose: 'walking' },
+    { height: .95, x: 5.2, z: 8.2, pose: 'standing' },
   ]
   return placements.map((placement, index) => !furnished && ['sitting', 'lying'].includes(placement.pose)
     ? { height: placement.height, x: floor.rooms[index % floor.rooms.length].spawn[0], z: floor.rooms[index % floor.rooms.length].spawn[1], pose: 'standing' }

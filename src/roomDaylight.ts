@@ -1,12 +1,12 @@
 import * as THREE from 'three'
-import { area, house, makeFloor, roofWindows, stairOpeningParts } from './model'
+import { area, makeFloor, roofWindows, stairOpeningParts } from './model'
 import type { FloorId, Rect, WindowEdits } from './model'
 
 export function roomDaylight(floorId: FloorId, houseSide: 'east' | 'west' = 'east', windows?: WindowEdits) {
   const floor = makeFloor(floorId, houseSide, windows)
   const apertures = floor.walls.filter(wall => ['east', 'north', 'south'].includes(wall.id)).flatMap(wall => wall.openings.filter(opening => !opening.infill && (opening.kind === 'window' || opening.id === 'terrace' || opening.id.startsWith('garden-door'))).map(opening => ({
-    east: wall.axis === 'x' ? wall.x + opening.start + opening.width / 2 : wall.x - .01,
-    south: wall.axis === 'z' ? wall.z + opening.start + opening.width / 2 : wall.id === 'north' ? house.north + .01 : house.south - .01,
+    east: wall.axis === 'x' ? wall.x + opening.start + opening.width / 2 : wall.x - .2,
+    south: wall.axis === 'z' ? wall.z + opening.start + opening.width / 2 : wall.id === 'north' ? wall.z + wall.depth + .2 : wall.z - .2,
     area: opening.width * opening.height,
   })))
   if (floorId === 'DG') for (const window of roofWindows) apertures.push({ east: window.x + window.width / 2, south: window.z + window.depth / 2, area: window.width * window.length })

@@ -133,7 +133,53 @@ und Kollisionen bleiben unveraendert. Die Farbgebung ist eine Annaeherung an
 trockenen Sommerbestand, keine exakte Fototextur; der Datumsregler aendert
 weiterhin nur den Sonnenstand, nicht den Vegetationszustand.
 
-## Teilunterkellerung West
+## Wolf-Gesamtplansatz, 13.11.2026 (aktueller Modellstand)
+
+Das Gebaeudemodell folgt dem vollstaendigen Wolf-Plansatz vom 13.11.2026 (M 1:100,
+Grundrisse KG/EG/OG/DG/Spitzboden, Ansichten Sued/Ost/Nord/West, Schnitt A-A)
+und loest damit die nachfolgenden historischen Zwischenstaende fuer das Haus ab
+(Carport, Stellplaetze und Aussenanlagen bleiben vorerst auf dem bisherigen Stand):
+
+- **Baukoeper & Vollkeller:** EG/OG/DG je 7,10 x 10,70 m (Aussenwaende 34,75 cm
+  bzw. EG-Suedwand 39 cm fuer integrierte Raffstorekaesten; Innenwaende 17,5 cm,
+  Sanitaerwaende teils 21,5 cm). Vollkeller 7,04 x 10,64 m mit 3 cm umlaufendem
+  Sockelruecksprung, 30 cm Stahlbeton-Aussenwaenden und 20 cm Innenwaenden.
+- **Raumhoehen & Decken (Schnitt A-A):** KG 2,53 m (FFB -2,89 m ab FFB EG /
+  -2,69 m ab Gelaende +-0,00; Kellerdecke inkl. EG-Aufbau 36 cm), EG 2,55 m
+  (FFB +-0,00 m / +0,20 m ab Gelaende; Deckenpaket 43 cm), OG 2,54 m (FFB +2,98 m /
+  +3,18 m; Deckenpaket 44 cm), DG 2,535 m bis Kehlbalkendecke (FFB +5,96 m /
+  +6,165 m; KBD 36 cm; Spitzboden ca. 77 cm licht).
+- **Dach & Treppe:** Satteldach 35 Grad, Kniestock 20 cm ueber FFB DG,
+  Dachvorsprung (DV) 10 cm an Traufen und Ost-Ortgang (Haustrennwand West 0 cm),
+  Firsthoehe ca. +10,63 m ueber Gelaende. Halbgewendelte 16-stufige Treppe
+  (2,12 x 2,21 m, Laufbreite ca. 1,05 m, 12 cm Mittelwand; Steigungen 18,1 bzw.
+  18,6 cm / 26 cm).
+- **Raeume & Flaechen (Wolf-Angaben):**
+  - KG (56,91 m2 Nutzflaeche): HWR/Technik/Lager 22,13 m2, Flur 3,54 m2,
+    Keller 2 5,53 m2, Keller/Hobby 25,71 m2.
+  - EG (56,23 m2): DU Bad 5,07 m2, Einbauschrank 1,63 m2, Diele 10,35 m2,
+    Wohnen/Essen/Kueche 39,18 m2.
+  - OG (54,73 m2): Bad 12,60 m2, Flur 5,14 m2, Kind 1 18,16 m2, Abst.R. 2,82 m2,
+    Kind 2 16,01 m2.
+  - DG (43,82 m2 Grundflaeche / 35,08 m2 Wohnflaeche, zzgl. 2 x 5,89 m2
+    abgetrennte Luftraeume): Schlafen/Ankleide 20,43 / 16,06 m2, Flur 3,07 m2,
+    Gast/Arbeiten 20,32 / 15,95 m2.
+- **Fenster, Tueren & Sonnenschutz:**
+  - KG: 3 Lichtschachtfenster 100 x 75 cm, BRH 168 cm (Nord, Ost, Sued).
+  - EG: DU Bad Nord 60,5 x 123 cm (BRH 93), Diele Nord 173 x 73 cm zweiflueglig
+    (BRH 143), Haustuer mit Glasseitenteil Ost 173,5 x 216 cm (63,5 + 110 cm,
+    ohne Vordach im Planstand), Kueche Ost 198 x 123 cm (BRH 93, 2 Fluegel ueber
+    festem Unterlicht), Wohnen Ost-Eck 110,5 x 216 cm (Festelement, Rollladen),
+    Wohnen Suedwest 110,5 x 216 cm (Festelement, Raffstore), HST Sued 298 x 216 cm
+    (Raffstore).
+  - OG: Bad Nord, Kind 1 Nord und Kind 2 Suedost je 173 x 123 cm (BRH 93, je
+    1 Dreh-Kipp-Fluegel + 1 Festfeld, Rollladen); Kind 1 Ost und Kind 2 Suedwest
+    je 110,5 x 216 cm (BRH 0, 90 cm festes Unterlicht + 1 DK-Fluegel, Rollladen).
+  - DG: 2 Giebelfenstertueren Ost je 110,5 x 216 cm (BRH 0, 90 cm Unterlicht,
+    Rollladen) sowie 2 Dachflaechenfenster 94 x 118 cm (Nord und Sued).
+  - Innentueren: Rohbaumass 88,5 x 211 cm (Kellertuer im EG 76,5 x 211 cm).
+
+## Teilunterkellerung West (historischer Zwischenstand)
 
 Das Kellergeschoss ist als rechteckiger Laengs-Teilkeller an der Haustrennwand
 mit 1,80 m Ostruecksprung ausgefuehrt (Aussenmass 5,25 x 10,60 m, lichte Breite

@@ -18,7 +18,7 @@ export function raffstores(floor: Floor): Raffstore[] {
       const boxWidth = end - start + (corner ? raffstoreDetail.setback : 0)
       const boxFace = face - (north ? 0 : raffstoreDetail.boxDepth)
       const box = { x: wall.axis === 'x' ? start : boxFace, z: wall.axis === 'x' ? boxFace : start, width: wall.axis === 'x' ? boxWidth : raffstoreDetail.boxDepth, depth: wall.axis === 'x' ? raffstoreDetail.boxDepth : boxWidth, bottom: opening.sill + opening.height, height: raffstoreDetail.boxHeight }
-      return { id: `${floor.id}-${opening.id}`, kind: wall.id === 'south' || opening.id === 'living-corner-fixed' ? 'raffstore' as const : 'roller' as const, wallId: wall.id, axis: wall.axis, x: wall.axis === 'x' ? start : plane, z: wall.axis === 'z' ? start : plane, width: end - start, sill: opening.sill, height: opening.height, corner, sharedEndGuide: corner && wall.axis === 'x', box }
+      return { id: `${floor.id}-${opening.id}`, kind: floor.id === 'EG' && wall.id === 'south' ? 'raffstore' as const : 'roller' as const, wallId: wall.id, axis: wall.axis, x: wall.axis === 'x' ? start : plane, z: wall.axis === 'z' ? start : plane, width: end - start, sill: opening.sill, height: opening.height, corner, sharedEndGuide: corner && wall.axis === 'x', box }
     })
   })
 }

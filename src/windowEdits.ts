@@ -3,7 +3,7 @@ import type { Floor, Opening, Wall, WindowEdit, WindowEdits } from './model'
 import { raffstores } from './raffstore'
 import { windowMullionStart, windowPanels, windowJoint } from './windowLayout'
 
-export const editableWindow = (floor: Floor, wall: Wall, opening: Opening) => floor.id !== 'KG' && ['east', 'north', 'south'].includes(wall.id) && opening.kind === 'window' && !opening.infill && !opening.cornerGlazing && opening.id !== 'garden-fixed'
+export const editableWindow = (floor: Floor, wall: Wall, opening: Opening) => floor.id !== 'KG' && ['east', 'north', 'south'].includes(wall.id) && opening.kind === 'window' && !opening.infill && !opening.cornerGlazing && opening.id !== 'garden-fixed' && opening.id !== 'entrance-fixed'
 
 export function windowDraft(opening: Opening): WindowEdit {
   const panels = windowPanels(opening), columns = opening.windowLayout?.columns ?? 1

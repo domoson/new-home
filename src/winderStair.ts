@@ -1,5 +1,5 @@
 export type StairPoint = [number, number]
-export const winderCore = { x: .3, z: 3.5, width: 1.9, depth: 2, end: 5.5, tread: .3, risers: 15, runWidth: .9, walkingOuterOffset: .425, turnSize: 1, arrivalDepth: 1.1 }
+export const winderCore = { x: .3475, z: 3.965, width: 2.12, depth: 2.21, end: 6.175, tread: .26, risers: 16, runWidth: 1.045, walkingOuterOffset: .425, turnSize: 1.105, arrivalDepth: 1.1 }
 export type WinderStep = { id: string; footprint: StairPoint[]; inner: [StairPoint, StairPoint]; height: number }
 
 export function stairPrism(footprint: StairPoint[], bottom: number, height: number) {
@@ -17,22 +17,22 @@ export function winderSteps(rise: number): WinderStep[] {
   const result: WinderStep[] = []
   const rectangle = (east: number, south: number, width: number, depth: number): StairPoint[] => [[east, south], [east + width, south], [east + width, south + depth], [east, south + depth]]
   const point = (angle: number, radius: number): StairPoint => [center[0] + Math.cos(angle) * radius, center[1] + Math.sin(angle) * radius]
-  const endTread = (core.width - turnSize) / 3
-  for (let index = 0; index < 3; index++) {
-    const east = core.x + core.width - (index + 1) * endTread
-    result.push({ id: `north-${index}`, footprint: rectangle(east, core.z, endTread, core.runWidth), inner: [[east + endTread, core.z + core.runWidth], [east, core.z + core.runWidth]], height: (index + 1) * rise / core.risers })
+  const startTread = (core.width - turnSize) / 4, endTread = (core.width - turnSize) / 3
+  for (let index = 0; index < 4; index++) {
+    const east = core.x + core.width - (index + 1) * startTread
+    result.push({ id: `north-${index}`, footprint: rectangle(east, core.z, startTread, core.runWidth), inner: [[east + startTread, core.z + core.runWidth], [east, core.z + core.runWidth]], height: (index + 1) * rise / core.risers })
   }
   for (let index = 0; index < 8; index++) {
     const start = -Math.PI / 2 - index * Math.PI / 8, end = start - Math.PI / 8
     const outer = (angle: number) => point(angle, turnSize / Math.max(Math.abs(Math.cos(angle)), Math.abs(Math.sin(angle))))
     const inner = (angle: number) => point(angle, (turnSize - core.runWidth) / Math.max(Math.abs(Math.cos(angle)), Math.abs(Math.sin(angle))))
     const innerStart = inner(start), innerEnd = inner(end)
-    result.push({ id: `winder-${index}`, footprint: [innerStart, outer(start), outer(end), innerEnd], inner: [innerStart, innerEnd], height: (index + 4) * rise / core.risers })
+    result.push({ id: `winder-${index}`, footprint: [innerStart, outer(start), outer(end), innerEnd], inner: [innerStart, innerEnd], height: (index + 5) * rise / core.risers })
   }
   for (let index = 0; index < 3; index++) {
     const east = center[0] + index * endTread
     const width = endTread
-    result.push({ id: `south-${index}`, footprint: rectangle(east, core.end - core.runWidth, width, core.runWidth), inner: [[east, core.end - core.runWidth], [east + width, core.end - core.runWidth]], height: (index + 12) * rise / core.risers })
+    result.push({ id: `south-${index}`, footprint: rectangle(east, core.end - core.runWidth, width, core.runWidth), inner: [[east, core.end - core.runWidth], [east + width, core.end - core.runWidth]], height: (index + 13) * rise / core.risers })
   }
   const mirror = ([east, south]: StairPoint): StairPoint => [east, core.z + core.end - south]
   return result.map(step => ({ ...step, footprint: step.footprint.map(mirror).reverse(), inner: [mirror(step.inner[1]), mirror(step.inner[0])] }))
@@ -41,10 +41,10 @@ export function winderSteps(rise: number): WinderStep[] {
 export function stairWalkingLine(rise: number): [number, number, number][] {
   const core = winderCore, center = [core.x + core.turnSize, core.z + core.turnSize]
   const halfRun = core.walkingOuterOffset, radius = core.turnSize - halfRun
-  const points: [number, number, number][] = [[core.x + core.width + .6, 0, core.z + halfRun], [center[0], rise * 3 / core.risers, core.z + halfRun]]
+  const points: [number, number, number][] = [[core.x + core.width + .6, 0, core.z + halfRun], [center[0], rise * 4 / core.risers, core.z + halfRun]]
   for (let index = 1; index <= 16; index++) {
     const angle = -Math.PI / 2 - index * Math.PI / 16
-    points.push([center[0] + radius * Math.cos(angle), rise * (3 + index / 2) / core.risers, center[1] + radius * Math.sin(angle)])
+    points.push([center[0] + radius * Math.cos(angle), rise * (4 + index / 2) / core.risers, center[1] + radius * Math.sin(angle)])
   }
   points.push([core.x + core.width + .6, rise, core.end - halfRun])
   return points.map(([east, height, south]) => [east, height, core.z + core.end - south])

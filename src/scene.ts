@@ -496,7 +496,7 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
     if (collide) triangles.push({ vertices, indices })
   }
   const renderedFloors = walk || showRoof ? floorIds : [floorId]
-  const canopy = entryCanopies.east !== false && (walk || showRoof || floorId === 'EG') ? entryCanopy(makeFloor('EG', includeSite ? 'east' : 'west')) : undefined
+  const canopy = Boolean(entryCanopies.east) && (walk || showRoof || floorId === 'EG') ? entryCanopy(makeFloor('EG', includeSite ? 'east' : 'west')) : undefined
   const cladding = createTimberCladding(renderedFloors, cutWalls && !walk && !showRoof, includeSite ? 'east' : 'west', canopy, windowEdits.east)
   group.add(cladding.group)
   cladding.set(initialAppearance.composition, initialAppearance.woodTone, initialAppearance.woodProfile)
@@ -545,9 +545,20 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
           const ridge = house.depth / 2
           const split = solid.z < ridge && solid.z + solid.depth > ridge ? [rect(solid.x, solid.z, solid.width, ridge - solid.z), rect(solid.x, ridge, solid.width, solid.z + solid.depth - ridge)] : [solid]
           for (const part of split) {
-            const tops = [Math.min(solid.bottom + solid.height, roofHeight(part.z)), Math.min(solid.bottom + solid.height, roofHeight(part.z + part.depth))]
+            let zStart = part.z, zEnd = part.z + part.depth
+            let roofStart = roofHeight(zStart), roofEnd = roofHeight(zEnd)
+            if (Math.max(roofStart, roofEnd) <= solid.bottom + 1e-5) continue
+            if (roofStart < solid.bottom) {
+              zStart += (solid.bottom - roofStart) / (roofEnd - roofStart) * (zEnd - zStart)
+              roofStart = solid.bottom
+            } else if (roofEnd < solid.bottom) {
+              zEnd = zStart + (roofStart - solid.bottom) / (roofStart - roofEnd) * (zEnd - zStart)
+              roofEnd = solid.bottom
+            }
+            if (zEnd - zStart <= 1e-5) continue
+            const tops: [number, number] = [Math.min(solid.bottom + solid.height, roofStart), Math.min(solid.bottom + solid.height, roofEnd)]
             const wedgeInteriorFace = { north: 3, south: 2, west: 5, east: 4 }[wall.id]
-            if (Math.min(...tops) > solid.bottom) { const mesh = wedge(part, [base + solid.bottom, base + solid.bottom], [base + tops[0], base + tops[1]], Array.from({ length: 6 }, (_, index) => wedgeInteriorFace !== undefined && index !== wedgeInteriorFace ? facade : plaster)); mesh.name = `${id}-wall-${wall.id}` }
+            if (Math.max(...tops) > solid.bottom + 1e-5) { const mesh = wedge(rect(part.x, zStart, part.width, zEnd - zStart), [base + solid.bottom, base + solid.bottom], [base + tops[0], base + tops[1]], Array.from({ length: 6 }, (_, index) => wedgeInteriorFace !== undefined && index !== wedgeInteriorFace ? facade : plaster)); mesh.name = `${id}-wall-${wall.id}` }
           }
         }
       }
@@ -570,9 +581,10 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
           for (const bottom of [0, openHeight - windowFrame]) fixedBox(windowFrame, bottom, glazing.width - 2 * windowFrame, windowFrame, openingFrame)
           if (opening.cornerGlazing && wall.axis === 'z') addBox(rect(east - .04, south + glazing.width - .04, .08, .08), base + opening.sill, openHeight, frameFaces(1, 5)).name = `${id}-glazing-corner-coupling`
           const columns = opening.windowLayout?.columns ?? 1, lowerFixed = opening.windowLayout?.lowerFixed
-          if (columns === 2) fixedBox(windowMullionStart(glazing), windowFrame, windowJoint, openHeight - 2 * windowFrame, frameMaterial).name = `${id}-${opening.id}-mullion`
+          const mullionBottom = lowerFixed ? lowerFixed + windowJoint / 2 : windowFrame
+          if (columns === 2 && openHeight - windowFrame > mullionBottom) fixedBox(windowMullionStart(glazing), mullionBottom, windowJoint, openHeight - windowFrame - mullionBottom, frameMaterial).name = `${id}-${opening.id}-mullion`
+          if (lowerFixed) fixedBox(windowFrame, lowerFixed - windowJoint / 2, glazing.width - 2 * windowFrame, windowJoint, frameMaterial).name = `${id}-${opening.id}-transom-0`
           for (const panel of windowPanels(glazing)) {
-            if (lowerFixed && panel.fixed && panel.bottom + panel.height < lowerFixed) fixedBox(panel.start, lowerFixed - windowJoint / 2, panel.width, windowJoint, frameMaterial).name = `${id}-${opening.id}-transom-${panel.column}`
             if (panel.fixed) {
               const infill = fixedBox(panel.start, panel.bottom, panel.width, panel.height, opening.infill === 'aluminium' ? entryDoorMaterial : glass, opening.infill ? .036 : .03)
               infill.name = `${id}-${opening.id}-fixed-${panel.column}`
@@ -594,7 +606,7 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
             addBox(rect(width - .03, direction < 0 ? .033 : -.045, .018, .012), Math.max(.12, height / 2 - .08), .16, dark, false, false, pivot)
             const leafId = `${id}-${opening.id}${panel.column ? '-secondary' : ''}`
             pivot.name = `${leafId}-sash`
-            const name = ({ 'kitchen-window': 'Küche', 'wc-window': 'Dusche / Ost', 'bath-window': 'Bad', 'child-north-window': 'Kind Nord', 'living-east': 'Wohnen / Ost', 'east-north': 'Ost / Nord', 'east-south': 'Ost / Süd', 'south-west': 'Südwest', 'south-east': 'Südost', 'gable-office': 'Büro / Ostgiebel', 'gable-parents': 'Schlafen / Ostgiebel', 'well-plant': 'Technik / Lichtschacht', 'well-hobby': 'Keller / Lichtschacht', 'well-hobby-south': 'Hobby / Lichtschacht Süd' } as Record<string, string>)[opening.id] ?? opening.id
+            const name = ({ 'wc-window': 'DU Bad / Nord', 'hall-window-fixed': 'Diele / Nord', 'kitchen-east-window': 'Küche / Ost', 'living-corner-fixed': 'Wohnen / Ost', 'garden-west-fixed': 'Wohnen / Südwest', 'bath-window': 'Bad / Nord', 'child-north-window': 'Kind 1 / Nord', 'east-north': 'Kind 1 / Ost', 'south-west': 'Kind 2 / Südwest', 'south-east': 'Kind 2 / Südost', 'gable-office': 'Schlafen / Ostgiebel', 'gable-parents': 'Gast-Arbeiten / Ostgiebel', 'well-plant': 'HWR-Technik / Lichtschacht Nord', 'well-hobby': 'Hobby / Lichtschacht Ost', 'well-hobby-south': 'Hobby / Lichtschacht Süd' } as Record<string, string>)[opening.id] ?? opening.id
             doors.push({ id: leafId, label: `${id} · Fenster ${name}${columns === 2 ? ` · Flügel ${panel.column + 1}` : ''}`, kind: 'window', pivot, closedAngle: pivot.rotation.y, direction, amount: 0, open: false, size: new THREE.Vector3(width, height, .06), center: new THREE.Vector3(width / 2, height / 2, 0), position: pivot.position.clone(), object: mesh, sliding: false })
           }
         } else {
@@ -774,8 +786,12 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
     for (const skirt of frostSkirts()) addBox(skirt, construction.terrain - frostSkirtDepth, frostSkirtDepth, stone, false).name = 'frost-skirt'
     if (includeSite) {
     const shape = new THREE.Shape(siteBoundary.map(([x, z]) => new THREE.Vector2(x, z)))
-    const groundHoles = walk || showRoof ? [siteHouseEnvelope(), partnerEnvelope()] : [siteHouseRect(cellar), siteHouseRect(cellar, 'west')]
-    for (const hole of [...groundHoles, ...wells.flatMap(well => [siteHouseRect(well), siteHouseRect(well, 'west')])]) shape.holes.push(new THREE.Path([new THREE.Vector2(hole.x, hole.z), new THREE.Vector2(hole.x + hole.width, hole.z), new THREE.Vector2(hole.x + hole.width, hole.z + hole.depth), new THREE.Vector2(hole.x, hole.z + hole.depth)]))
+    const groundHoles = (walk || showRoof ? [siteHouseEnvelope(), partnerEnvelope()] : [siteHouseRect(cellar), siteHouseRect(cellar, 'west')]).map((hole, index) => index === 1 && hole.x + hole.width >= 0 ? { ...hole, width: hole.width - .001 } : hole)
+    const wellHoles = wells.flatMap(well => {
+      const padded = well.x >= house.width ? { ...well, x: well.x + .002, width: well.width - .002 } : well.z < 0 ? { ...well, depth: well.depth - .002 } : { ...well, z: well.z + .002, depth: well.depth - .002 }
+      return [siteHouseRect(padded), siteHouseRect(padded, 'west')]
+    })
+    for (const hole of [...groundHoles, ...wellHoles]) shape.holes.push(new THREE.Path([new THREE.Vector2(hole.x, hole.z), new THREE.Vector2(hole.x + hole.width, hole.z), new THREE.Vector2(hole.x + hole.width, hole.z + hole.depth), new THREE.Vector2(hole.x, hole.z + hole.depth)]))
     const geometry = new THREE.ShapeGeometry(shape); geometry.rotateX(Math.PI / 2); geometry.translate(0, construction.terrain, 0)
     const lawn = createSummerLawnTexture(); textures.push(lawn); groundMaterial.map = lawn
     const ground = new THREE.Mesh(geometry, groundMaterial); ground.name = 'site-ground'; ground.receiveShadow = true; siteGroup.add(ground)

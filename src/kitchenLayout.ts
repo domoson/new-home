@@ -1,24 +1,24 @@
 import type { Furniture, Rect } from './model'
 
-export const kitchenPrep: Rect = { x: 4.4, z: 5, width: .55, depth: .52 }
+export const kitchenPrep: Rect = { x: 4.8025, z: 5.5225, width: .55, depth: .52 }
 export const kitchenDeviceZones: Rect[] = [
-  { x: 6.07, z: 4.54, width: .38, depth: .4 },
-  { x: 6.05, z: 2.57, width: .3, depth: .22 },
-  { x: 6.37, z: 2.57, width: .22, depth: .26 },
-  { x: 6.05, z: 3.12, width: .5, depth: .5 },
+  { x: 6.2225, z: 5.0625, width: .38, depth: .4 },
+  { x: 6.2025, z: 3.0925, width: .3, depth: .22 },
+  { x: 6.5225, z: 3.0925, width: .22, depth: .26 },
+  { x: 6.2025, z: 3.6425, width: .5, depth: .5 },
 ]
 
 export function kitchenFurniture(ceiling: number): Furniture[] {
   const item = (id: string, kind: Furniture['kind'], x: number, z: number, width: number, depth: number, height: number, bottom = 0): Furniture => ({ id, kind, x, z, width, depth, height, bottom, angle: 0 })
   return [
-    ...['kitchen-tall-storage-1', 'kitchen-tall-storage-2', 'kitchen-tall', 'fridge', 'kitchen-tall-storage-3'].map((id, index) => ({ ...item(id, 'cabinet', 3.6 + index * .6, 2.5, .6, .6, ceiling), ...(index === 4 ? { niche: { bottom: .92, height: .6 } } : {}) })),
-    item('kitchen', 'counter', 6, 3.1, .6, 1.86, .92),
-    item('peninsula', 'counter', 3.95, 4.96, 2.65, 1, .92),
-    { ...item('kitchen-sink', 'sink', 6.03, 3.7, .54, .8, .92), angle: Math.PI / 2 },
-    item('induction', 'hob', 4.98, 5, .8, .52, .025, .92),
-    item('espresso', 'espresso', 6.07, 4.54, .38, .4, .4, .92),
-    item('toaster', 'machine', 6.05, 2.57, .3, .22, .22, .92),
-    item('sodastream', 'machine', 6.37, 2.57, .22, .26, .45, .92),
-    item('cookit', 'machine', 6.05, 3.12, .5, .5, .45, .92),
+    ...['kitchen-tall-storage-1', 'kitchen-tall-storage-2', 'kitchen-tall', 'fridge', 'kitchen-tall-storage-3'].map((id, index) => ({ ...item(id, 'cabinet', 3.7525 + index * .6, 3.0225, .6, .6, ceiling), ...(index === 4 ? { niche: { bottom: .92, height: .6 } } : {}) })),
+    item('kitchen', 'counter', 6.1525, 3.6225, .6, 1.86, .92),
+    item('peninsula', 'counter', 4.3525, 5.4825, 2.4, 1, .92),
+    { ...item('kitchen-sink', 'sink', 6.1825, 4.2225, .54, .8, .92), angle: Math.PI / 2 },
+    item('induction', 'hob', 5.3625, 5.5225, .76, .52, .025, .92),
+    item('espresso', 'espresso', 6.2225, 5.0625, .38, .4, .4, .92),
+    item('toaster', 'machine', 6.2025, 3.0925, .3, .22, .22, .92),
+    item('sodastream', 'machine', 6.5225, 3.0925, .22, .26, .45, .92),
+    item('cookit', 'machine', 6.2025, 3.6425, .5, .5, .45, .92),
   ]
 }

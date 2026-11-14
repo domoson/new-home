@@ -14,7 +14,7 @@ export function createFacadeMaterial(texture: THREE.Texture, alwaysWood = false,
       bool aboveGround = claddingPosition.y >= 0.0;
       bool exterior = claddingPosition.x >= ${((house.width + house.east) / 2 - .0001).toFixed(4)} || claddingPosition.x <= ${(house.west / 2 + .0001).toFixed(4)} || claddingPosition.z <= ${(house.north / 2 + .0001).toFixed(4)} || claddingPosition.z >= ${((house.depth + house.south) / 2 - .0001).toFixed(4)};
       bool eastFace = claddingPosition.x >= ${house.east.toFixed(4)};
-      bool entry = eastFace && claddingPosition.y <= 2.70 && claddingPosition.z >= 0.10 && claddingPosition.z <= 1.90;
+      bool entry = eastFace && claddingPosition.y <= ${(elevations.OG - slabThickness('OG')).toFixed(4)} && claddingPosition.z >= 0.25 && claddingPosition.z <= 2.38;
       bool og = claddingPosition.y >= ${(elevations.OG - slabThickness('OG')).toFixed(4)} && claddingPosition.y < ${(elevations.DG - slabThickness('DG')).toFixed(4)};
       bool timber = alwaysWood || (aboveGround && (claddingMode == 1 || (claddingMode == 2 && claddingPosition.y >= ${(elevations.OG - slabThickness('OG')).toFixed(4)}) || (claddingMode == 3 && eastFace && claddingPosition.y >= ${elevations.DG.toFixed(4)}) || (claddingMode == 4 && entry) || (claddingMode == 5 && og) || (claddingMode == 6 && (og || entry)) || (claddingMode == 7 && ((eastFace && claddingPosition.z > 2.7 && claddingPosition.z < 4.9) || (!eastFace && claddingPosition.x > 4.2 && claddingPosition.x < 6.4)))));
       if (!exterior && !alwaysWood) diffuseColor.rgb = vec3(1.0);

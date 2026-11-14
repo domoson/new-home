@@ -27,8 +27,8 @@ export function planObjects(floor: Floor, furnished: boolean): Measurable[] {
   }
   if (floor.id === 'KG') {
     const cellar = basementEnvelope(), full = houseEnvelope(), setback = full.x + full.width - cellar.x - cellar.width
-    objects.push({ ...rect(cellar.x + cellar.width, full.z, setback, full.depth), label: 'Nicht unterkellert (Bodenplatte EG)', details: `${metres(setback)} Rücksprung von Ostfassade · ca. 5,58–6,99 m Abstand zur Nachbargarage Nr. 8 · Frostschürze / Gründung ungeprüft` })
-    objects.push(...lightWells.map(well => ({ ...well, label: 'Lichtschacht / Abdeckung', details: `${Math.max(well.width, well.depth) * 100} × ${Math.min(well.width, well.depth) * 100} cm Außenmaß · Ausführung ungeprüft` })))
+    if (setback > .1) objects.push({ ...rect(cellar.x + cellar.width, full.z, setback, full.depth), label: 'Nicht unterkellert (Bodenplatte EG)', details: `${metres(setback)} Rücksprung von Ostfassade · Frostschürze / Gründung ungeprüft` })
+    objects.push(...lightWells.map(well => ({ ...well, label: 'Lichtschacht / Abdeckung', details: `${Math.round(Math.max(well.width, well.depth) * 1000) / 10} × ${Math.round(Math.min(well.width, well.depth) * 1000) / 10} cm Außenmaß · Ausführung ungeprüft` })))
   }
   for (const room of floor.rooms) for (const part of room.parts) objects.push({ ...part, label: room.name + (room.parts.length > 1 ? ' · Teilfläche' : ''), details: `${roomArea(room, floor.id).floor.toLocaleString('de-DE', { maximumFractionDigits: 2 })} m² gesamt · ` + (floor.id === 'DG' ? `Lichte Höhe ${metres(Math.min(roofHeight(part.z), roofHeight(part.z + part.depth)))} bis ${metres(roofHeight(Math.max(part.z, Math.min(5, part.z + part.depth))))}` : `Lichte Höhe ${metres(floor.height)}`) })
   objects.push({ ...stairFor(), label: 'Treppenkern', details: 'Ein durchgehender Lauf, zwei Viertelwendelungen · Antritt Süd, Austritt Nord' })

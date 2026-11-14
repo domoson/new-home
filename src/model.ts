@@ -14,39 +14,33 @@ export type Opening = { start: number; width: number; sill: number; height: numb
 export type Wall = Rect & { id: string; axis: 'x' | 'z'; openings: Opening[]; height?: number; recesses?: (Rect & { bottom: number; height: number })[] }
 export type Furniture = Rect & { id: string; kind: 'bed' | 'sofa' | 'chaise' | 'bookcase' | 'table' | 'chair' | 'bench' | 'cabinet' | 'coat-rack' | 'counter' | 'sink' | 'wc' | 'shower' | 'bath' | 'desk' | 'tv' | 'plant' | 'machine' | 'hob' | 'espresso'; height: number; bottom?: number; angle?: number; color?: string; shape?: 'round'; concealedFittings?: boolean; seatHeight?: number; front?: 'north' | 'south' | 'east' | 'west'; frontBottom?: number; niche?: { bottom: number; height: number }; baseInset?: { west: number; south: number } }
 export type Floor = { id: FloorId; name: string; elevation: number; height: number; rooms: Room[]; walls: Wall[]; furniture: Furniture[] }
-export const construction = { exteriorWall: .348, partyWall: .4, clearHeight: 2.77, basementClearHeight: 2.25, timberFloor: .2, basementCeiling: .2, foundationPackage: .2, roofNormal: .24, ridgeCapAllowance: .07, terrain: -.2 }
+export const construction = { exteriorWall: .3475, southWallEG: .39, partyWall: .3475, basementWall: .3, basementInset: .03, clearHeight: 2.55, upperClearHeight: 2.54, atticClearHeight: 2.535, basementClearHeight: 2.53, timberFloor: .43, atticFloor: .44, basementCeiling: .36, foundationPackage: .41, roofNormal: .508, ridgeCapAllowance: .07, terrain: -.2 }
 export const facadeGrid = .3
-export const house = { width: 6.9, depth: 10.5, west: .3, east: 6.6, north: .3, south: 10.2, pitch: 35, knee: .5 }
-export const basementEastSetback = 1.8
-export const basement = { west: house.west, east: house.east - basementEastSetback, north: house.north, south: house.south }
-export const houseEnvelope = () => ({ x: house.west - construction.partyWall, z: house.north - construction.exteriorWall, width: house.east + construction.exteriorWall - house.west + construction.partyWall, depth: house.south - house.north + 2 * construction.exteriorWall })
-export const basementEnvelope = () => rect(basement.west - construction.partyWall, basement.north - construction.exteriorWall, basement.east + construction.exteriorWall - basement.west + construction.partyWall, basement.south - basement.north + 2 * construction.exteriorWall)
+export const house = { width: 7.1, depth: 10.7, west: .3475, east: 6.7525, north: .3475, south: 10.3525, pitch: 35, knee: .275 }
+export const basementEastSetback = 0
+export const basement = { west: .33, east: 6.77, north: .33, south: 10.37 }
+export const houseEnvelope = () => ({ x: 0, z: 0, width: house.width, depth: house.depth })
+export const basementEnvelope = () => rect(.03, .03, 7.04, 10.64)
 export const frostSkirtDepth = .8
 export function frostSkirts(): Rect[] {
-  const full = houseEnvelope(), cellar = basementEnvelope(), unexcavatedStart = cellar.x + cellar.width
-  return [
-    rect(house.east, full.z, construction.exteriorWall, full.depth),
-    rect(unexcavatedStart, full.z, house.east - unexcavatedStart, construction.exteriorWall),
-    rect(unexcavatedStart, house.south, house.east - unexcavatedStart, construction.exteriorWall),
-  ]
+  return []
 }
-export const housePlacement = { x: construction.partyWall - house.west, z: .2 }
+export const housePlacement = { x: 0, z: .2 }
 export const stair = winderCore
-export const interiorWallThickness = .125
-export const standardDoor = { width: .86, height: 2.11, frame: .03 }
+export const interiorWallThickness = .175
+export const standardDoor = { width: .885, height: 2.11, frame: .03 }
 export const stairFor = () => stair
 export const floorIds: FloorId[] = ['KG', 'EG', 'OG', 'DG']
-export const elevations: Record<FloorId, number> = { KG: -(construction.basementClearHeight + construction.basementCeiling), EG: 0, OG: construction.clearHeight + construction.timberFloor, DG: 2 * (construction.clearHeight + construction.timberFloor) }
-export const slabThickness = (id: FloorId) => id === 'KG' ? construction.foundationPackage : id === 'EG' ? construction.basementCeiling : construction.timberFloor
-export const storeyRise = (id: FloorId) => id === 'KG' ? elevations.EG - elevations.KG : elevations.OG - elevations.EG
+export const elevations: Record<FloorId, number> = { KG: -2.89, EG: 0, OG: 2.98, DG: 5.96 }
+export const slabThickness = (id: FloorId) => id === 'KG' ? construction.foundationPackage : id === 'EG' ? construction.basementCeiling : id === 'OG' ? construction.timberFloor : construction.atticFloor
+export const storeyRise = (id: FloorId) => id === 'KG' ? elevations.EG - elevations.KG : id === 'EG' ? elevations.OG - elevations.EG : elevations.DG - elevations.OG
 export const rect = (x: number, z: number, width: number, depth: number): Rect => ({ x, z, width, depth })
 export function entryCanopy(floor: Floor) {
   const wall = floor.walls.find(wall => wall.id === 'east')!
-  const entrance = wall.openings.find(opening => opening.id === 'entrance')!
-  const doorStart = wall.z + entrance.start
-  const end = doorStart + (entrance.width - .3 + 2.5) / 2
+  const openings = wall.openings.filter(opening => opening.id.startsWith('entrance'))
   const start = wall.z + .06
-  return { ...rect(wall.x + wall.width, start, .9, end - start), bottom: 2.35, height: .12, sideThickness: .08 }
+  const end = wall.z + Math.max(...openings.map(opening => opening.start + opening.width)) + .14
+  return { ...rect(wall.x + wall.width, start, .9, end - start), bottom: 2.24, height: .12, sideThickness: .08 }
 }
 export function furnitureVolumes(item: Furniture): (Rect & { bottom: number; height: number })[] {
   const { x, z, width, depth, height } = item
@@ -69,10 +63,14 @@ export function furnitureVolumes(item: Furniture): (Rect & { bottom: number; hei
 }
 export const stairRecess = rect(stair.x + stair.turnSize, stair.z + stair.runWidth, stair.width - stair.turnSize, stair.depth - 2 * stair.runWidth)
 export const stairOpeningParts = [rect(stair.x, stair.z, stair.width, stair.depth)]
-export const basementWindow = { width: .9, height: .75, southGap: 1.2, eastNorthShift: 2.4 }
-export const lightWellSize = { width: 1.3, depth: .5 }
+export const basementWindow = { width: 1, height: .75, sill: 1.68 }
+export const lightWellSize = { width: 1.13, depth: .685 }
 const wellOverhang = (lightWellSize.width - basementWindow.width) / 2
-export const lightWells = [rect(basement.west + .9 - wellOverhang, basementEnvelope().z - lightWellSize.depth, lightWellSize.width, lightWellSize.depth), rect(basement.west + .9 - wellOverhang, basement.south + construction.exteriorWall, lightWellSize.width, lightWellSize.depth)]
+export const lightWells = [
+  rect(1.28 - wellOverhang, -lightWellSize.depth, lightWellSize.width, lightWellSize.depth),
+  rect(house.width, 6.72 - wellOverhang, lightWellSize.depth, lightWellSize.width),
+  rect(1.285 - wellOverhang, house.depth, lightWellSize.width, lightWellSize.depth),
+]
 export function lightWellBars(well: Rect): Rect[] {
   const alongX = well.width >= well.depth
   const crossLength = alongX ? well.depth : well.width
@@ -81,14 +79,14 @@ export function lightWellBars(well: Rect): Rect[] {
     : rect(well.x + .08 + index * .12, well.z, .012, well.depth))
 }
 const roofWindowWidth = .94
-const roofWindowLength = 1.4
+const roofWindowLength = 1.18
 const roofWindowDepth = roofWindowLength * Math.cos(house.pitch * Math.PI / 180)
-const roofWindowX = (house.west + house.east - roofWindowWidth) / 2
+const roofWindowX = 3.08
 export const roofWindows: (Rect & { id: string; name: string; length: number })[] = [
-  { ...rect(roofWindowX, 1.75, roofWindowWidth, roofWindowDepth), id: 'DG-north-skylight', name: 'Dachfenster Nord', length: roofWindowLength },
-  { ...rect(roofWindowX, house.depth - 1.75 - roofWindowDepth, roofWindowWidth, roofWindowDepth), id: 'DG-south-skylight', name: 'Dachfenster S\u00fcd', length: roofWindowLength },
+  { ...rect(roofWindowX, 1.71, roofWindowWidth, roofWindowDepth), id: 'DG-north-skylight', name: 'Dachfenster Nord', length: roofWindowLength },
+  { ...rect(roofWindowX, house.depth - 1.71 - roofWindowDepth, roofWindowWidth, roofWindowDepth), id: 'DG-south-skylight', name: 'Dachfenster S\u00fcd', length: roofWindowLength },
 ]
-export const roofEdgeDetail = { vergeOverhang: .12, eavesOverhang: .14, thickness: .055, ventilationGap: .015, flashingHeight: .065, flashingThickness: .004 } as const
+export const roofEdgeDetail = { vergeOverhang: .1, eavesOverhang: .1, thickness: .055, ventilationGap: .015, flashingHeight: .065, flashingThickness: .004 } as const
 export function roofEnvelope(): Rect {
   const envelope = houseEnvelope()
   return rect(envelope.x, envelope.z - roofEdgeDetail.eavesOverhang, envelope.width + roofEdgeDetail.vergeOverhang, envelope.depth + 2 * roofEdgeDetail.eavesOverhang)
@@ -116,7 +114,7 @@ export function atticLivingArea(room: Room) {
   const band = (height: number) => room.parts.reduce((sum, part) => sum + part.width * Math.max(0, Math.min(part.z + part.depth, house.depth - heightLine(height)) - Math.max(part.z, heightLine(height))), 0)
   return (band(1) + band(2)) / 2
 }
-export const atticCeiling = { height: 2.77, thickness: .24 }
+export const atticCeiling = { height: construction.atticClearHeight, thickness: .36 }
 export const ceilingHeight = (south: number) => Math.min(roofHeight(south), atticCeiling.height)
 export function atticCeilingPanels(): Rect[] {
   const edge = heightLine(atticCeiling.height), full = heightLine(atticCeiling.height + atticCeiling.thickness)
@@ -125,8 +123,8 @@ export function atticCeilingPanels(): Rect[] {
 export function roomArea(room: Room, floor: FloorId) {
   const gross = area(room.parts)
   if (floor === 'KG') return { floor: gross, living: 0 }
-  if (floor !== 'DG') return { floor: gross, living: gross * .97 }
-  return { floor: gross, living: atticLivingArea(room) * .97 }
+  if (floor !== 'DG') return { floor: gross, living: gross }
+  return { floor: gross, living: atticLivingArea(room) }
 }
 export function makeFloor(id: FloorId, houseSide: 'east' | 'west' = 'east', windows: WindowEdits = {}): Floor {
   return applyWindowEdits(buildProviderFloor(id, houseSide), windows)

@@ -6,16 +6,16 @@ export type OpeningLabel = { id: string; side: 'north' | 'east' | 'south'; x: nu
 const centimetres = (value: number) => (value * 100).toLocaleString('de-DE', { maximumFractionDigits: 1 })
 const openingSize = (width: number, height: number) => `${centimetres(width)} \u00d7 ${centimetres(height)} cm`
 
-export const openingTitle = (opening: Opening) => opening.infill === 'aluminium' ? 'Alu-Seitenteil' : opening.id === 'terrace' ? 'Hebeschiebet\u00fcr' : opening.kind === 'window' ? windowPanels(opening).every(panel => panel.fixed) ? 'Festverglasung' : opening.windowLayout?.lowerFixed ? 'Fenstert\u00fcr' : 'Fenster' : opening.kind === 'passage' ? 'Durchgang' : 'T\u00fcr'
+export const openingTitle = (opening: Opening) => opening.infill === 'aluminium' ? 'Alu-Seitenteil' : opening.id === 'entrance-fixed' ? 'Haust\u00fcr-Seitenteil' : opening.id === 'terrace' ? 'Hebeschiebet\u00fcr' : opening.kind === 'window' ? windowPanels(opening).every(panel => panel.fixed) ? 'Festverglasung' : opening.sill === 0 && opening.windowLayout?.lowerFixed ? 'Fenstert\u00fcr' : 'Fenster' : opening.kind === 'passage' ? 'Durchgang' : 'T\u00fcr'
 
 function windowExecution(opening: Opening): string[] {
   const panels = windowPanels(opening)
   const operable = panels.filter(panel => !panel.fixed)
   if (!operable.length) return ['nicht \u00f6ffenbar']
-  const fixedFields = panels.filter(panel => panel.fixed && !operable.some(leaf => leaf.column === panel.column))
+  const fixedFields = panels.filter(panel => panel.fixed && (!opening.windowLayout?.lowerFixed || panel.bottom >= opening.windowLayout.lowerFixed) && !operable.some(leaf => leaf.column === panel.column))
   return [
     `${operable.length} \u00d6ffnungsfl\u00fcgel${fixedFields.length ? ` + ${fixedFields.length === 1 ? 'Festfeld' : `${fixedFields.length} Festfelder`}` : ''}`,
-    ...(opening.windowLayout?.lowerFixed ? [`Unterlicht fest bis ${centimetres(opening.windowLayout.lowerFixed)} cm`] : []),
+    ...(opening.windowLayout?.lowerFixed ? [`Unterlicht fest (${centimetres(opening.windowLayout.lowerFixed)} cm)`] : []),
   ]
 }
 
