@@ -1,5 +1,5 @@
 import * as SunCalc from 'suncalc'
-import { house, houseEnvelope, housePlacement } from './model'
+import { basementEnvelope, house, houseEnvelope, housePlacement } from './model'
 import type { Rect } from './model'
 import type { TimberOptions } from './timberCladding'
 
@@ -25,6 +25,7 @@ export const partner = { x: -house.width, z: .9, width: house.width, depth: hous
 export const siteHouseRect = (bounds: Rect, side: 'east' | 'west' = 'east'): Rect => ({ ...bounds, x: side === 'east' ? bounds.x + housePlacement.x : -bounds.x - bounds.width - housePlacement.x, z: bounds.z + housePlacement.z + (side === 'west' ? partner.z : 0) })
 export const siteHouseEnvelope = () => siteHouseRect(houseEnvelope())
 export const partnerEnvelope = () => siteHouseRect(houseEnvelope(), 'west')
+export const siteBasementEnvelope = (side: 'east' | 'west' = 'east') => siteHouseRect(basementEnvelope(), side)
 export const finishes = {
   interiorDoor: [{ name: 'Eiche natur', color: '#dfd6c2' }, { name: 'Reinweiß', color: '#ffffff' }, { name: 'Gebrochenes Weiß', color: '#f2efe6' }, { name: 'Hellgrau', color: '#c4c7c4' }],
   facade: [{ name: 'Kreideweiß', color: '#fafafa' }, { name: 'Lichtgrau', color: '#d3d7d6' }, { name: 'Salbeigrau', color: '#bfc9bd' }, { name: 'Muschelweiß', color: '#eeeae0' }, { name: 'Nebelblau', color: '#bdcdd3' }, { name: 'Mineralgrün', color: '#9eaea4' }, { name: 'Steingrau', color: '#b4b4b0' }, { name: 'Kohle', color: '#666b68' }, { name: 'Cremeweiß', color: '#eee8d8' }],

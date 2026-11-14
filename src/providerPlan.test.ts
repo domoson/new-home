@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
-import { ceilingHeight, construction, elevations, floorIds, house, lightWellBars, lightWells, makeFloor, roofPanels, roomArea, wallSolids } from './model'
+import { area, basement, basementEnvelope, ceilingHeight, construction, elevations, floorIds, floorSlabs, frostSkirts, house, houseEnvelope, lightWellBars, lightWells, makeFloor, roofPanels, roomArea, wallSolids } from './model'
 import { referenceAreas } from './providerPlan'
 import { kitchenModules } from './kitchenStorage'
-import { boundaryDistance, partner, polygonArea, siteArea, siteBoundary, siteParcels } from './context'
+import { boundaryDistance, partner, polygonArea, siteArea, siteBasementEnvelope, siteBoundary, siteHouseEnvelope, siteParcels } from './context'
 import { winderCore, winderSteps, stairWalkingLine } from './winderStair'
 import { createRoomLighting, lightingCircuits } from './lighting'
 import { createIndirectLighting } from './indirectLighting'
@@ -51,41 +51,54 @@ describe('Anbieterentwurf', () => {
       expect(overlap, `${seat.id}/${other.id}`).toBe(false)
     }
   })
-  it('removes pantry storage and keeps the cellar divider clear of both door openings', () => {
+  it('builds a west partial basement that stays well clear of the east neighbor boundary garage', () => {
     expect(makeFloor('EG').furniture.filter(item => item.id.startsWith('pantry-'))).toEqual([])
-    const floor = makeFloor('KG'), divider = floor.walls.find(wall => wall.id === 'east-divider')!
-    expect(divider.x).toBe(3.625)
+    const cellar = basementEnvelope(), full = houseEnvelope(), floor = makeFloor('KG')
+    expect(cellar.x).toBeCloseTo(full.x)
+    expect(cellar.z).toBeCloseTo(full.z)
+    expect(cellar.depth).toBeCloseTo(full.depth)
+    expect(full.x + full.width - cellar.x - cellar.width).toBeCloseTo(1.8)
+    expect(area(floorSlabs('KG'))).toBeCloseTo(cellar.width * cellar.depth)
+    expect(frostSkirts()).toHaveLength(3)
+    const siteCellar = siteBasementEnvelope('east'), siteFull = siteHouseEnvelope()
+    for (const fraction of [0, .5, 1]) {
+      const z = siteCellar.z + siteCellar.depth * fraction
+      const cellarClearance = boundaryDistance([siteCellar.x + siteCellar.width, z], 1)
+      const fullClearance = boundaryDistance([siteFull.x + siteFull.width, z], 1)
+      expect(cellarClearance).toBeGreaterThan(5.55)
+      expect(cellarClearance - fullClearance).toBeGreaterThan(1.75)
+    }
+    expect(floor.walls.some(wall => wall.id === 'east-divider')).toBe(false)
+    expect(floor.rooms.map(room => room.id)).toEqual(['bath', 'hall', 'child-south'])
+    expect(roomArea(floor.rooms[0], 'KG').floor).toBeCloseTo(13.5)
+    expect(roomArea(floor.rooms[1], 'KG').floor).toBeCloseTo(9)
+    expect(roomArea(floor.rooms[2], 'KG').floor).toBeCloseTo(20.25)
     for (const id of ['bath-south', 'store-north']) {
       const wall = floor.walls.find(wall => wall.id === id)!, door = wall.openings[0]
-      expect(divider.x - wall.x - door.start - door.width).toBeCloseTo(.165)
+      expect(wall.x + door.start).toBeGreaterThan(2.2 + .2)
+      expect(basement.east - wall.x - door.start - door.width).toBeCloseTo(1.34)
     }
-    expect(floor.rooms.find(room => room.id === 'hall')!.parts[0].width).toBeCloseTo(divider.x - house.west)
-    expect(floor.rooms.find(room => room.id === 'child-north')!.parts[0].x).toBeCloseTo(divider.x + divider.width)
   })
-  it('moves the east cellar window north and adds an aligned south window with centered light wells', () => {
+  it('retains aligned north and south cellar windows with centered light wells and omits the east well', () => {
     const floor = makeFloor('KG')
-    expect(lightWells).toHaveLength(3)
+    expect(lightWells).toHaveLength(2)
+    expect(floor.walls.find(wall => wall.id === 'east')!.openings).toEqual([])
     const measuredWells = planObjects(floor, true).filter(object => object.label.startsWith('Lichtschacht'))
-    expect(measuredWells).toHaveLength(3)
+    expect(measuredWells).toHaveLength(2)
     expect(measuredWells.every(well => well.details.startsWith('130 × 50 cm'))).toBe(true)
+    expect(planObjects(floor, true).some(object => object.label.startsWith('Nicht unterkellert'))).toBe(true)
     const north = floor.walls.find(wall => wall.id === 'north')!
     const south = floor.walls.find(wall => wall.id === 'south')!
     expect(south.openings[0].start).toBe(north.openings[0].start)
-    for (const [index, wallId] of ['east', 'north', 'south'].entries()) {
+    for (const [index, wallId] of ['north', 'south'].entries()) {
       const wall = floor.walls.find(wall => wall.id === wallId)!, window = wall.openings[0], well = lightWells[index]
       expect(window).toMatchObject({ width: .9, height: .75, sill: 1.35 })
-      if (wall.axis === 'z') {
-        expect(wall.z + window.start).toBeCloseTo(8.4 - 2.4)
-        expect(wall.z + window.start + window.width).toBeCloseTo(6.9)
-        expect(well.z + well.depth / 2).toBeCloseTo(wall.z + window.start + window.width / 2)
-        expect(well).toMatchObject({ width: .5, depth: 1.3 })
-      } else {
-        expect(wall.x + window.start).toBeCloseTo(1.2)
-        expect(well.x + well.width / 2).toBeCloseTo(wall.x + window.start + window.width / 2)
-        expect(well).toMatchObject({ width: 1.3, depth: .5 })
-      }
+      expect(wall.x + window.start).toBeCloseTo(1.2)
+      expect(well.x + well.width / 2).toBeCloseTo(wall.x + window.start + window.width / 2)
+      expect(well).toMatchObject({ width: 1.3, depth: .5 })
+      expect(well.x + well.width).toBeLessThan(basement.east)
     }
-    expect(lightWells[2].z).toBeCloseTo(house.south + construction.exteriorWall)
+    expect(lightWells[1].z).toBeCloseTo(house.south + construction.exteriorWall)
   })
   it('uses the offered envelope and section levels', () => {
     expect(house.width).toBe(6.9)
@@ -107,9 +120,10 @@ describe('Anbieterentwurf', () => {
   })
   it('keeps furniture and kitchen modules inside the new shell', () => {
     for (const id of floorIds) for (const furniture of makeFloor(id).furniture) {
+      const eastLimit = id === 'KG' ? basement.east : house.east
       expect(furniture.x, furniture.id).toBeGreaterThanOrEqual(house.west - .001)
       expect(furniture.z, furniture.id).toBeGreaterThanOrEqual(house.north - .001)
-      expect(furniture.x + furniture.width, furniture.id).toBeLessThanOrEqual(house.east + .001)
+      expect(furniture.x + furniture.width, furniture.id).toBeLessThanOrEqual(eastLimit + .001)
       expect(furniture.z + furniture.depth, furniture.id).toBeLessThanOrEqual(house.south + .001)
       for (const module of kitchenModules(furniture)) {
         expect(module.x + module.width).toBeLessThanOrEqual(furniture.x + furniture.width + .001)

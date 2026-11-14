@@ -1,6 +1,6 @@
 import * as THREE from 'three'
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js'
-import { atticCeiling, atticCeilingPanels, construction, entryCanopy, house, houseEnvelope, housePlacement, elevations, floorIds, floorSlabs, furnitureVolumes, lightWellBars, lightWells, makeFloor, rect, ridgeElevations, roofEdgeDetail, roofEnvelope, roofHeight, roofInnerElevation, roofOuterElevation, roofPanels, roofVerticalThickness, roofWindows, slabThickness, stairFor, stairGuards, stairHandrails, stairInnerWall, stairSolids, storeyRise, wallSolids } from './model'
+import { atticCeiling, atticCeilingPanels, basementEnvelope, construction, entryCanopy, frostSkirtDepth, frostSkirts, house, houseEnvelope, housePlacement, elevations, floorIds, floorSlabs, furnitureVolumes, lightWellBars, lightWells, makeFloor, rect, ridgeElevations, roofEdgeDetail, roofEnvelope, roofHeight, roofInnerElevation, roofOuterElevation, roofPanels, roofVerticalThickness, roofWindows, slabThickness, stairFor, stairGuards, stairHandrails, stairInnerWall, stairSolids, storeyRise, wallSolids } from './model'
 import { windowFrame, windowGap, windowJoint, windowMullionStart, windowPanels } from './windowLayout'
 import { kitchenModules, moduleFront } from './kitchenStorage'
 import { terraceFurniture, terraceParts, westTerraceFurniture } from './terrace'
@@ -512,10 +512,11 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
       blinds.push(blind); group.add(blind.group)
     }
     const cut = cutWalls && !walk && !showRoof
-    for (const slab of includeSite ? floorSlabs(id) : [envelope]) {
+    const slabEnvelope = id === 'KG' ? basementEnvelope() : envelope
+    for (const slab of includeSite ? floorSlabs(id) : [slabEnvelope]) {
       const texture = floorMap.clone(); texture.repeat.set(slab.width / 2, slab.depth / 2); texture.needsUpdate = true; textures.push(texture)
       const floorMaterial = id === 'KG' ? stone : mat('#ffffff', .8, texture)
-      const mesh = addBox(slab, base - slabThickness(id), slabThickness(id), [Math.abs(slab.x + slab.width - envelope.x - envelope.width) < .000001 ? facade : plaster, slab.x === envelope.x ? facade : plaster, floorMaterial, plaster, Math.abs(slab.z + slab.depth - envelope.z - envelope.depth) < .000001 ? facade : plaster, slab.z === envelope.z ? facade : plaster]); mesh.name = `${id}-slab`
+      const mesh = addBox(slab, base - slabThickness(id), slabThickness(id), [Math.abs(slab.x + slab.width - slabEnvelope.x - slabEnvelope.width) < .000001 ? facade : plaster, slab.x === slabEnvelope.x ? facade : plaster, floorMaterial, plaster, Math.abs(slab.z + slab.depth - slabEnvelope.z - slabEnvelope.depth) < .000001 ? facade : plaster, slab.z === slabEnvelope.z ? facade : plaster]); mesh.name = `${id}-slab`
     }
     for (const room of floor.rooms.filter(room => ['wc', 'bath', 'entry', 'pantry'].includes(room.id) || room.id === 'hall' && id !== 'EG')) for (const part of room.tileParts ?? room.parts) {
       if (room.id === 'hall' && id !== 'EG') {
@@ -767,9 +768,12 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
   }
   if (walk || showRoof || floorId === 'KG') {
     const wells = lightWells
+    const cellar = basementEnvelope()
+    for (const skirt of frostSkirts()) addBox(skirt, construction.terrain - frostSkirtDepth, frostSkirtDepth, stone, false).name = 'frost-skirt'
     if (includeSite) {
     const shape = new THREE.Shape(siteBoundary.map(([x, z]) => new THREE.Vector2(x, z)))
-    for (const hole of [siteHouseEnvelope(), partnerEnvelope(), ...wells.flatMap(well => [siteHouseRect(well), siteHouseRect(well, 'west')])]) shape.holes.push(new THREE.Path([new THREE.Vector2(hole.x, hole.z), new THREE.Vector2(hole.x + hole.width, hole.z), new THREE.Vector2(hole.x + hole.width, hole.z + hole.depth), new THREE.Vector2(hole.x, hole.z + hole.depth)]))
+    const groundHoles = walk || showRoof ? [siteHouseEnvelope(), partnerEnvelope()] : [siteHouseRect(cellar), siteHouseRect(cellar, 'west')]
+    for (const hole of [...groundHoles, ...wells.flatMap(well => [siteHouseRect(well), siteHouseRect(well, 'west')])]) shape.holes.push(new THREE.Path([new THREE.Vector2(hole.x, hole.z), new THREE.Vector2(hole.x + hole.width, hole.z), new THREE.Vector2(hole.x + hole.width, hole.z + hole.depth), new THREE.Vector2(hole.x, hole.z + hole.depth)]))
     const geometry = new THREE.ShapeGeometry(shape); geometry.rotateX(Math.PI / 2); geometry.translate(0, construction.terrain, 0)
     const lawn = createSummerLawnTexture(); textures.push(lawn); groundMaterial.map = lawn
     const ground = new THREE.Mesh(geometry, groundMaterial); ground.name = 'site-ground'; ground.receiveShadow = true; siteGroup.add(ground)
@@ -789,7 +793,7 @@ export function buildScene(floorId: FloorId, walk: boolean, showRoof: boolean, f
       for (const [index, bar] of lightWellBars(well).entries()) addBox(bar, -.14, .015, dark, false).name = `light-well-grate-${wellIndex}-${index}`
     }
     const soil = mat('#969b93'); soil.transparent = true; soil.opacity = .18; soil.depthWrite = false
-    for (const edge of [rect(envelope.x - .08, envelope.z, .08, envelope.depth), rect(envelope.x, envelope.z - .08, envelope.width, .08), rect(envelope.x + envelope.width, envelope.z, .08, envelope.depth), rect(envelope.x, envelope.z + envelope.depth, envelope.width, .08)]) addBox(edge, elevations.KG - slabThickness('KG'), construction.terrain - elevations.KG + slabThickness('KG'), soil, false)
+    for (const edge of [rect(cellar.x - .08, cellar.z, .08, cellar.depth), rect(cellar.x, cellar.z - .08, cellar.width, .08), rect(cellar.x + cellar.width, cellar.z, .08, cellar.depth), rect(cellar.x, cellar.z + cellar.depth, cellar.width, .08)]) addBox(edge, elevations.KG - slabThickness('KG'), construction.terrain - elevations.KG + slabThickness('KG'), soil, false)
     groundMaterial.transparent = floorId === 'KG'; groundMaterial.opacity = floorId === 'KG' ? .25 : 1; groundMaterial.depthWrite = floorId !== 'KG'
   }
   const targetMaterial = new THREE.MeshBasicMaterial({ colorWrite: false, depthWrite: false }); materials.push(targetMaterial)

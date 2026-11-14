@@ -13,7 +13,19 @@ export type Floor = { id: FloorId; name: string; elevation: number; height: numb
 export const construction = { exteriorWall: .348, partyWall: .4, clearHeight: 2.77, basementClearHeight: 2.25, timberFloor: .2, basementCeiling: .2, foundationPackage: .2, roofNormal: .24, ridgeCapAllowance: .07, terrain: -.2 }
 export const facadeGrid = .3
 export const house = { width: 6.9, depth: 10.5, west: .3, east: 6.6, north: .3, south: 10.2, pitch: 35, knee: .5 }
+export const basementEastSetback = 1.8
+export const basement = { west: house.west, east: house.east - basementEastSetback, north: house.north, south: house.south }
 export const houseEnvelope = () => ({ x: house.west - construction.partyWall, z: house.north - construction.exteriorWall, width: house.east + construction.exteriorWall - house.west + construction.partyWall, depth: house.south - house.north + 2 * construction.exteriorWall })
+export const basementEnvelope = () => rect(basement.west - construction.partyWall, basement.north - construction.exteriorWall, basement.east + construction.exteriorWall - basement.west + construction.partyWall, basement.south - basement.north + 2 * construction.exteriorWall)
+export const frostSkirtDepth = .8
+export function frostSkirts(): Rect[] {
+  const full = houseEnvelope(), cellar = basementEnvelope(), unexcavatedStart = cellar.x + cellar.width
+  return [
+    rect(house.east, full.z, construction.exteriorWall, full.depth),
+    rect(unexcavatedStart, full.z, house.east - unexcavatedStart, construction.exteriorWall),
+    rect(unexcavatedStart, house.south, house.east - unexcavatedStart, construction.exteriorWall),
+  ]
+}
 export const housePlacement = { x: construction.partyWall - house.west, z: .2 }
 export const stair = winderCore
 export const interiorWallThickness = .125
@@ -56,7 +68,7 @@ export const stairOpeningParts = [rect(stair.x, stair.z, stair.width, stair.dept
 export const basementWindow = { width: .9, height: .75, southGap: 1.2, eastNorthShift: 2.4 }
 export const lightWellSize = { width: 1.3, depth: .5 }
 const wellOverhang = (lightWellSize.width - basementWindow.width) / 2
-export const lightWells = [rect(house.east + construction.exteriorWall, house.depth - basementWindow.southGap - basementWindow.width - basementWindow.eastNorthShift - wellOverhang, lightWellSize.depth, lightWellSize.width), rect(house.west + .9 - wellOverhang, houseEnvelope().z - lightWellSize.depth, lightWellSize.width, lightWellSize.depth), rect(house.west + .9 - wellOverhang, house.south + construction.exteriorWall, lightWellSize.width, lightWellSize.depth)]
+export const lightWells = [rect(basement.west + .9 - wellOverhang, basementEnvelope().z - lightWellSize.depth, lightWellSize.width, lightWellSize.depth), rect(basement.west + .9 - wellOverhang, basement.south + construction.exteriorWall, lightWellSize.width, lightWellSize.depth)]
 export function lightWellBars(well: Rect): Rect[] {
   const alongX = well.width >= well.depth
   const crossLength = alongX ? well.depth : well.width
@@ -156,8 +168,8 @@ export function stairSolids(rise: number): Solid[] {
   })
 }
 export function floorSlabs(id: FloorId): Rect[] {
+  if (id === 'KG') return [basementEnvelope()]
   const envelope = houseEnvelope()
-  if (id === 'KG') return [envelope]
   const core = stairFor()
   return [rect(envelope.x, envelope.z, envelope.width, core.z - envelope.z), rect(envelope.x, core.z, core.x - envelope.x, core.depth), rect(core.x + core.width, core.z, envelope.x + envelope.width - core.x - core.width, core.depth), rect(envelope.x, core.end, envelope.width, envelope.z + envelope.depth - core.end)]
 }

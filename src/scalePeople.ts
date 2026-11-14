@@ -31,10 +31,10 @@ export function peoplePlacements(id: FloorId, furnished: boolean): Placement[] {
     { height: 1.2, x: 4.9, z: 4.2, pose: 'standing' },
     { height: .95, x: 2.8, z: 6.5, pose: 'standing' },
   ] : [
-    { height: 1.75, x: 3.8, z: 1.3, pose: 'standing' },
-    { height: 1.65, x: 5, z: 4.8, pose: 'standing' },
-    { height: 1.2, x: 3.8, z: 7.2, pose: 'walking' },
-    { height: .95, x: 2.2, z: 8.3, pose: 'standing' },
+    { height: 1.75, x: 2.1, z: 2.1, pose: 'standing' },
+    { height: 1.65, x: 3.2, z: 4.5, pose: 'standing' },
+    { height: 1.2, x: 2.2, z: 7, pose: 'walking' },
+    { height: .95, x: 1.6, z: 8.5, pose: 'standing' },
   ]
   return placements.map((placement, index) => !furnished && ['sitting', 'lying'].includes(placement.pose)
     ? { height: placement.height, x: floor.rooms[index % floor.rooms.length].spawn[0], z: floor.rooms[index % floor.rooms.length].spawn[1], pose: 'standing' }

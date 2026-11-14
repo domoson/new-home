@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { PointerEvent } from 'react'
 import { MapPinned, Ruler, Trash2 } from 'lucide-react'
-import { boundaryDistance, boundaryZ, partnerEnvelope, siteBoundary, siteDivision, siteHouseEnvelope, siteParcels } from './context'
+import { boundaryDistance, boundaryZ, partnerEnvelope, siteBasementEnvelope, siteBoundary, siteDivision, siteHouseEnvelope, siteParcels } from './context'
 import { houseSetbacks } from './setbacks'
 import { usePlanGestures } from './planGestures'
 import { distance, metres } from './measure'
@@ -57,7 +57,8 @@ export default function SitePlan({ dimensions, zoom, selected, onSelect, onZoom 
     let point = { x: position.x, z: position.y }
     if (event.shiftKey && origin) return Math.abs(point.x - origin.x) > Math.abs(point.z - origin.z) ? { x: point.x, z: origin.z } : { x: origin.x, z: point.z }
     let minimum = 8 / Math.hypot(matrix.a, matrix.b)
-    for (const [x, z] of [...siteBoundary, ...siteItems.flatMap(item => item.points), ...neighborItems.flatMap(item => item.points), ...neighborhoodParcels.flatMap(parcel => parcel.points), ...(setbacks?.faces.flatMap(face => face.points) ?? [])]) {
+    const basementCorners = (['east', 'west'] as const).flatMap(side => rectCorners(siteBasementEnvelope(side)))
+    for (const [x, z] of [...siteBoundary, ...siteItems.flatMap(item => item.points), ...basementCorners, ...neighborItems.flatMap(item => item.points), ...neighborhoodParcels.flatMap(parcel => parcel.points), ...(setbacks?.faces.flatMap(face => face.points) ?? [])]) {
       const gap = distance(point, { x, z })
       if (gap < minimum) { minimum = gap; point = { x, z } }
     }
@@ -112,6 +113,12 @@ export default function SitePlan({ dimensions, zoom, selected, onSelect, onZoom 
         {dimensions && item.width && item.depth && !item.id.startsWith('access') && <><Dimension start={(item.dimensionPoints ?? item.points)[0]} end={(item.dimensionPoints ?? item.points)[1]} offset={item.id.startsWith('bins') ? -.22 : .55} /><Dimension start={(item.dimensionPoints ?? item.points)[1]} end={(item.dimensionPoints ?? item.points)[2]} offset={.35} /></>}
         {dimensions && item.id.startsWith('path') && <Dimension start={[(item.points[0][0] + item.points[3][0]) / 2, (item.points[0][1] + item.points[3][1]) / 2]} end={[(item.points[1][0] + item.points[2][0]) / 2, (item.points[1][1] + item.points[2][1]) / 2]} label="0,90 m" />}
       </g>)}
+      <g pointerEvents="none" fill="none" stroke="#6d7c70" strokeWidth=".03" strokeDasharray=".18 .12">
+        {(['east', 'west'] as const).map(side => {
+          const cellar = siteBasementEnvelope(side)
+          return <rect key={side} data-basement-outline={side} x={cellar.x} y={cellar.z} width={cellar.width} height={cellar.depth}><title>Teilunterkellerung ({side === 'east' ? 'Ost' : 'West'}): {metres(cellar.width)} × {metres(cellar.depth)}</title></rect>
+        })}
+      </g>
       {siteParking.map(({ side, carport, covered, bins, gardenEdge, point, streetZ, open }) => <g key={side}>
         {[covered, open].flatMap((rectangle, index) => [rectangle.width / 2 - .95, rectangle.width / 2 + .5].map(offset => <polygon key={`${index}-${offset}`} points={[[rectangle.x + offset, rectangle.z + rectangle.depth], [rectangle.x + offset + .45, rectangle.z + rectangle.depth], [rectangle.x + offset + .45, streetZ(rectangle.x + offset + .45)], [rectangle.x + offset, streetZ(rectangle.x + offset)]].map(([x, z]) => point(x, z).join(',')).join(' ')} fill="#d8dfcd" stroke="#b1bba6" strokeWidth=".02" pointerEvents="none" />))}
         <path d={`M${point(carport.x, carport.z)} L${point(carport.x + carport.width, carport.z)}`} stroke="#55624b" strokeWidth=".12" />

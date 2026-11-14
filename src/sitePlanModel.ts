@@ -1,4 +1,4 @@
-import { partner, partnerEnvelope, siteHouseEnvelope } from './context'
+import { boundaryDistance, partner, partnerEnvelope, siteBasementEnvelope, siteHouseEnvelope } from './context'
 import { distance, metres } from './measure'
 import { rectCorners, siteParking } from './parking'
 import type { SiteRect } from './parking'
@@ -24,9 +24,13 @@ export const neighborItems: SiteItem[] = [
   return { ...item, width, depth, details: `ca. ${metres(width)} x ${metres(depth)} · schematische Umgebung, nicht vermessen` }
 })
 
+const eastCellar = siteBasementEnvelope('east')
+const eastCellarMinGap = boundaryDistance([eastCellar.x + eastCellar.width, eastCellar.z], 1)
+const eastCellarMaxGap = boundaryDistance([eastCellar.x + eastCellar.width, eastCellar.z + eastCellar.depth], 1)
+
 export const siteItems: SiteItem[] = [
-  rectangle('house-east', 'Haus Ost', siteHouseEnvelope(), '#e9e7df'),
-  rectangle('house-west', 'Haus West', partnerEnvelope(), '#e9e7df'),
+  { ...rectangle('house-east', 'Haus Ost', siteHouseEnvelope(), '#e9e7df'), details: `${metres(siteHouseEnvelope().width)} × ${metres(siteHouseEnvelope().depth)} · Teilkeller West ${metres(eastCellar.width)} breit (ca. ${eastCellarMinGap.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}–${eastCellarMaxGap.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} m Abstand zur Garage Nr. 8)` },
+  { ...rectangle('house-west', 'Haus West', partnerEnvelope(), '#e9e7df'), details: `${metres(partnerEnvelope().width)} × ${metres(partnerEnvelope().depth)} · Teilkeller an Haustrennwand (${metres(siteBasementEnvelope('west').width)} breit)` },
   ...(['east', 'west'] as const).filter(() => terraceArea > 0).map(side => {
     const point = (east: number, south: number): [number, number] => side === 'east' ? [east, south] : [-east, south + partner.z]
     return { ...rectangle(`terrace-${side}`, `Terrasse ${side === 'east' ? 'Ost' : 'West'}`, terraceMain, '#d7c5a6', point), points: terraceOutline.map(([east, south]) => point(east, south)), dimensionPoints: rectCorners(terraceMain).map(([east, south]) => point(east, south)), details: `5,00 m × 3,00 m + Rücklauf 0,75 m × 1,50 m · ${terraceArea.toLocaleString('de-DE', { maximumFractionDigits: 2 })} m²` }

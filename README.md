@@ -102,6 +102,32 @@ und Kollisionen bleiben unveraendert. Die Farbgebung ist eine Annaeherung an
 trockenen Sommerbestand, keine exakte Fototextur; der Datumsregler aendert
 weiterhin nur den Sonnenstand, nicht den Vegetationszustand.
 
+## Teilunterkellerung West
+
+Das Kellergeschoss ist als rechteckiger Laengs-Teilkeller an der Haustrennwand
+mit 1,80 m Ostruecksprung ausgefuehrt (Aussenmass 5,25 x 10,60 m, lichte Breite
+4,50 m, 42,75 m2 netto statt zuvor 59,60 m2 Vollkeller):
+
+- **Technik / Waschen (Nord, 13,50 m2):** direkt unter Gaestebad und OG-Bad
+  fuer kurze Steigstraenge; Waermepumpe, Speicher, Waschmaschine, Trockner,
+  Vorratsregal und Nordlichtschacht.
+- **Kellerflur (Mitte, 9,00 m2 inkl. Treppe):** 2,60 m tiefer Vorplatz oestlich
+  des Treppenlaufs mit durchgehendem Vorratsregal an der Ostwand.
+- **Keller / Hobby (Sued, 20,25 m2):** quadratischer 4,50 x 4,50 m Hobby-,
+  Werk- und Lagerraum mit Regalen, Tisch, Sofa und Suedlichtschacht fuer
+  Nord-Sued-Querlueftung. Der fruehere Ost-Lichtschacht entfaellt.
+
+Durch den Ruecksprung von 1,80 m gegenueber der Ostfassade waechst der
+senkrechte Abstand der Keller-Ostwand zur oestlichen Nachbargarage Nr. 8 auf der
+Grenze von zuvor 3,79 bis 5,20 m auf rund 5,58 m (Nord) bis 6,99 m (Sued).
+Selbst mit Arbeitsraum und 45-Grad-Baugrubenboeschung bleiben rund 2,5 bis 3,9 m
+unberuehrtes Urgelaende vor dem Garagenfundament. Die Haustrennwand bleibt
+durchgehend ohne Abtreppung auf einer Ebene gegruendet; der 1,80 m breite nicht
+unterkellerte Oststreifen (unter Eingang, Kuechenzeile und Essbank) besitzt eine
+EG-Bodenplatte mit schematischer Frostschuerze bis -1,00 m. Baugrundgutachten,
+Nachweise nach DIN 4123 / DIN 4124, Lastabtrag/Plattenueberbrueckung am
+Kellerversprung sowie Hausanschlussfuehrung sind fachlich zu planen.
+
 ## Wolf-Angebot: Fenster und Fassade, 01.11.2026
 
 Grundlage ist der wiederhergestellte Tag `wolfhaus-angebot-v0`, ergaenzt um
@@ -128,7 +154,7 @@ Visualisierungsvariante, keine Bestellfreigabe. Tag und Git-Historie bleiben erh
 | DG Dachfenster Nord / Sued | je 94 x 140 | unveraendert | Dachschraege | Klapp-/Schwing; 2 externe Rolllaeden ergaenzt |
 | EG Haustuer-Seitenteil Ost | 30 x 225 Festglas | 30 x 215,5 | 0 | Gleiche Alu-Oberflaeche wie Tuer; geschlossene Fuellung, Position und Masse als Annahme |
 | Haustuer | im Modell 110 x 225 | 110 x 215,5 | 0 | Alu, 40-cm-Edelstahlgriff; neue Hoehe nur Chat-Annahme |
-| KG | im Modell 3 x 90 x 75 | unveraendert | 135 | Kein annotierter KG-Plan; viertes Fenster aus Chat nicht lokalisiert |
+| KG | im Modell zuvor 3 x 90 x 75 | 2 x 90 x 75 (Nord/Sued) | 135 | Teilkeller West ohne Ostfenster; viertes Fenster aus Chat nicht lokalisiert |
 
 Oeffnungsmasse und BRH stehen auch direkt am Grundriss; die 3D-Rahmen und
 beweglichen Fluegel verwenden dieselben Daten. Die Leistungsliste benennt

@@ -3,8 +3,8 @@ import { house } from './model'
 import { partner } from './context'
 import { siteEntrySteps, siteLightWells, splashStripParts, splashStripWidth } from './splashStrip'
 
-test('keeps all three cellar light wells clear of gravel on both house halves', () => {
-  expect(siteLightWells).toHaveLength(6)
+test('keeps north and south cellar light wells clear of gravel on both house halves', () => {
+  expect(siteLightWells).toHaveLength(4)
   for (const well of siteLightWells) for (const part of splashStripParts) {
     const overlapEast = Math.min(part.x + part.width, well.x + well.width) - Math.max(part.x, well.x)
     const overlapSouth = Math.min(part.z + part.depth, well.z + well.depth) - Math.max(part.z, well.z)

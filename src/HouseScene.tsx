@@ -256,8 +256,9 @@ export default function HouseScene({ floorId, mode, furnished, roof, cutWalls, s
       const outdoorLighting = createOutdoorLighting(model.group)
       const globalFill = new THREE.Group(); scene.add(globalFill)
       if (mode === 'walk') for (const level of floorIds) for (const west of [false, true]) {
+        const fillX = level === 'KG' ? 2.6 : 4.3
         const light = new THREE.PointLight('#fff5db', 22, 12, 1.8)
-        light.position.set(west ? -4.3 : 4.3, elevations[level] + 2.5, 5 + (west ? 1.2 : 0)); globalFill.add(light)
+        light.position.set(west ? -fillX : fillX, elevations[level] + 2.5, 5 + (west ? 1.2 : 0)); globalFill.add(light)
       }
       const lightsOff = Object.fromEntries(lightingCircuits.flatMap(circuit => [[circuit.id, false], [`west-${circuit.id}`, false]]))
       let lightingFloor = floorId

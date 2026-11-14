@@ -1,4 +1,4 @@
-import { basementWindow, construction, elevations, house, houseEnvelope, interiorWallThickness, rect, stair, standardDoor } from './model'
+import { basement, basementEnvelope, basementWindow, construction, elevations, house, houseEnvelope, interiorWallThickness, rect, stair, standardDoor } from './model'
 import type { Floor, FloorId, Furniture, Opening, Rect, Room, Wall } from './model'
 import { kitchenFurniture } from './kitchenLayout'
 import { raffstores } from './raffstore'
@@ -35,13 +35,16 @@ function shell(id: FloorId): Wall[] {
   const underlightWindow = (name: string, start: number): Opening => ({ ...fixedWindow(name, start), windowLayout: { columns: 1, lowerFixed: .9 } })
   const cornerReturn = Math.max(0, .4 - construction.exteriorWall)
   const north: Opening[] = id === 'KG' ? [windowOpening('well-plant', .9, basementWindow.width, 1.35, basementWindow.height)] : id === 'EG' ? [windowOpening('wc-window', .3, .605, 1.23, 1.23), { ...windowOpening('hall-window-fixed', 3.6, 1.73, 1.73, .73), windowLayout: { columns: 2, fixed: false } }] : id === 'OG' ? [windowOpening('bath-window', .9, 1.73, .93, 1.23), windowOpening('child-north-window', 4.235, 1.73, .93, 1.23)] : []
-  const east: Opening[] = id === 'KG' ? [windowOpening('well-hobby', house.depth - basementWindow.southGap - basementWindow.width - basementWindow.eastNorthShift, basementWindow.width, 1.35, basementWindow.height)] : id === 'EG' ? [{ ...windowOpening('entrance-fixed', .3, .3, 0, 2.155), infill: 'aluminium' }, { ...opening('entrance', .6), width: 1.1, height: 2.155, swing: 'reverse' }, windowOpening('kitchen-east-window', 3.6, 1.98, .93, 1.23), fixedWindow('living-corner-fixed', house.south - cornerReturn - 1.105)] : id === 'OG' ? [underlightWindow('east-north', 3.6)] : [underlightWindow('gable-office', 3.6), underlightWindow('gable-parents', house.depth - 3.6 - 1.105)]
+  const east: Opening[] = id === 'KG' ? [] : id === 'EG' ? [{ ...windowOpening('entrance-fixed', .3, .3, 0, 2.155), infill: 'aluminium' }, { ...opening('entrance', .6), width: 1.1, height: 2.155, swing: 'reverse' }, windowOpening('kitchen-east-window', 3.6, 1.98, .93, 1.23), fixedWindow('living-corner-fixed', house.south - cornerReturn - 1.105)] : id === 'OG' ? [underlightWindow('east-north', 3.6)] : [underlightWindow('gable-office', 3.6), underlightWindow('gable-parents', house.depth - 3.6 - 1.105)]
   const southWallLength = house.east - house.west
   const terraceWidth = 2.98, terraceLeaf = terraceWidth / 2
   const terraceStart = southWallLength - terraceWidth - cornerReturn
   const south: Opening[] = id === 'KG' ? [windowOpening('well-hobby-south', .9, basementWindow.width, 1.35, basementWindow.height)] : id === 'EG' ? [fixedWindow('garden-west-fixed', 1.2 - house.west), opening('terrace', terraceStart, terraceLeaf, 'door', 0, 2.155), { ...windowOpening('garden-fixed', terraceStart + terraceLeaf, terraceLeaf, 0, 2.155), windowLayout: { columns: 1, fixed: true } }] : id === 'OG' ? [underlightWindow('south-west', 1.2 - house.west), windowOpening('south-east', 4.235, 1.73, .93, 1.23)] : []
-  const envelope = houseEnvelope()
-  return [wall('west', 'z', envelope.x, envelope.z, envelope.depth, [], construction.partyWall), wall('east', 'z', house.east, envelope.z, envelope.depth, east.map(opening => ({ ...opening, start: opening.start - envelope.z })), construction.exteriorWall), wall('north', 'x', house.west, envelope.z, house.east - house.west, north, construction.exteriorWall), wall('south', 'x', house.west, house.south, house.east - house.west, south, construction.exteriorWall)]
+  const envelope = id === 'KG' ? basementEnvelope() : houseEnvelope()
+  const eastInner = id === 'KG' ? basement.east : house.east
+  const westInner = id === 'KG' ? basement.west : house.west
+  const southInner = id === 'KG' ? basement.south : house.south
+  return [wall('west', 'z', envelope.x, envelope.z, envelope.depth, [], construction.partyWall), wall('east', 'z', eastInner, envelope.z, envelope.depth, east.map(opening => ({ ...opening, start: opening.start - envelope.z })), construction.exteriorWall), wall('north', 'x', westInner, envelope.z, eastInner - westInner, north, construction.exteriorWall), wall('south', 'x', westInner, southInner, eastInner - westInner, south, construction.exteriorWall)]
 }
 
 export function buildProviderFloor(id: FloorId, side: 'east' | 'west'): Floor {
@@ -67,10 +70,28 @@ export function buildProviderFloor(id: FloorId, side: 'east' | 'west'): Floor {
       { ...item('wardrobe', 'cabinet', 3.45, 1.75, 2.1, .6, floor.height), front: 'north' },
       item('sideboard', 'cabinet', .55, lowerSouth + .2, 1.8, .45, .6), item('tv', 'tv', .77, lowerSouth, 1.3, .08, 1.45), item('dining', 'table', 5.2, 7.75, .9, 1.8, .75), item('dining-bench', 'bench', 6.15, 7.75, .4, 1.8, .85), item('sofa', 'sofa', .4, 9.05, 2.8, .95, .8, Math.PI), item('sofa-chaise', 'sofa', .4, 7.2, .95, 1.85, .8, -Math.PI / 2), { ...item('coffee', 'table', 1.5, 8.05, .9, .9, .35), shape: 'round', color: '#ffffff' }, ...[7.9, 8.5, 9.1].map((south, index) => item(`dining-chair-${index}`, 'chair', 4.5, south, .43, .43, .8, -Math.PI / 2)), ...[4.55, 5.25].map((east, index) => ({ ...item(`kitchen-stool-${index}`, 'chair', east, 5.86, .43, .4, .68), seatHeight: .65 }))]
   } else if (id === 'KG') {
-    const divider = 3.625
-    floor.walls.push(wall('bath-south', 'x', west, upperNorth, east - west, [opening('bath', 2.3)], bearing), wall('east-divider', 'z', divider, stair.z, stair.depth, [opening('child-north', .35)]), wall('store-north', 'x', west, stair.end, east - west, [opening('child-south', 2.3)], bearing))
-    floor.rooms = [room('bath', 'Technik / Lager', [rect(west, north, east - west, upperNorth - north)], [3.7, 2.1], '#e4e7e8'), room('child-north', 'Keller', [rect(divider + partition, stair.z, east - divider - partition, stair.depth)], [4.9, 4.7], '#e4e7e8'), room('child-south', 'Keller / Hobby', [rect(west, lowerSouth, east - west, south - lowerSouth)], [3.5, 8.1], '#e4e7e8'), room('hall', 'Kellerflur', [rect(west, stair.z, divider - west, stair.depth)], [2.85, 4.65], '#eeeee8', 'Einschließlich Treppengrundfläche; keine Wohnfläche.')]
-    floor.furniture = [item('heat-pump', 'machine', .45, .45, .75, .75, 1.8), item('tank', 'machine', 1.4, .45, .7, .7, 1.7), item('washer', 'machine', 4.85, .45, .62, .62, .88), item('dryer', 'machine', 5.55, .45, .62, .62, .88), item('utility-shelf', 'bookcase', .4, upperNorth - 1.4, .4, 1.3, 2), item('cellar-shelf', 'bookcase', east - .45, stair.z + .1, .35, 1.8, 2), item('hobby-table', 'table', 4.9, 7.7, 1.3, .7, .75), item('hobby-sofa', 'sofa', .45, south - .9, 2, .8, .8)]
+    const cellarEast = basement.east
+    floor.walls.push(
+      wall('bath-south', 'x', west, upperNorth, cellarEast - west, [opening('bath', 2.3)], bearing),
+      wall('store-north', 'x', west, stair.end, cellarEast - west, [opening('child-south', 2.3)], bearing),
+    )
+    floor.rooms = [
+      room('bath', 'Technik / Waschen', [rect(west, north, cellarEast - west, upperNorth - north)], [2.95, 1.95], '#e4e7e8', 'Nordwestlicher Technik- und Hauswirtschaftsraum im Teilkeller direkt unter Gästebad und OG-Bad (kurze Steigstränge): Wärmepumpe, Speicher, Waschmaschine, Trockner und Vorratsregal; Belichtung über Nordlichtschacht. Hausanschlussführung durch den 1,80 m breiten nicht unterkellerten Oststreifen fachlich zu planen.'),
+      room('hall', 'Kellerflur', [rect(west, stair.z, cellarEast - west, stair.depth)], [3.05, 4.5], '#eeeee8', 'Großzügiger Kellerflur mit 2,60 m Tiefe östlich des Treppenlaufs und Stellfläche für ein durchgehendes Vorratsregal an der Ostwand. Einschließlich Treppengrundfläche; keine Wohnfläche.'),
+      room('child-south', 'Keller / Hobby', [rect(west, lowerSouth, cellarEast - west, south - lowerSouth)], [2.5, 7.8], '#e4e7e8', 'Quadratischer Hobby-, Werk- und Lagerkeller (4,50 × 4,50 m) mit Südlichtschacht für Nord–Süd-Querlüftung. Durch 1,80 m Ostrücksprung bleibt die Kelleraußenwand rund 5,58 bis 6,99 m von der Grenzbebauung (Garage Nr. 8) entfernt.'),
+    ]
+    floor.furniture = [
+      item('heat-pump', 'machine', .42, .45, .75, .75, 1.8),
+      item('tank', 'machine', 2.25, .45, .7, .7, 1.7),
+      item('washer', 'machine', 3.42, .45, .62, .62, .88),
+      item('dryer', 'machine', 4.1, .45, .62, .62, .88),
+      item('utility-shelf', 'bookcase', .4, 1.8, .4, 1.35, 2),
+      item('cellar-shelf', 'bookcase', cellarEast - .42, stair.z + .1, .38, 1.8, 2, Math.PI),
+      item('hobby-shelf', 'bookcase', .4, 6, .38, 1.6, 2),
+      item('storage-shelf', 'bookcase', cellarEast - .42, 5.85, .38, 2, 2, Math.PI),
+      item('hobby-table', 'table', 3.25, 8.75, 1.4, .7, .75),
+      item('hobby-sofa', 'sofa', .45, south - .9, 2, .8, .8),
+    ]
   } else if (id === 'OG') {
     const divider = upperHallDivider(), childWest = divider + partition, bathEast = 4, hallEnd = upperChildrenDivider(), storeSouth = hallEnd
     const wetEast = west + 1.2 + .04, screenThickness = .15, screenEast = wetEast + screenThickness, screenNorth = 1.05, screenSouth = 2.4, serviceNorth = 1.7, serviceDepth = .15, vanityDepth = .5, sinkWidth = .6
